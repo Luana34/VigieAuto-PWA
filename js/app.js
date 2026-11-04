@@ -1,6 +1,12 @@
 import { LocalDatabase, STORES } from "./db.js";
 import { parseBackupJson, stringifyBackupJson, survivesUserNumber, addNumbersForUse } from "./precise-json.js";
 import { VIGIE_LOGO_PATHS } from "./logo.js";
+import {
+  DETAIL_KEY, CATEGORIES_KEY, SUBTYPE_KEY, CUSTOM_CATEGORY_PREFIX, MAX_DETAIL_LINES,
+  MAX_SERVICE_CATEGORIES, MAX_CATEGORY_LENGTH, SERVICE_FAMILIES, categoryKey, searchCategories,
+  legacyCategory, inspectCategories, inspectDetails, parseCents, formatCents,
+  centsAsNumber, sumCents, fuelSuggestions, mapsSearchUrl,
+} from "./maintenance.js";
 import { consumeGpsFix } from "./gps.js";
 import {
   SUGGESTION_SETTING_ID, AUTRE_MARQUE, AUTRE_MODELE, FUEL_CHOICES,
@@ -30,7 +36,7 @@ import {
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.1";
+const APP_VERSION = "1.5.2-beta.2";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -241,6 +247,10 @@ function activeReminders() {
 }
 async function apply(operations) {
   if (!state.demo) await state.db.apply(operations);
+  applyToMemory(operations);
+}
+async function applyJournalChecked(operations, guards) {
+  if (!state.demo) await state.db.applyChecked(operations, guards);
   applyToMemory(operations);
 }
 function applyToMemory(operations) {
@@ -848,7 +858,7 @@ function serviceView() {
   return `${pageHeading("Carnet d’entretien", `L’historique de ${esc(nameOf(getVehicle()))}.`, addButton("Ajouter une intervention", "add-service"))}
     <div class="summary-grid">${metric("Interventions", number(all.length), "", "Dans votre carnet", "wrench")}${metric("Dépenses entretien", money(all.reduce((s, x) => s + (Number(x.parts) || 0) + (Number(x.labor) || 0), 0)), "", "Pièces et main-d’œuvre", "receipt")}${metric("Dernière intervention", all[0] ? shortDate(all[0].date) : "—", "", "Selon la date enregistrée", "calendar")}</div>
     <div class="filterbar">${categoryFilter("services", SERVICE_CATEGORIES, state.serviceFilter)}<span class="filter-count">${rows.length} intervention${rows.length === 1 ? "" : "s"}</span></div>
-    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("wrench")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${number(x.odometer)} km · ${esc(SERVICE_CATEGORIES[x.category] || "Autre")}${x.place ? ` · ${esc(x.place)}` : ""}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${money((Number(x.parts) || 0) + (Number(x.labor) || 0))}</div>${rowButtons("service", x.id)}</div>`).join("") : empty("wrench", all.length ? "Aucun résultat" : "Votre carnet est prêt", all.length ? "Essayez une autre catégorie." : "Enregistrez votre première intervention.", "add-service", "Ajouter une intervention")}</div>
+    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("wrench")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${number(x.odometer)} km · ${esc(serviceCategoryText(x))}${x.place ? ` · ${esc(x.place)}` : ""}${serviceDetailText(x)}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${money((Number(x.parts) || 0) + (Number(x.labor) || 0))}</div>${rowButtons("service", x.id)}</div>`).join("") : empty("wrench", all.length ? "Aucun résultat" : "Votre carnet est prêt", all.length ? "Essayez une autre catégorie." : "Enregistrez votre première intervention.", "add-service", "Ajouter une intervention")}</div>
     <div class="note-line">${I("info")} Les échéances d’entretien dépendent du véhicule et de son usage : référez-vous au carnet constructeur.</div>`;
 }
 function fillsView() {
@@ -876,7 +886,7 @@ function fillsView() {
         ? all
             .map((x) => {
               const result = calc.byId[x.id];
-              return `<div class="list-row">${square("fuel", "orange")}<div class="list-main"><div class="list-title">${number(x.volume, 2)} ${esc(x.unit || "L")} · ${x.full ? "Complet" : "Partiel"}</div><div class="list-meta">${shortDate(x.date)} · ${number(x.odometer)} km${x.station ? ` · ${esc(x.station)}` : ""}${result ? `<br><b>${number(result.consumption, 2)} ${esc(result.unit)}/100 km</b> · ${number(result.distance)} km parcourus` : ""}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${money(x.total)}</div>${rowButtons("fill", x.id)}</div>`;
+              return `<div class="list-row">${square("fuel", "orange")}<div class="list-main"><div class="list-title">${number(x.volume, 2)} ${esc(x.unit || "L")} · ${x.full ? "Complet" : "Partiel"}</div><div class="list-meta">${shortDate(x.date)} · ${number(x.odometer)} km${x.station ? ` · ${esc(x.station)}` : ""}${typeof x[SUBTYPE_KEY] === "string" && x[SUBTYPE_KEY] ? ` · ${esc(x[SUBTYPE_KEY])}` : ""}${result ? `<br><b>${number(result.consumption, 2)} ${esc(result.unit)}/100 km</b> · ${number(result.distance)} km parcourus` : ""}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${money(x.total)}</div>${rowButtons("fill", x.id)}</div>`;
             })
             .join("")
         : empty(
@@ -1212,48 +1222,264 @@ function vehicleForm(id = "") {
   });
   updateVehicleOptions(modal.querySelector('form[data-form="vehicle"]'));
 }
+// Le formulaire principal reste ouvert sous le sélecteur : son brouillon ne
+// dépend ni d'un glissement, ni de la reconstruction du DOM de la liste.
+let serviceDraft = null;
+const categoryPicker = $("#category-picker");
+let categoryPickerToken = null;
+// history.back() est asynchrone : une réouverture très rapide attend le
+// popstate précédent pour qu'il ne referme pas le nouveau sélecteur.
+let categoryHistoryPending = false, categoryOpenQueued = false;
+function serviceCategoryText(x) {
+  const info = inspectCategories(x);
+  if (info.state === "valid" && info.value.items.length)
+    return info.value.items.map((item) => item.label).join(" · ");
+  return SERVICE_CATEGORIES[x.category] || (typeof x.category === "string" && x.category) || "Autre";
+}
+function serviceDetailText(x) {
+  const detail = inspectDetails(x);
+  if (detail.state === "conflict") return "<br><strong>Détail et montant global à vérifier</strong>";
+  if (detail.state === "unsupported") return "<br>Détail conservé, non lisible dans cette version";
+  if (detail.state !== "valid" || !detail.value.lines.length) return "";
+  const names = detail.value.lines.map((line) => line.label).join(" · ");
+  return `<br>${esc(names)}`;
+}
+function mapField(name, label, value, placeholder) {
+  return `<div class="field"><label for="f-${name}">${label}</label><div class="map-field"><input id="f-${name}" name="${name}" value="${esc(value)}" placeholder="${esc(placeholder)}"><button class="btn secondary map-button" type="button" data-action="open-place-map" data-field="${name}" aria-label="Voir ${name === "station" ? "la station" : "le lieu"} sur Google Maps">📍</button></div><small>Ouvre Google Maps sur demande ; Internet et service externe.</small></div>`;
+}
+function serviceLineRow(line = null, originalIndex = "new", disabled = false) {
+  const attrs = disabled ? "disabled" : "";
+  return `<div class="service-line" data-service-line data-original-index="${esc(originalIndex)}">
+    <label>Pièce / opération<input type="text" data-service-label value="${esc(line?.label ?? "")}" placeholder="Filtre à huile" maxlength="200" required ${attrs}></label>
+    <label>Coût (€)<input type="number" data-service-price value="${line ? esc(formatCents(line.cents)) : "0.00"}" min="0" step="0.01" inputmode="decimal" required ${attrs}></label>
+    <button type="button" class="icon-button service-remove" data-action="remove-service-line" aria-label="Supprimer cette pièce ou opération" ${attrs}>×</button>
+  </div>`;
+}
+function makeServiceDraft(x) {
+  const categories = inspectCategories(x);
+  const items = categories.state === "valid" ? categories.value.items.map((item) => ({ ...item })) : [];
+  if (categories.state === "absent" && x.id && typeof x.category === "string" && x.category) {
+    items.push({ family:"historique", label:SERVICE_CATEGORIES[x.category] || x.category, legacy:x.category });
+  }
+  return {recordId:x.id || "", categories, items, categoryChanged:false, pendingCustom:[],
+    details:inspectDetails(x), detailChanged:false, reconciled:false};
+}
+function drawServiceCategories(form) {
+  const box = form?.querySelector("[data-service-category-chips]");
+  if (!box || !serviceDraft) return;
+  if (serviceDraft.categories.state === "unsupported") {
+    box.innerHTML = '<p class="form-help">Catégories d’une autre version : elles restent intactes, mais ne peuvent pas être modifiées ici.</p>';
+    return;
+  }
+  box.innerHTML = serviceDraft.items.length
+    ? serviceDraft.items.map((item, index) => `<span class="category-chip"><span>${esc(item.label)}</span><button type="button" data-action="remove-service-category" data-index="${index}" aria-label="Retirer la catégorie ${esc(item.label)}">×</button></span>`).join("")
+    : '<span class="form-help">Aucune catégorie détaillée sélectionnée.</span>';
+}
+function categoryOptionsForDraft() {
+  return [...(state.records?.settings || []), ...(serviceDraft?.pendingCustom || [])];
+}
+function drawCategoryPickerResults(query = "") {
+  const results = categoryPicker.querySelector("[data-category-results]");
+  if (!results || !serviceDraft) return;
+  const clean = query.trim(), matches = searchCategories(clean, categoryOptionsForDraft());
+  const resultRow = (item, showFamily) => `<button type="button" class="category-option" data-action="choose-service-category" data-family="${esc(item.family)}" data-label="${esc(item.label)}"><span aria-hidden="true">${item.icon}</span><span><strong>${esc(item.label)}</strong>${showFamily ? `<small>${esc(item.familyLabel)}</small>` : ""}</span></button>`;
+  let html = "";
+  if (clean) {
+    const exact = matches.some((item) => normalise(item.label) === normalise(clean));
+    const create = clean.length <= MAX_CATEGORY_LENGTH && !exact
+      ? `<button type="button" class="category-option create-category" data-action="create-service-category" data-label="${esc(clean)}"><span aria-hidden="true">➕</span><span><strong>Créer la catégorie « ${esc(clean)} »</strong><small>Elle sera mémorisée à l’enregistrement.</small></span></button>` : "";
+    // S'il n'y a aucun résultat, la création est bien le premier choix.
+    html = (!matches.length ? create : "") + matches.map((item) => resultRow(item, true)).join("") + (matches.length ? create : "");
+    if (!html) html = `<p class="category-empty">${clean.length > MAX_CATEGORY_LENGTH ? `La catégorie ne peut pas dépasser ${MAX_CATEGORY_LENGTH} caractères.` : "Aucun résultat."}</p>`;
+  } else {
+    const groups = [...SERVICE_FAMILIES.map((family) => ({ id:family.id, title:family.title, icon:family.icon })),
+      { id:"personnalise", title:"Mes catégories", icon:"➕" }];
+    html = groups.map((family) => {
+      const entries = matches.filter((item) => item.family === family.id);
+      if (!entries.length) return "";
+      return `<section class="category-group"><h3>${family.icon} ${esc(family.title)}</h3>${entries.map((item) => resultRow(item, false)).join("")}</section>`;
+    }).join("");
+    html += '<button type="button" class="category-option create-category" data-action="focus-category-search"><span aria-hidden="true">➕</span><span><strong>Autre…</strong><small>Rechercher ou créer une catégorie personnelle</small></span></button>';
+  }
+  results.innerHTML = html;
+}
+function closeCategoryPicker({fromHistory = false} = {}) {
+  if (!categoryPicker.open) return;
+  const token = categoryPickerToken;
+  categoryPickerToken = null;
+  categoryPicker.close();
+  $("#modal [data-action=open-service-categories]")?.focus();
+  if (!fromHistory && token && history.state?.vigieCategoryPicker === token) {
+    categoryHistoryPending = true;
+    try { history.back(); } catch { categoryHistoryPending = false; }
+  }
+}
+function openCategoryPicker() {
+  if (!serviceDraft || serviceDraft.categories.state === "unsupported" || categoryPicker.open) return;
+  if (categoryHistoryPending) { categoryOpenQueued = true; return; }
+  categoryPicker.innerHTML = `<div class="category-picker-shell"><header class="category-picker-head"><button type="button" class="category-back" data-action="close-service-categories" aria-label="Retour au formulaire">←</button><div><h2 id="category-picker-title">Choisir une catégorie</h2><p>Choisissez une catégorie à ajouter à l’entretien.</p></div></header><div class="category-search"><label for="category-query">Rechercher</label><input id="category-query" data-category-query type="search" autocomplete="off" placeholder="Filtre, bougie, frein…"></div><div class="category-results" data-category-results></div></div>`;
+  categoryPicker.showModal();
+  drawCategoryPickerResults();
+  const token = uid();
+  try {
+    const previous = history.state && typeof history.state === "object" ? history.state : {};
+    history.pushState({ ...previous, vigieCategoryPicker:token }, "", location.href);
+    categoryPickerToken = token;
+  } catch { categoryPickerToken = null; }
+  categoryPicker.querySelector("[data-category-query]").focus();
+}
+function chooseServiceCategory(family, label, create = false) {
+  if (!serviceDraft || serviceDraft.categories.state === "unsupported") return;
+  const value = String(label || "").trim();
+  if (!value || value.length > MAX_CATEGORY_LENGTH) throw new Error(`Saisissez une catégorie de ${MAX_CATEGORY_LENGTH} caractères maximum.`);
+  if (create) family = "personnalise";
+  const item = { family, label:value };
+  if (!serviceDraft.items.some((existing) => categoryKey(existing) === categoryKey(item))) {
+    if (serviceDraft.items.length >= MAX_SERVICE_CATEGORIES) throw new Error(`Vous pouvez associer au maximum ${MAX_SERVICE_CATEGORIES} catégories à une intervention.`);
+    serviceDraft.items.push(item);
+    serviceDraft.categoryChanged = true;
+  }
+  if (create && !categoryOptionsForDraft().some((entry) => typeof entry.id === "string" && entry.id.startsWith(CUSTOM_CATEGORY_PREFIX) && normalise(entry.label) === normalise(value)))
+    serviceDraft.pendingCustom.push({id:`${CUSTOM_CATEGORY_PREFIX}${uid()}`, version:1, label:value});
+  drawServiceCategories(modal.querySelector('form[data-form="service"]'));
+  closeCategoryPicker();
+}
+function readServiceLines(form, previousRecord, {forSave = false} = {}) {
+  const rows = [...form.querySelectorAll("[data-service-line]")], seen = new Set();
+  if (rows.length > MAX_DETAIL_LINES) throw new Error(`Vous pouvez ajouter au maximum ${MAX_DETAIL_LINES} pièces ou opérations.`);
+  const original = serviceDraft?.details?.value?.lines || [];
+  return rows.map((row) => {
+    const key = row.dataset.originalIndex;
+    const index = key === "new" ? -1 : Number(key);
+    if (index !== -1 && (!Number.isInteger(index) || index < 0 || index >= original.length || seen.has(index)))
+      throw new Error("Détail illisible : annulez et rouvrez l’intervention.");
+    if (index !== -1) seen.add(index);
+    const previous = index === -1 ? null : original[index];
+    const labelInput = row.querySelector("[data-service-label]"), priceInput = row.querySelector("[data-service-price]");
+    const label = previous && labelInput.dataset.edited !== "true" ? previous.label : labelInput.value.trim();
+    if (forSave && !label.trim()) throw new Error("Renseignez le libellé de chaque pièce ou opération.");
+    const cents = parseCents(priceInput.value);
+    return previous ? { ...previous, label, cents } : { label, cents };
+  });
+}
+function updateServiceAmounts(form) {
+  if (!form || !serviceDraft) return;
+  const parts = form.elements.parts, output = form.querySelector("[data-service-total]"), rows = form.querySelectorAll("[data-service-line]");
+  if (!parts || !output) return;
+  const locked = ["unsupported", "conflict"].includes(serviceDraft.details.state) && !serviceDraft.reconciled;
+  if (rows.length && !locked) {
+    parts.readOnly = true;
+    parts.setAttribute("aria-readonly", "true");
+    try { parts.value = formatCents(sumCents(readServiceLines(form, null).map((x) => x.cents))); }
+    catch { parts.value = ""; }
+  } else if (!locked) {
+    parts.readOnly = false;
+    parts.removeAttribute("aria-readonly");
+  }
+  try {
+    const p = String(parts.value).trim(), l = String(form.elements.labor.value).trim();
+    if (!p || !l || !survivesUserNumber(p) || !survivesUserNumber(l)) throw new Error("invalid");
+    output.textContent = money(addNumbersForUse(Number(p), Number(l)));
+  } catch { output.textContent = "—"; }
+}
+function serviceFieldsForSave(form, previous, data) {
+  if (!serviceDraft || serviceDraft.recordId !== (previous.id || "")) throw new Error("Formulaire périmé. Fermez puis rouvrez l’intervention.");
+  const additions = {};
+  let parts;
+  const detail = serviceDraft.details;
+  const locked = ["unsupported", "conflict"].includes(detail.state) && !serviceDraft.reconciled;
+  const rows = [...form.querySelectorAll("[data-service-line]")];
+  if (locked) {
+    parts = asNumber(data, "parts");
+    if (parts !== previous.parts) throw new Error("Le montant global a changé : rouvrez l’intervention avant de continuer.");
+  } else if (rows.length) {
+    const lines = readServiceLines(form, previous, {forSave:true});
+    parts = centsAsNumber(sumCents(lines.map((line) => line.cents)));
+    if (serviceDraft.detailChanged || detail.state === "absent" || serviceDraft.reconciled) {
+      const base = detail.value && typeof detail.value === "object" ? detail.value : {};
+      additions[DETAIL_KEY] = { ...base, version:1, lines };
+    }
+  } else {
+    parts = asNumber(data, "parts");
+    if (serviceDraft.detailChanged && detail.value && typeof detail.value === "object")
+      additions[DETAIL_KEY] = { ...detail.value, version:1, lines:[] };
+  }
+  const category = serviceDraft.categoryChanged
+    ? legacyCategory(serviceDraft.items[0])
+    : previous.id && Object.hasOwn(previous, "category") ? previous.category : "vidange";
+  if (serviceDraft.categoryChanged) {
+    const base = serviceDraft.categories.state === "valid" ? serviceDraft.categories.value : {};
+    additions[CATEGORIES_KEY] = { ...base, version:1, items:serviceDraft.items.map((item) => ({...item})) };
+  }
+  const usedCustom = new Set(serviceDraft.items.filter((item) => item.family === "personnalise").map((item) => normalise(item.label)));
+  const suggestions = serviceDraft.pendingCustom.filter((item) => usedCustom.has(normalise(item.label)));
+  return {parts, category, additions, suggestions};
+}
+categoryPicker.addEventListener("cancel", (event) => { event.preventDefault(); closeCategoryPicker(); });
+window.addEventListener("popstate", () => {
+  if (categoryHistoryPending) {
+    categoryHistoryPending = false;
+    const reopen = categoryOpenQueued;
+    categoryOpenQueued = false;
+    if (reopen && modal.open) openCategoryPicker();
+    return;
+  }
+  if (categoryPicker.open && (!categoryPickerToken || history.state?.vigieCategoryPicker !== categoryPickerToken))
+    closeCategoryPicker({fromHistory:true});
+});
+
 function serviceForm(id = "") {
   const x = recordById("services", id) || {};
   const edit = !!x.id;
   const v = getVehicle();
+  serviceDraft = makeServiceDraft(x);
+  const detail = serviceDraft.details;
+  const locked = ["conflict", "unsupported"].includes(detail.state);
+  const lines = detail.value?.lines || [];
+  const detailMessage = detail.state === "conflict"
+    ? `<p class="detail-warning">La somme des lignes (${esc(money(centsAsNumber(detail.totalCents)))}) diffère du montant global (${esc(money(x.parts))}). Les deux restent inchangés si vous ne choisissez pas de recalculer.</p><button type="button" class="btn secondary small" data-action="reconcile-service-details">Utiliser la somme des lignes</button>`
+    : detail.state === "unsupported"
+      ? '<p class="detail-warning">Détail d’une autre version ou illisible : il reste intact. Le coût global ne peut pas être modifié ici.</p>'
+      : '<p class="form-help">Facultatif. Si vous ajoutez des lignes, leur somme remplace le coût global des pièces.</p>';
   formModal({
     title: edit ? "Modifier une intervention" : "Ajouter une intervention",
-    subtitle: esc(nameOf(v)),
-    form: "service",
-    id,
+    subtitle: esc(nameOf(v)), form:"service", id,
     body: `<div class="form-grid">
-    ${field("title", "Intitulé", x.title, { required: true, full: true, placeholder: "Vidange et filtre à huile" })}
-    ${selectField("category", "Catégorie", x.category || "vidange", SERVICE_CATEGORIES)}${field("date", "Date", x.date || today(), { type: "date", required: true })}
-    ${field("odometer", "Kilométrage (km)", x.odometer ?? v.odometer, { type: "number", min: 0, step: 1, required: true })}${field("place", "Lieu / intervenant", x.place, { placeholder: "Garage, moi-même…" })}
-    ${field("parts", "Coût des pièces (€)", x.parts ?? 0, { type: "number", min: 0, step: "0.01", required: true })}${field("labor", "Main-d’œuvre (€)", x.labor ?? 0, { type: "number", min: 0, step: "0.01", required: true })}
-    ${area("notes", "Notes", x.notes, { placeholder: "Détails de l’intervention…" })}
-    ${!edit ? `<hr class="form-divider"><div class="form-section-title">Prévoir la prochaine échéance <span style="color:var(--muted);font-weight:500">(facultatif)</span></div>${field("reminderDate", "Date du rappel", "", { type: "date" })}${field("reminderKm", "Kilométrage du rappel (km)", "", { type: "number", min: 0, step: 1 })}<p class="form-help">Fixez vous-même les échéances selon le carnet constructeur. Un rappel sera créé si au moins une valeur est renseignée.</p>` : ""}
+    ${field("title", "Intitulé", x.title, { required:true, full:true, placeholder:"Vidange et filtre à huile" })}
+    <div class="field full-width"><span class="field-label">Catégories</span><div class="category-chips" data-service-category-chips></div>${serviceDraft.categories.state === "unsupported" ? "" : '<button type="button" class="btn secondary small" data-action="open-service-categories">+ Choisir une catégorie</button>'}</div>
+    ${field("date", "Date", x.date || today(), { type:"date", required:true })}${field("odometer", "Kilométrage (km)", x.odometer ?? v.odometer, { type:"number", min:0, step:1, required:true })}
+    ${mapField("place", "Lieu / intervenant", x.place, "Garage, moi-même…")}
+    ${field("parts", "Coût des pièces (€)", x.parts ?? 0, { type:"number", min:0, step:"any", required:true, extra:(locked || lines.length ? 'readonly aria-readonly="true"' : "") })}
+    ${field("labor", "Main-d’œuvre (€)", x.labor ?? 0, { type:"number", min:0, step:"any", required:true })}
+    <div class="service-total field"><span class="field-label">Total de l’intervention</span><strong data-service-total>—</strong></div>
+    <div class="service-details full-width"><div class="form-section-title">Pièces et opérations</div>${detailMessage}<div class="service-lines" data-service-lines>${lines.map((line,index) => serviceLineRow(line,index,locked)).join("")}</div>${locked ? "" : '<button type="button" class="btn secondary small" data-action="add-service-line">+ Ajouter une pièce / opération</button>'}</div>
+    ${area("notes", "Notes", x.notes, { placeholder:"Détails de l’intervention…" })}
+    ${!edit ? `<hr class="form-divider"><div class="form-section-title">Prévoir la prochaine échéance <span style="color:var(--muted);font-weight:500">(facultatif)</span></div>${field("reminderDate", "Date du rappel", "", { type:"date" })}${field("reminderKm", "Kilométrage du rappel (km)", "", { type:"number", min:0, step:1 })}<p class="form-help">Fixez vous-même les échéances selon le carnet constructeur. Un rappel sera créé si au moins une valeur est renseignée.</p>` : ""}
   </div>`,
   });
+  const form = modal.querySelector('form[data-form="service"]');
+  drawServiceCategories(form);
+  updateServiceAmounts(form);
 }
 function fillForm(id = "") {
   const x = recordById("fills", id) || {};
   const v = getVehicle();
   const unit = x.unit || carUnit();
   const electric = unit === "kWh";
+  const subtypeSupported = !Object.hasOwn(x, SUBTYPE_KEY) || typeof x[SUBTYPE_KEY] === "string";
+  const suggestions = fuelSuggestions(v, state.records.fills);
   formModal({
-    title: x.id
-      ? electric
-        ? "Modifier une recharge"
-        : "Modifier un plein"
-      : electric
-        ? "Ajouter une recharge"
-        : "Ajouter un plein",
-    subtitle: esc(nameOf(v)),
-    form: "fill",
-    id,
+    title: x.id ? (electric ? "Modifier une recharge" : "Modifier un plein") : (electric ? "Ajouter une recharge" : "Ajouter un plein"),
+    subtitle: esc(nameOf(v)), form:"fill", id,
     body: `<div class="form-grid">
-    ${field("date", "Date", x.date || today(), { type: "date", required: true })}${field("odometer", "Kilométrage (km)", x.odometer ?? v.odometer, { type: "number", min: 0, step: 1, required: true })}
-    ${field("volume", `Quantité (${unit})`, x.volume ?? "", { type: "number", min: 0.01, step: "0.01", required: true, placeholder: electric ? "30,00" : "45,00" })}${field("unitPrice", `Prix par ${unit} (€)`, x.unitPrice ?? "", { type: "number", min: 0, step: "0.001", placeholder: "Facultatif" })}
-    ${field("total", "Prix total (€)", x.total ?? "", { type: "number", min: 0, step: "0.01", required: true, help: "Calculé si quantité et prix unitaire sont indiqués ; vous pouvez le modifier." })}${field("station", electric ? "Borne" : "Station-service", x.station, { placeholder: "Facultatif" })}
+    ${field("date", "Date", x.date || today(), { type:"date", required:true })}${field("odometer", "Kilométrage (km)", x.odometer ?? v.odometer, { type:"number", min:0, step:1, required:true })}
+    <div class="field"><span class="field-label">Énergie du véhicule</span><div class="energy-label">${esc(fuelLabel(v))} · ${esc(unit)}</div></div>
+    <div class="field"><label for="f-fuelSubtype">Sous-type de carburant / recharge</label><input id="f-fuelSubtype" name="fuelSubtype" value="${esc(subtypeSupported ? x[SUBTYPE_KEY] || "" : "")}" list="fuel-subtype-suggestions" autocomplete="off" placeholder="Facultatif, ou saisie libre" ${subtypeSupported ? "" : "disabled"}><datalist id="fuel-subtype-suggestions">${suggestions.map((item) => `<option value="${esc(item)}"></option>`).join("")}</datalist><small>${subtypeSupported ? "Suggestions et derniers choix de ce véhicule ; aucun effet automatique sur la consommation." : "Valeur d’une autre version conservée sans modification."}</small></div>
+    ${field("volume", `Quantité (${unit})`, x.volume ?? "", { type:"number", min:0.01, step:"0.01", required:true, placeholder:electric ? "30,00" : "45,00" })}${field("unitPrice", `Prix par ${unit} (€)`, x.unitPrice ?? "", { type:"number", min:0, step:"0.001", placeholder:"Facultatif" })}
+    ${field("total", "Prix total (€)", x.total ?? "", { type:"number", min:0, step:"0.01", required:true, help:"Calculé si quantité et prix unitaire sont indiqués ; vous pouvez le modifier." })}${mapField("station", electric ? "Borne" : "Station-service", x.station, "Facultatif")}
     ${checkbox("full", electric ? "Batterie rechargée à 100 %" : "Plein complet", x.id ? !!x.full : true)}
     <p class="form-help">${electric ? "La consommation est estimée entre deux charges à 100 %, en incluant les charges intermédiaires." : "Les pleins partiels sont pris en compte entre deux pleins complets."}</p>
-    ${area("notes", "Notes", x.notes, { placeholder: "Une précision à conserver…" })}
+    ${area("notes", "Notes", x.notes, { placeholder:"Une précision à conserver…" })}
   </div>`,
   });
 }
@@ -1501,22 +1727,25 @@ async function saveForm(form) {
     await apply([put("trips", record)]);
   } else if (type === "service") {
     x = recordById("services", id) || {};
+    if (id && !x.id) throw new Error("Cette intervention n’existe plus. Fermez le formulaire et rechargez.");
+    const fields = serviceFieldsForSave(form, x, d);
     record = {
-      ...x,
+      ...x, ...fields.additions,
       id: x.id || uid(),
       vehicleId: x.vehicleId || v.id,
       title: text(d, "title", true),
-      category: text(d, "category"),
+      category: fields.category,
       date: dateValue(d, "date", true),
       odometer: asNumber(d, "odometer"),
       place: text(d, "place"),
-      parts: asNumber(d, "parts"),
+      parts: fields.parts,
       labor: asNumber(d, "labor"),
       notes: text(d, "notes"),
       createdAt: x.createdAt || now,
       updatedAt: now,
     };
     ops.push(put("services", record));
+    for (const suggestion of fields.suggestions) ops.push(put("settings", suggestion));
     const dueDate = dateValue(d, "reminderDate"),
       dueKm = asNumber(d, "reminderKm", { optional: true });
     if (!x.id && (dueDate || dueKm !== null))
@@ -1539,9 +1768,14 @@ async function saveForm(form) {
       );
     const op = odometerOperation(v.id, record.odometer);
     if (op) ops.push(op);
-    await apply(ops);
+    await applyJournalChecked(ops, [
+      {store:"vehicles", id:v.id, expected:v},
+      {store:"services", id:record.id, expected:x.id ? x : null},
+      ...fields.suggestions.map((suggestion) => ({store:"settings", id:suggestion.id, expected:null})),
+    ]);
   } else if (type === "fill") {
     x = recordById("fills", id) || {};
+    if (id && !x.id) throw new Error("Ce plein n’existe plus. Fermez le formulaire et rechargez.");
     record = {
       ...x,
       id: x.id || uid(),
@@ -1558,10 +1792,17 @@ async function saveForm(form) {
       createdAt: x.createdAt || now,
       updatedAt: now,
     };
+    const subtypeControl = form.elements.fuelSubtype;
+    if (subtypeControl && !subtypeControl.disabled &&
+        (subtypeControl.dataset.edited === "true" || (!x.id && subtypeControl.value.trim())))
+      record[SUBTYPE_KEY] = subtypeControl.value.trim();
     ops.push(put("fills", record));
     const op = odometerOperation(v.id, record.odometer);
     if (op) ops.push(op);
-    await apply(ops);
+    await applyJournalChecked(ops, [
+      {store:"vehicles", id:v.id, expected:v},
+      {store:"fills", id:record.id, expected:x.id ? x : null},
+    ]);
   } else if (type === "expense") {
     x = recordById("expenses", id) || {};
     record = {
@@ -2157,8 +2398,70 @@ document.addEventListener("click", async (event) => {
     }
     switch (action) {
       case "close-modal":
+        if (categoryPicker.open) closeCategoryPicker();
         modal.close();
         break;
+      case "open-service-categories":
+        openCategoryPicker();
+        break;
+      case "close-service-categories":
+        closeCategoryPicker();
+        break;
+      case "focus-category-search":
+        categoryPicker.querySelector("[data-category-query]")?.focus();
+        break;
+      case "choose-service-category":
+        chooseServiceCategory(target.dataset.family, target.dataset.label);
+        break;
+      case "create-service-category":
+        chooseServiceCategory("personnalise", target.dataset.label, true);
+        break;
+      case "remove-service-category": {
+        const index = Number(target.dataset.index);
+        if (serviceDraft && Number.isInteger(index) && index >= 0 && index < serviceDraft.items.length) {
+          serviceDraft.items.splice(index,1); serviceDraft.categoryChanged = true;
+          drawServiceCategories(target.closest('form[data-form="service"]'));
+        }
+        break;
+      }
+      case "add-service-line": {
+        const form = target.closest('form[data-form="service"]'), list = form?.querySelector("[data-service-lines]");
+        if (!list || !serviceDraft) break;
+        if (list.children.length >= MAX_DETAIL_LINES) throw new Error(`Vous pouvez ajouter au maximum ${MAX_DETAIL_LINES} lignes.`);
+        if (!list.children.length && Number(form.elements.parts.value) > 0 &&
+            !confirm("Le coût global existant sera remplacé par la somme des pièces détaillées lorsque vous enregistrerez. Continuer ?")) break;
+        list.insertAdjacentHTML("beforeend", serviceLineRow());
+        serviceDraft.detailChanged = true;
+        updateServiceAmounts(form);
+        list.lastElementChild.querySelector("[data-service-label]").focus();
+        break;
+      }
+      case "remove-service-line": {
+        const form = target.closest('form[data-form="service"]'), row = target.closest("[data-service-line]");
+        if (!form || !row || !serviceDraft) break;
+        row.remove(); serviceDraft.detailChanged = true;
+        if (!form.querySelector("[data-service-line]")) { form.elements.parts.value = "0"; form.elements.parts.readOnly = false; }
+        updateServiceAmounts(form);
+        form.querySelector('[data-action="add-service-line"]')?.focus();
+        break;
+      }
+      case "reconcile-service-details": {
+        const form = target.closest('form[data-form="service"]');
+        if (!form || !serviceDraft || serviceDraft.details.state !== "conflict") break;
+        if (!confirm("Remplacer le coût global des pièces par la somme des lignes ? Ce choix sera appliqué seulement à l’enregistrement.")) break;
+        serviceDraft.reconciled = true; serviceDraft.detailChanged = true;
+        form.querySelectorAll("[data-service-line] input, [data-service-line] button").forEach((el) => { el.disabled = false; });
+        const list = form.querySelector("[data-service-lines]");
+        list.insertAdjacentHTML("afterend", '<button type="button" class="btn secondary small" data-action="add-service-line">+ Ajouter une pièce / opération</button>');
+        target.disabled = true; updateServiceAmounts(form);
+        break;
+      }
+      case "open-place-map": {
+        const form = target.closest('form[data-form="service"], form[data-form="fill"]');
+        const value = form?.elements[target.dataset.field]?.value;
+        window.open(mapsSearchUrl(value), "_blank", "noopener,noreferrer");
+        break;
+      }
       case "add-template-point": {
         const form = target.closest('form[data-form="template"]');
         const list = form?.querySelector("[data-template-points]");
@@ -2421,6 +2724,16 @@ document.addEventListener("submit", async (event) => {
   }
 });
 document.addEventListener("input", (event) => {
+  if (event.target.matches("[data-category-query]")) { drawCategoryPickerResults(event.target.value); return; }
+  const serviceFormElement = event.target.closest('form[data-form="service"]');
+  if (serviceFormElement && serviceDraft) {
+    if (event.target.matches("[data-service-label], [data-service-price]")) {
+      event.target.dataset.edited = "true"; serviceDraft.detailChanged = true;
+    }
+    updateServiceAmounts(serviceFormElement);
+    return;
+  }
+  if (event.target.name === "fuelSubtype") event.target.dataset.edited = "true";
   if (event.target.matches("[data-template-title]")) {
     event.target.dataset.edited = "true";
     return;

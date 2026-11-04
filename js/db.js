@@ -15,9 +15,25 @@ export const STORES = [
 ];
 const DB_NAME = "cq-auto-local";
 // Conserver ce nom : c’est la même base que CQ Auto sur la même origine.
-// La version 3 garde les mêmes collections ; elle interdit le retour direct à
-// une PWA v2 qui ne comprend pas les nombres exacts stockés dans IndexedDB.
-const DB_VERSION = 3;
+// Version 4 : mêmes collections ; éviter le retour direct à une ancienne PWA
+// qui modifierait le total sans actualiser les détails et catégories nouveaux.
+// La sauvegarde échangée reste JSON v3 ; conserver un export avant mise à jour.
+const DB_VERSION = 4;
+
+/** Comparaison structurelle des enregistrements JSON et des marqueurs numériques
+ * Uint8Array ; si l'objet courant a changé, l'édition est refusée avant écriture. */
+export function sameStoredValue(a, b, depth = 0) {
+  if (Object.is(a, b)) return true;
+  if (depth > 260 || a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+  if (a instanceof Uint8Array || b instanceof Uint8Array) {
+    return a instanceof Uint8Array && b instanceof Uint8Array && a.length === b.length && a.every((value, i) => value === b[i]);
+  }
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  if (Array.isArray(a) && a.length !== b.length) return false;
+  const left = Object.keys(a).sort(), right = Object.keys(b).sort();
+  if (left.length !== right.length || left.some((key, i) => key !== right[i])) return false;
+  return left.every((key) => sameStoredValue(a[key], b[key], depth + 1));
+}
 
 export class LocalDatabase {
   constructor() {
@@ -88,6 +104,46 @@ export class LocalDatabase {
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error || new Error("Écriture impossible."));
       tx.onabort = () => reject(tx.error || new Error("Transaction annulée."));
+    });
+  }
+  /** Contrôle optimiste et écritures dans une même transaction IndexedDB.
+   * expected:null exige que l'identifiant n'existe pas déjà. */
+  async applyChecked(operations, guards) {
+    if (!operations.length) return;
+    return new Promise((resolve, reject) => {
+      let tx, reason;
+      try {
+        const stores = [...new Set([...operations.map((op) => op.store), ...guards.map((guard) => guard.store)])];
+        if (stores.some((name) => !STORES.includes(name))) throw new Error('Collection inconnue.');
+        tx = this.db.transaction(stores, 'readwrite');
+        const write = () => {
+          try {
+            for (const op of operations) {
+              const store = tx.objectStore(op.store);
+              if (op.type === 'put') store.put(op.value);
+              else if (op.type === 'delete') store.delete(op.id);
+              else if (op.type === 'clear') store.clear();
+              else throw new Error('Opération inconnue.');
+            }
+          } catch (error) { reason = error; tx.abort(); }
+        };
+        let remaining = guards.length;
+        if (!remaining) write();
+        for (const guard of guards) {
+          const request = tx.objectStore(guard.store).get(guard.id);
+          request.onsuccess = () => {
+            const current = request.result ?? null;
+            if (!sameStoredValue(current, guard.expected)) {
+              reason = new Error('Ces données ont changé dans un autre onglet. Fermez le formulaire, rechargez la page et réessayez.');
+              tx.abort(); return;
+            }
+            if (--remaining === 0) write();
+          };
+        }
+      } catch (error) { if (tx) tx.abort(); reject(error); return; }
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(reason || tx.error || new Error('Écriture impossible.'));
+      tx.onabort = () => reject(reason || tx.error || new Error('Transaction annulée.'));
     });
   }
   async saveVehicleWithSuggestions(vehicle) {

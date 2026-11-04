@@ -1,8 +1,30 @@
 # VigieAuto — récapitulatif des fonctions
 
-**Document vivant : à actualiser à chaque mise à jour**, même lorsqu’elle est uniquement technique. Dernière mise à jour : 2 novembre 2026. Il distingue la PWA familiale **1.5.1**, la PWA candidate **1.5.2-beta.1** et le projet Android **0.4.0-beta.20**. La bêta est une préversion de développement, pas la version 0.4.0 stable ; les étapes futures ci-dessous ne sont pas des fonctions disponibles.
+**PWA 1.5.2-beta.2 candidate — carnet enrichi :** multi-pièces avec total, catégories multiples en plein écran, catégorie libre, sous-type de carburant et recherche Google Maps volontaire sont développés côté PWA ; Android beta.26 ne les propose pas encore. Le JSON v3 conserve les totaux historiques, avec extensions facultatives ; les scénarios testés et limites sont dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md). IndexedDB passe à 4 : sauvegarde externe avant essai ; aucun retour direct sur la base par beta.1/1.5.1. Pas de validation iPhone ni d’échange Android beta.26 pour ces nouveautés.
 
-**Plan suivant :** terminer la phase 1 avant les nouveaux écrans. Les quatre sous-lots de stockage sont réalisés en beta.17/18 et l’Undo du carnet en beta.19. La correction de précision est candidate ; les tests sur appareil, finitions, automatisation et mesures restent à faire. [Voir le plan détaillé](PLAN-PRIORITES-APRES-BETA16.md).
+**Document vivant : à actualiser à chaque mise à jour**, même lorsqu’elle est uniquement technique. Dernière mise à jour : 4 novembre 2026. Il distingue la PWA familiale **1.5.1**, la PWA candidate **1.5.2-beta.2** et le projet Android **0.4.0-beta.26**. La bêta est une préversion de développement, pas la version 0.4.0 stable ; les étapes futures ci-dessous ne sont pas des fonctions disponibles.
+
+**Décision du 4 novembre — carnet :** détails multi-pièces, catégories par familles et sélecteur plein écran, liens cartes, sous-types carburant et compatibilité JSON à vérifier ; un premier lot existe dans la **PWA beta.2 candidate** ; le portage Android et les essais réels restent à faire. L’utilisateur indique avoir installé la candidate sur Android et importé son JSON sans perte constatée ; iPhone non disponible. [Détails](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet).
+
+**Beta.26 — photo du véhicule actif :** depuis l’accueil, choisir dans le sélecteur système une image d’au plus 12 Mio ; l’application applique l’orientation EXIF lorsqu’elle est reconnue, la réduit en JPEG de 1 600 px au plus et 3 Mio au plus, sans recopier les métadonnées, puis affiche un aperçu. Remplacement et retrait sont confirmés et sans Undo ; la photo précédente n’est pas perdue si l’import échoue. Les photos importées illisibles ou trop grosses sont conservées. Room 15, JSON v3 et PWA ne changent pas ; aucune permission générale de galerie, caméra, GPS, Bluetooth ou réseau n’est ajoutée. Prise de vue directe et aperçus de tous les véhicules restent à faire. [Détails](PHOTO-VEHICULE.md).
+
+Avant la correction EXIF : suite JVM complète **548 réussis et 8 ignorés**, lint zéro erreur/20 avertissements et 61 scénarios instrumentés compilés mais non exécutés. Après remplacement par AndroidX : APK debug compilé, **73/73 tests ciblés réussis** et pont photo fictif Android ↔ PWA stable et candidate vérifié sous Chromium. La suite complète et le lint n’ont pas été relancés après la correction ; la recompilation des instrumentés après correction n’est pas confirmée. Aucun essai Android beta.26 sur Windows, GitHub, émulateur ou téléphone.
+
+**Beta.25 — essai R8 séparé :** une variante de recherche minifiée est préparée sous l’identifiant distinct `com.vigieauto.app.r8test`, avec le nom « TEST R8 - VigieAuto » et la clé de debug du poste ; elle possède sa propre base et ne met pas à jour l’installation habituelle `com.vigieauto.app`. La version debug normale et la release habituelle ne sont pas remplacées. Le contrôle statique du paquet ne prouve pas son fonctionnement réel : les sauvegardes, migrations et parcours sous R8 restent à tester sur appareil/émulateur avec des données fictives. Aucun serveur, migration Room ou changement JSON/PWA ; phase 1 toujours en cours. Voir [VALIDATION-R8.md](VALIDATION-R8.md).
+
+**Contrôles beta.25 :** l’APK `r8Test` isolé a été compilé et contrôlé statiquement, avec lint vital séparé sans anomalie ; taille locale **1 989 477 octets**, avec signature de debug, non représentative d’une release validée ou d’un AAB. La variante debug normale est compilée : **76 tests JVM ciblés réussis sur 76** (six classes, code non minifié), zéro ignoré ; pas de nouvelle suite JVM complète pour ce lot de configuration. Les 57 scénarios instrumentés debug sont compilés, non exécutés ; lint debug : zéro erreur et 17 avertissements. Tests Python : contrôleur R8 22/22, rapports CI 21/21, workflow 7/7, archiveur 19/19. Aucun essai réel de l’application R8, GitHub, Windows, émulateur, téléphone ou PWA pour ce lot.
+
+**Beta.24 — chargement prolongé :** après 10 secondes de chargement, « Réessayer » est proposé aussi sur l’écran d’état et au-dessus d’un formulaire ouvert. Ce délai ne signifie pas que les données sont perdues et ne déclenche aucune reprise automatique. La tentative précédente doit se terminer avant une nouvelle lecture ; si elle ne peut pas être interrompue, la reprise peut continuer à attendre. Les formulaires restent en mémoire, mais un arrêt de l’application peut faire perdre une saisie non enregistrée. Aucun effacement de base ; Room 15, JSON v3 et PWA inchangés. Voir [LECTURE-DU-CARNET.md](LECTURE-DU-CARNET.md).
+
+**Contrôles beta.24 :** sous Linux, la suite JVM a compté **534 tests : 526 réussis, huit ignorés faute de fixtures de retour PWA, aucun échec**, sur 76 classes ; durée incrémentale 8 min 12 s hors compilation et téléchargements, non prédictive de Windows. Un contrôle tactile a ensuite été ajouté : les deux classes ViewModel/Compose ont été relancées séparément, **50/50 réussis** (42 + 8). En regroupant les rapports réels de la suite et de ce reciblage, le contrôleur valide 527 réussis et les mêmes huit ignorés ; ce n’est pas une seule suite de 535 tests. Aucun marqueur CloseGuard reconnu, sans preuve d’absence de fuite. APK debug et 57 scénarios instrumentés compilés ; instrumentés non exécutés. Lint : zéro erreur, 17 avertissements. Tests Python : rapports 20/20, workflow 6/6 et archiveur 18/18. Pas de nouveau parcours PWA, ni essai GitHub, Windows, émulateur ou téléphone pour ce lot.
+
+**Beta.23 — lecture fiable du carnet :** chargement explicite, erreur sans données techniques privées et bouton « Réessayer » ; un état inconnu ou une surveillance interrompue ne sont plus présentés comme un carnet vide. Les modifications manuelles et la confirmation d’import sont bloquées jusqu’au retour d’une lecture fiable et de l’Undo. Les formulaires déjà ouverts restent en mémoire sous le message, sans garantie après arrêt du processus. Room 15 et JSON v3 inchangés ; PWA inchangée. Voir [LECTURE-DU-CARNET.md](LECTURE-DU-CARNET.md).
+
+**Contrôles beta.23 :** Suite JVM Linux beta.23 : **530 tests, 522 réussis, huit ignorés faute de fixtures PWA et aucun échec**, sur 76 classes. Lancement incrémental : 6 min 59 s, hors compilations et téléchargements ; ce temps ne prédit pas Windows. Le contrôleur accepte uniquement ces huit omissions attendues ; aucun marqueur CloseGuard reconnu, sans preuve d’absence de fuite. Aucun nouveau parcours PWA n’a été exécuté pour ce lot. Les tests Python réussissent : rapports 19/19, workflow 6/6, archiveur 18/18. APK debug, tests JVM et 57 scénarios instrumentés compilés ; scénarios instrumentés non exécutés. Lint : 0 erreur et 17 avertissements.
+
+**Beta.22 :** aucun écran ni fonction métier n’est ajouté. Le nettoyage des ressources de navigation dans les tests simulés est renforcé et les avertissements CloseGuard reconnus sont signalés dans les rapports ; leur absence ne prouve pas l’absence de fuite sur téléphone. **517 tests JVM réussis sans échec ni ignoré**, avec huit fixtures PWA fictives de validations antérieures réutilisées ; appareils, Windows beta.22 et GitHub restent à vérifier. [Détails](TESTS-RESSOURCES.md).
+
+**Plan suivant :** avancer par lots sur les phases principales sans attendre les essais sur téléphone ; GPS natif puis Bluetooth assisté de l’autoradio avant l’essai en voiture, sans OBD. Les tests sur appareil, la CI, R8, la mesure et la candidate PWA iPhone restent à valider ; la phase 1 n’est pas déclarée stable. [Plan détaillé](PLAN-PRIORITES-APRES-BETA16.md).
 
 ## L’essentiel
 
@@ -12,7 +34,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Fonctions communes
 
-| Fonction | PWA 1.5.2-beta.1 candidate | Android 0.4.0-beta.20 |
+| Fonction | PWA 1.5.2-beta.1 candidate | Android 0.4.0-beta.26 |
 |---|---|---|
 | Utilisation en français, plusieurs véhicules, fonctionnement local | Oui | Oui |
 | Sans compte, abonnement, pub, serveur de synchronisation ou télémétrie dans l’application | Oui | Oui |
@@ -24,7 +46,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 | Création d’un véhicule et correction du compteur | Oui | Oui |
 | Confirmation avant abandon d’un formulaire modifié | Non pour les formulaires ordinaires | Oui : véhicule, compteur, entretien, plein, trajet et rappel |
 | Modifier les informations principales d’un véhicule | Oui | Oui, fiche du véhicule actif ; compteur séparé |
-| Modifier la photo ou supprimer un véhicule | Oui | À développer ; photo importée conservée |
+| Modifier la photo ou supprimer un véhicule | Oui | Photo du véhicule actif depuis galerie, remplacement/retrait confirmés ; suppression du véhicule à développer |
 | Marques/modèles hors ligne, recherchables, libres et mémorisés | Oui | Oui |
 | Entretiens, pleins/recharges, rappels et trajets manuels : ajout, modification, suppression | Oui | Oui |
 | Annuler après suppression du carnet | Non : suppression après confirmation | Oui, suppression immédiate puis restauration de la dernière entrée, sous conditions |
@@ -40,15 +62,16 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 - Le même référentiel embarqué comprend **48 marques, 432 modèles et 7 types d’énergie**, sans connexion et sans imposer une génération de modèle. Il comporte notamment Renault, Peugeot, Citroën, Dacia, Volkswagen et les autres marques demandées.
 - Année libre, énergie, détail de motorisation/finition et immatriculation : facultatifs ; **kilométrage obligatoire** à la création. L’exemple Renault Clio 2008 Diesel 1.5 dCi 68 ne crée pas de véhicule réel et ne suppose aucun kilométrage.
 - Le compteur actuel peut être corrigé sans modifier les anciennes interventions. Un entretien ou un plein avec compteur supérieur augmente le compteur actuel ; une suppression ou modification ancienne ne le baisse pas automatiquement. Le chronomètre de trajet ne calcule pas le compteur.
-- Dans la PWA : modification complète, photo, notes et suppression du véhicule avec ses données associées. **Android beta.7 :** Depuis Accueil → **Modifier ce véhicule**, modifier marque et modèle libres, année, énergie et détail libre, finition/motorisation, immatriculation, VIN et notes. Le compteur se corrige séparément ; photo, données du carnet et propriétés non affichées restent conservées. Sans changement, aucune écriture n’est effectuée. Un conflit ou une donnée trop longue est refusé sans tronquer ; un formulaire modifié demande confirmation avant abandon. La suppression, l’ajout ou modification de photo et les autres champs enrichis restent à réaliser. Les photos déjà importées sont conservées dans les sauvegardes même si Android ne les affiche pas entièrement.
+- Dans la PWA : modification complète, photo, notes et suppression du véhicule avec ses données associées. **Android beta.7 :** Depuis Accueil → **Modifier ce véhicule**, modifier marque et modèle libres, année, énergie et détail libre, finition/motorisation, immatriculation, VIN et notes. Le compteur se corrige séparément ; photo, données du carnet et propriétés non affichées restent conservées. Sans changement, aucune écriture n’est effectuée. Un conflit ou une donnée trop longue est refusé sans tronquer ; un formulaire modifié demande confirmation avant abandon. Depuis beta.26, l’accueil permet de choisir, remplacer et retirer après confirmation la photo du véhicule actif ; une photo importée illisible ou trop volumineuse est conservée sans aperçu. La prise de vue directe, la suppression du véhicule et les autres champs enrichis restent à réaliser.
 - Pour une fiche Android, les champs courts sont limités à 500 caractères, les notes à 8 000 et la représentation de l’année à 128 à l’ouverture ; une valeur importée plus longue est refusée sans troncature ni changement de la base. Un code ou détail d’énergie atypique reste inchangé tant que l’énergie n’est pas modifiée. En cas de conflit, fermer puis rouvrir la fiche. La sauvegarde externe reste indispensable.
 
 ## Entretien et rappels
 
 - Ajouter, consulter, modifier et supprimer les interventions, avec date, compteur, libellé et coûts de pièces/main-d’œuvre. On peut proposer une prochaine échéance en enregistrant un entretien ou créer un rappel distinct.
-- Les rappels peuvent utiliser une date, un kilométrage ou les deux, un seuil d’avertissement et une récurrence. Ils sont affichés dans l’application. « Marquer comme fait » recalcule les échéances récurrentes depuis la date et le compteur actuels ; les dimensions sans intervalle ne sont pas reconduites.
+- Les rappels peuvent utiliser une date, un kilométrage ou les deux, un seuil d’avertissement et une récurrence **en jours et/ou kilomètres**. Ils sont affichés dans l’application. « Marquer comme fait » recalcule l’échéance du rappel existant depuis la date et le compteur actuels ; les dimensions sans intervalle ne sont pas reconduites. La récurrence en mois calendaires reste à développer.
 - Les interventions et les rappels restent des entrées distinctes : supprimer une intervention ne supprime pas automatiquement son rappel. Les intervalles ne remplacent pas les préconisations du constructeur.
-- Les notifications locales lorsque l’app est fermée, le lien automatique d’un rappel terminé vers une nouvelle intervention et les catégories/échéances enrichies sont prévus, **non réalisés**.
+- **Décidé pour la phase 3, non implémenté :** mémorisation des intervalles saisis par véhicule et type d’entretien, puis pré-remplissage du rappel, toujours confirmable, modifiable ou désactivable. Pas de base constructeur, de service externe ni de création silencieuse. Deux ou trois saisies cohérentes ne garantissent pas qu’un intervalle soit adapté. Voir [le plan, section 3.5](PLAN-PRIORITES-APRES-BETA16.md#35-enrichissement-des-écrans-existants).
+- Les notifications locales lorsque l’app est fermée, la proposition d’ouvrir un entretien après avoir marqué un rappel « fait » et les catégories/échéances enrichies sont prévues, **non réalisées**.
 
 ## Pleins, recharges et coûts
 
@@ -66,7 +89,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Dépenses, contrôles qualité, symptômes et documents
 
-| Rubrique | PWA 1.5.2-beta.1 candidate | Android 0.4.0-beta.20 |
+| Rubrique | PWA 1.5.2-beta.1 candidate | Android 0.4.0-beta.26 |
 |---|---|---|
 | Dépenses diverses et résumé des coûts saisis | Disponible | Dépenses importées conservées dans Room et exportables en JSON ; écran complet à développer |
 | CQ, modèles de checklists et historique | Six modèles de départ ; modèles personnalisables, points individuels déplaçables ou supprimables, et contrôles | Consultation partielle des données importées ; création/édition complètes à développer |
@@ -92,6 +115,10 @@ L’application ne remplace ni un professionnel ni un diagnostic mécanique. Pou
 - **PWA :** première visite et mise en cache sur une adresse HTTPS ; sur iPhone, Safari → Partager → Sur l’écran d’accueil. Stockage lié à l’origine et à l’installation : ne pas changer d’adresse ni effacer les données sans export préalable. Un nouvel appareil a sa propre base.
 - **Android :** projet à ouvrir dans Android Studio ; une connexion peut être nécessaire pour télécharger le SDK et les dépendances de compilation, mais pas pour utiliser les fonctions locales de l’application compilée. `INSTALLER-ANDROID.md` explique signature, SDK et sauvegardes.
 - Les archives Android et Web utilisent toutes deux une racine nommée **VigieAuto** : les extraire dans **deux dossiers parents différents** pour ne pas mélanger leurs fichiers.
+
+## Évolution technique Android beta.21 — CI préparée
+
+**Beta.21 — CI préparée :** un workflow GitHub Actions compile Android, lance lint et la suite JVM, puis vérifie les rapports. Huit retours de pont sans PWA sont annoncés ignorés, jamais comptés comme réussis ; toute autre omission inattendue bloque le contrôle. Deux émulateurs API 26/36 peuvent être demandés manuellement, avec comparaison des 57 scénarios attendus. Les actions sont épinglées, aucun secret ni APK n’est publié, et les noms d’export habituels sont ajoutés à `.gitignore` sans remplacer une vérification manuelle. Le workflow n’a pas encore tourné sur GitHub ; les émulateurs et téléphones ne sont pas testés ici. Aucun changement métier Android, Room 15 et JSON v3 inchangés ; PWA familiale 1.5.1 et candidate 1.5.2-beta.1 inchangées. La phase 1 reste ouverte. Voir [CI-VERIFICATIONS.md](CI-VERIFICATIONS.md). La suite JVM locale recense 514 tests sur 75 classes : **506 réussis, huit ignorés faute de fixtures PWA et aucun échec** ; les rapports réels ont été contrôlés. APK debug et 57 scénarios instrumentés compilés ; lint : 0 erreur et 17 avertissements. Les tests de scripts passent (rapports 17/17, workflow 6/6 et archiveur 16/16), ainsi que l’analyse statique actionlint. Deux avertissements CloseGuard SQLite/Room subsistaient alors dans une simulation ; voir le diagnostic beta.22 ci-dessus.
 
 ## Évolution technique Android beta.20 et PWA candidate
 
@@ -180,7 +207,7 @@ La beta.9 ne modifie aucune fonction du carnet : elle corrige la configuration e
 
 ## Ce qui est prévu mais pas encore réalisé
 
-Phases futures : terminer le véhicule Android (suppression, photo et autres champs) ; dépenses/CQ/symptômes/documents complets ; statistiques ; GPS Android facultatif ; notifications, widgets, recherche et accessibilité renforcées ; extras Bluetooth BLE assisté, partage familial, flotte et tablette. Les choix techniques, données personnelles, permissions, carte et éventuelle conservation des traces GPS doivent être confirmés et testés. Aucun démarrage GPS automatique, suivi fermé garanti, cloud, OBD, OCR ou diagnostic automatique n’est promis dans la version actuelle.
+Phases futures : terminer le véhicule Android (suppression, prise de vue et autres champs) ; dépenses/CQ/symptômes/documents complets ; statistiques ; GPS Android facultatif puis Bluetooth assisté de l’autoradio ; notifications, widgets, recherche et accessibilité ; partage familial, flotte et tablette. Stations après 0.4.0 stable. Voir [le plan](PLAN-PRIORITES-APRES-BETA16.md).
 
 **Stations & Prix carburants :** module Android futur spécifié, non implémenté et prévu après le socle 0.4.0 stable. Il envisage des prix officiels, une localisation ponctuelle facultative et un cache local partiel. La carte, la source, les services réseau et leurs implications pour la confidentialité restent à vérifier. Voir [`module-stations-carburants.md`](module-stations-carburants.md).
 

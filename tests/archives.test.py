@@ -30,8 +30,10 @@ class ArchiveTests(unittest.TestCase):
         self.workspace = Path(self.tmp.name)
         self.project = self.workspace / "cq-auto"
         paths = [
-            "README.md", "INSTALLER.md", "index.html", "css/style.css", "js/app.js", "js/gps.js", "js/precise-json.js",
+            "README.md", "INSTALLER.md", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
+            "js/gps.js", "js/precise-json.js", "js/maintenance.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
             "tests/precise-json.test.js", "tests/precision-interface.cjs", "docs/PRECISION-SAUVEGARDES.md",
+            "docs/CARNET-PWA-BETA2.md", "docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md", "docs/PLAN-PRIORITES-APRES-BETA16.md",
             "js/catalogue.js", "data/brands_models_fr.json",
             "assets/logo-original.png", "icons/icon.png", "icons/apple-touch-icon.png", "tests/logo-interface.cjs", "docs/HISTORIQUE.md",
             "docs/CAHIER-DES-CHARGES.md", "docs/FEUILLE-DE-ROUTE.md", "docs/RECAPITULATIF-FONCTIONS.md",
@@ -44,12 +46,7 @@ class ArchiveTests(unittest.TestCase):
         (self.project / "scripts").mkdir()
         shutil.copy2(SCRIPT, self.project / "scripts" / "creer-archive.py")
         shutil.copy2(SCRIPT.parent / "gestion_archives.py", self.project / "scripts" / "gestion_archives.py")
-        version = "2.0.0"
-        (self.project / "js/app.js").write_text('const APP_VERSION = "2.0.0";')
-        (self.project / "package.json").write_text(json.dumps({"version": version}))
-        (self.project / "package-lock.json").write_text(json.dumps({"version": version, "packages": {"": {"version": version}}}))
-        (self.project / "manifest.webmanifest").write_text(json.dumps({"icons": [{"src": "./icons/icon.png?v=1"}]}))
-        (self.project / "sw.js").write_text('const CACHE = "cq-auto-app-v2.0.0";')
+        self.set_version("2.0.0")
         current = project_zip_bytes("web", b"current-old")
         older = project_zip_bytes("web", b"older")
         self.old = {
@@ -62,6 +59,15 @@ class ArchiveTests(unittest.TestCase):
 
     def tearDown(self):
         self.tmp.cleanup()
+
+    def set_version(self, version):
+        (self.project / "js/app.js").write_text(f'const APP_VERSION = "{version}";')
+        (self.project / "package.json").write_text(json.dumps({"version": version}))
+        (self.project / "package-lock.json").write_text(json.dumps({"version": version, "packages": {"": {"version": version}}}))
+        icon = f"./icons/icon.png?v=vigie-{version}"
+        (self.project / "manifest.webmanifest").write_text(json.dumps({"icons": [{"src": icon}]}))
+        (self.project / "index.html").write_text(f'<link href="{icon}"><dialog id="category-picker"></dialog>')
+        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}"; const FILES = ["./js/maintenance.js", "{icon}"];')
 
     def run_script(self, *args):
         return subprocess.run(["python3", str(self.project / "scripts/creer-archive.py"), *args],
@@ -112,10 +118,7 @@ class ArchiveTests(unittest.TestCase):
 
     def test_candidate_and_deferred_retention_preserve_all_old_archives(self):
         version = "2.0.0-beta.1"
-        (self.project / "js/app.js").write_text(f'const APP_VERSION = "{version}";')
-        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}";')
-        (self.project / "package.json").write_text(json.dumps({"version": version}))
-        (self.project / "package-lock.json").write_text(json.dumps({"version": version, "packages": {"": {"version": version}}}))
+        self.set_version(version)
         before = {p.name: p.read_bytes() for p in self.workspace.glob("*.zip")}
         result = self.run_script("--sans-nettoyage")
         self.assertEqual(0, result.returncode, result.stderr)
@@ -125,10 +128,7 @@ class ArchiveTests(unittest.TestCase):
 
     def test_candidate_is_not_newer_than_a_stable_release_of_same_version(self):
         version = "2.0.0-beta.1"
-        (self.project / "js/app.js").write_text(f'const APP_VERSION = "{version}";')
-        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}";')
-        (self.project / "package.json").write_text(json.dumps({"version": version}))
-        (self.project / "package-lock.json").write_text(json.dumps({"version": version, "packages": {"": {"version": version}}}))
+        self.set_version(version)
         (self.workspace / "VigieAuto-v2.0.0.zip").write_bytes(project_zip_bytes("web"))
         result = self.run_script("--sans-nettoyage")
         self.assertNotEqual(0, result.returncode)
@@ -136,10 +136,7 @@ class ArchiveTests(unittest.TestCase):
 
     def test_candidate_keeps_family_stable_and_latest_android_in_three_places(self):
         version = "2.0.0-beta.1"
-        (self.project / "js/app.js").write_text(f'const APP_VERSION = "{version}";')
-        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}";')
-        (self.project / "package.json").write_text(json.dumps({"version": version}))
-        (self.project / "package-lock.json").write_text(json.dumps({"version": version, "packages": {"": {"version": version}}}))
+        self.set_version(version)
         stable = self.workspace / "VigieAuto-Android-v0.3.0.zip"
         latest = self.workspace / "VigieAuto-Android-v0.4.0-beta.20.zip"
         stable.write_bytes(project_zip_bytes("android", b"stable"))
@@ -160,6 +157,43 @@ class ArchiveTests(unittest.TestCase):
         self.assertFalse((self.workspace / ".VigieAuto-v2.0.0.tmp").exists())
         for name, content in self.old.items():
             self.assertEqual((self.workspace / name).read_bytes(), content)
+
+    def test_missing_enriched_carnet_files_never_prunes(self):
+        for rel in ("js/maintenance.js", "js/db.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
+                    "docs/CARNET-PWA-BETA2.md", "docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md",
+                    "docs/PLAN-PRIORITES-APRES-BETA16.md"):
+            with self.subTest(missing=rel):
+                p = self.project / rel
+                data = p.read_bytes(); p.unlink()
+                try:
+                    result = self.run_script()
+                    self.assertNotEqual(result.returncode, 0, rel)
+                    self.assertIn("indispensables", result.stderr)
+                    self.assertFalse((self.workspace / "VigieAuto-v2.0.0.zip").exists())
+                    self.assertFalse((self.workspace / ".VigieAuto-v2.0.0.tmp").exists())
+                    for name, content in self.old.items():
+                        self.assertEqual((self.workspace / name).read_bytes(), content)
+                finally:
+                    p.write_bytes(data)
+
+    def test_versions_selector_and_offline_cache_are_checked(self):
+        mutations = (
+            ("sw.js", lambda s: s.replace('"./js/maintenance.js"', '"./js/autre.js"'), "cache"),
+            ("index.html", lambda s: s.replace('category-picker', 'autre-dialogue'), "Sélecteur"),
+            ("index.html", lambda s: s.replace('vigie-2.0.0', 'vigie-1.0.0'), "version"),
+            ("manifest.webmanifest", lambda s: s.replace('vigie-2.0.0', 'vigie-1.0.0'), "version"),
+            ("sw.js", lambda s: s.replace('./icons/icon.png', './icons/autre.png'), "icône"),
+        )
+        for rel, mutate, message in mutations:
+            with self.subTest(file=rel, message=message):
+                self.set_version("2.0.0")
+                p = self.project / rel; p.write_text(mutate(p.read_text()))
+                result = self.run_script()
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(message.lower(), result.stderr.lower())
+                self.assertFalse((self.workspace / "VigieAuto-v2.0.0.zip").exists())
+                for name, content in self.old.items():
+                    self.assertEqual((self.workspace / name).read_bytes(), content)
 
     def test_different_alias_is_not_removed(self):
         (self.workspace / "VigieAuto.zip").write_bytes(b"not an identical copy")
@@ -186,7 +220,7 @@ class ArchiveTests(unittest.TestCase):
     def test_version_mismatch_and_unclassified_files_stop_safely(self):
         (self.project / "sw.js").write_text('const CACHE = "cq-auto-app-v1.0.0";')
         self.assertNotEqual(self.run_script().returncode, 0)
-        (self.project / "sw.js").write_text('const CACHE = "cq-auto-app-v2.0.0";')
+        self.set_version("2.0.0")
         (self.project / "js/app.js").write_text('const APP_VERSION = "1.0.0";')
         self.assertNotEqual(self.run_script().returncode, 0)
         (self.project / "js/app.js").write_text('const APP_VERSION = "2.0.0";')

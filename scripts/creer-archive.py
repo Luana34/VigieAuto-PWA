@@ -96,6 +96,17 @@ def main() -> None:
     sw = (PROJECT / "sw.js").read_text(encoding="utf-8")
     if not re.search(r'const CACHE\s*=\s*"[^"]+-v' + re.escape(version) + r'"', sw):
         raise RuntimeError("La version du cache de sw.js ne correspond pas à package.json.")
+    if '"./js/maintenance.js"' not in sw:
+        raise RuntimeError("Le module du carnet enrichi manque au cache hors ligne.")
+    index = (PROJECT / "index.html").read_text(encoding="utf-8")
+    if 'id="category-picker"' not in index or f"?v=vigie-{version}" not in index:
+        raise RuntimeError("Sélecteur de catégories ou version des icônes absent de index.html.")
+    manifest_source = json.loads((PROJECT / "manifest.webmanifest").read_text(encoding="utf-8"))
+    icons = manifest_source.get("icons", [])
+    if not icons or any(not icon.get("src", "").endswith(f"?v=vigie-{version}") for icon in icons):
+        raise RuntimeError("La version des icônes du manifest ne correspond pas à package.json.")
+    if any(json.dumps(icon["src"], ensure_ascii=False) not in sw for icon in icons):
+        raise RuntimeError("Une icône du manifest manque au cache hors ligne.")
     destination = WORKSPACE / f"VigieAuto-v{version}.zip"
     temporary = WORKSPACE / f".VigieAuto-v{version}.tmp"
     if destination.exists():
@@ -121,9 +132,13 @@ def main() -> None:
             required = {
                 f"{ROOT_NAME}/index.html", f"{ROOT_NAME}/sw.js", f"{ROOT_NAME}/package.json",
                 f"{ROOT_NAME}/package-lock.json", f"{ROOT_NAME}/manifest.webmanifest",
-                f"{ROOT_NAME}/js/app.js", f"{ROOT_NAME}/js/gps.js", f"{ROOT_NAME}/js/precise-json.js", f"{ROOT_NAME}/css/style.css",
+                f"{ROOT_NAME}/js/app.js", f"{ROOT_NAME}/js/db.js", f"{ROOT_NAME}/js/gps.js", f"{ROOT_NAME}/js/precise-json.js",
+                f"{ROOT_NAME}/js/maintenance.js", f"{ROOT_NAME}/css/style.css", f"{ROOT_NAME}/css/themes.css",
                 f"{ROOT_NAME}/js/catalogue.js", f"{ROOT_NAME}/data/brands_models_fr.json",
+                f"{ROOT_NAME}/tests/maintenance.test.js", f"{ROOT_NAME}/tests/carnet-enrichi.cjs",
                 f"{ROOT_NAME}/tests/precise-json.test.js", f"{ROOT_NAME}/tests/precision-interface.cjs", f"{ROOT_NAME}/docs/PRECISION-SAUVEGARDES.md",
+                f"{ROOT_NAME}/docs/CARNET-PWA-BETA2.md", f"{ROOT_NAME}/docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md",
+                f"{ROOT_NAME}/docs/PLAN-PRIORITES-APRES-BETA16.md",
                 f"{ROOT_NAME}/assets/logo-original.png", f"{ROOT_NAME}/README.md",
                 f"{ROOT_NAME}/icons/apple-touch-icon.png", f"{ROOT_NAME}/tests/logo-interface.cjs",
                 f"{ROOT_NAME}/docs/HISTORIQUE.md", f"{ROOT_NAME}/docs/CAHIER-DES-CHARGES.md",

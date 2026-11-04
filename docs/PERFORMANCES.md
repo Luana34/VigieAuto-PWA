@@ -1,6 +1,6 @@
 # Performance et fluidité — objectifs et méthode
 
-**Document vivant · 2 novembre 2026.** Intégré à la phase 1, à réviser à chaque version. Ces chiffres sont des **objectifs souhaités**, pas des mesures actuelles ni des garanties sur tous les appareils. Aucun profilage sur téléphone réel ni benchmark macro n’est revendiqué pour l’alpha ou la bêta. Une migration de plusieurs années de données peut exceptionnellement durer plus longtemps ; l’information et la préservation priment sur le délai.
+**Document vivant · 4 novembre 2026.** Intégré à la phase 1, à réviser à chaque version. Ces chiffres sont des **objectifs souhaités**, pas des mesures actuelles ni des garanties sur tous les appareils. Aucun profilage sur téléphone réel ni benchmark macro n’est revendiqué pour l’alpha ou la bêta. Une migration de plusieurs années de données peut exceptionnellement durer plus longtemps ; l’information et la préservation priment sur le délai.
 
 **Précisions après beta.16 :** profils de référence, R8, CI et mesures restent à réaliser dans la phase 1. Le gain hypothétique de 20 à 40 % avec des profils n’est pas garanti ; une photo de 12 Mo ramenée vers 100 Ko est une cible indicative dépendant de la qualité et de l’image. Tester séparément sur émulateur et téléphone ; les 34 scénarios instrumentés beta.16 sont compilés, non exécutés ici. Voir [PLAN-PRIORITES-APRES-BETA16.md](PLAN-PRIORITES-APRES-BETA16.md).
 
@@ -46,9 +46,74 @@ Ne pas annoncer « instantané », « 0 crash », « aucune saccade », « 60 fp
 
 Étendre les listes paresseuses et les clés stables aux autres écrans après examen ; étudier Paging si les volumes et le profilage le justifient. Observer la durée des requêtes avec les index et le coût de grandes images. Prévoir Macrobenchmark startup/défilement, baseline profile mesuré, captures avant/après, CI compatible et vérifications sur appareils représentatifs. R8 et réduction de ressources sur une configuration release testée ; ne pas confondre une clé debug avec une signature de production. Optimiser les dépendances sans SDK publicitaire ni analytique imposé.
 
-Pour les futures photos, lire les dimensions et l’orientation, décoder à une taille bornée et fermer les flux ; respecter le choix de qualité et conserver les documents originaux lorsqu’ils doivent pouvoir être réexportés à l’identique. `Size.ORIGINAL` ne réduit pas automatiquement une image Coil. Ne pas modifier avec perte les pièces jointes importées pour atteindre une cible de taille.
+Pour les autres futures photos et pièces jointes, lire les dimensions et l’orientation, décoder à une taille bornée et fermer les flux ; respecter le choix de qualité et conserver les documents originaux lorsqu’ils doivent pouvoir être réexportés à l’identique. `Size.ORIGINAL` ne réduit pas automatiquement une image Coil. Ne pas modifier avec perte les pièces jointes importées pour atteindre une cible de taille.
 
 Un calcul SQL ne doit pas mélanger des agrégats imbriqués incorrectement : la consommation est fondée sur des **intervalles de pleins complets**, avec partiels intermédiaires, distances strictement positives et unités séparées ; les moyennes sont pondérées par la distance. Tester aussi les dates égales, corrections de compteur et montants facultatifs. Le parallélisme de plusieurs requêtes n’est pas nécessairement plus rapide sur une même base SQLite : mesurer.
+
+## Note documentaire — rappels semi-automatiques, 2 novembre 2026
+
+- [x] Décision de phase 3 consignée dans [le plan des priorités](PLAN-PRIORITES-APRES-BETA16.md#35-enrichissement-des-écrans-existants) ; aucun code, aucune version ni aucune donnée de l’application modifiés.
+- [ ] Les mesures sur appareil, la validation de la CI et les éléments non cochés ci-dessous restent à faire. Aucun nouveau benchmark ou test d’application n’est revendiqué pour cette mise à jour documentaire.
+
+## Checklist PWA 1.5.2-beta.2 — 4 novembre 2026
+
+- [x] Détail de pièces, catégories, recherche plein écran, sous-types libres et lien Google Maps volontaire disponibles dans la candidate PWA ; écriture contrôlée en transaction et anciennes valeurs globales conservées dans les cas couverts.
+- [ ] Mesurer sur appareils réels le chargement, la recherche dans la liste, le défilement et la mémoire ; aucun chiffre ni 60 fps garanti. Mesurer l’import/export 10 Mo reste à faire.
+- [ ] Valider Safari iOS réel, les gestes système, Google/Apple Maps et les échanges détaillés avec Android beta.26. Sauvegarder avant le passage IndexedDB 2/3→4 ; retour direct ancien code impossible.
+- [x] 39/39 tests unitaires, 17/17 tests d’archive et scénarios automatiques du carnet, précision et migrations Chromium/WebKit Linux ; les parcours interface, trajets, GPS simulé, catalogue et logo ont été testés sous Chromium. Aucun téléphone réel.
+
+## Décision documentaire du 4 novembre — carnet PWA puis Android
+
+- [x] Six enrichissements demandés et nomenclature complète consignés ; aucun de ces changements de carnet n’est encore implémenté.
+- [ ] Mesurer sur appareils réels le sélecteur plein écran, recherche, saisies et conservation des données après développement ; Android PWA a fait l’objet d’un retour utilisateur d’installation/import, pas d’un benchmark. iPhone indisponible.
+
+## Checklist beta.26 — 4 novembre 2026
+
+- [x] Images sélectionnées bornées à 12 Mio, décodage sous-échantillonné, sortie à 1 600 px/3 Mio maximum et aperçu à 600 px ; traitement et lecture sur IO. Ce sont des limites de traitement, pas une mesure sur appareil ou une garantie contre toute mémoire insuffisante.
+- [x] Après correction AndroidX : APK debug compilé, 73/73 tests JVM ciblés et pont photo fictif Android ↔ PWA candidate et stable réussis. Avant correction : suite complète 548 réussis/8 ignorés, lint zéro erreur/20 avertissements, 61 scénarios instrumentés compilés mais non exécutés.
+- [x] APK debug local **16 121 476 octets**, soit environ **16,12 Mo décimaux / 15,37 Mio** : il dépasse l’objectif indicatif de 15 Mo. C’est un APK debug ; ce n’est ni la taille d’une release optimisée ni celle d’un AAB.
+- [ ] Après correction EXIF : relancer la suite JVM complète et le lint ; recompilation des instrumentés non confirmée et exécution sur appareil toujours à faire.
+- [ ] Taille release, démarrage froid/chaud, latence écran, défilement 1 000 éléments, RAM, batterie, import/export 10 Mo et fuites sur appareil : **non mesurés**. L’APK debug local ne valide pas la cible de distribution.
+- [ ] Tests Windows, émulateur/téléphone, première CI GitHub, PWA iPhone et performances à réaliser ; R8 beta.25 n’est pas une validation de beta.26. `forkEvery=1` est inchangé ; compatibilité Windows des nouveaux graphiques natifs simulés non vérifiée ici.
+
+## Checklist beta.25 — 4 novembre 2026
+
+- [x] Variante d’essai R8 isolée de l’installation normale compilée et contrôlée statiquement ; lint vital séparé sans anomalie. L’APK de test signé debug fait 1 989 477 octets localement : **ni release de production, ni objectif de taille démontré, ni test de fonctionnement réel**. La configuration release habituelle n’est pas modifiée.
+- [x] Debug compilé ; 76/76 tests JVM ciblés non minifiés ; lint debug zéro erreur/17 avertissements ; les 57 instrumentés debug sont compilés mais non exécutés. Pas de suite JVM complète beta.25.
+- [ ] Démarrage, sauvegardes, migrations et navigation dans la variante R8 : essais sur émulateur/téléphone à faire. Taille signée de production, R8 de production, AAB, profils, RAM, fluidité et durée d’import/export non validés.
+- [ ] Première exécution GitHub, essai Windows et validation iPhone de la candidate PWA non effectués.
+
+## Checklist beta.24 — 4 novembre 2026
+
+- [x] Compilation debug et contrôle fonctionnel Linux : Suite JVM Linux : 534 tests, 526 réussis, huit retours PWA ignorés faute de fixtures et aucun échec. Un test tactile ajouté ensuite a été vérifié avec un reciblage de 50/50 tests ; ces deux lancements ne sont pas une unique suite de 535 tests. Les 57 scénarios instrumentés sont compilés, pas exécutés ; aucun nouvel essai Windows, GitHub, émulateur, téléphone ou PWA pour ce lot.
+- [x] Lint : zéro erreur et 17 avertissements ; aucun nouveau benchmark. L’APK **debug** construit localement pèse 12 217 651 octets, ce n’est ni l’APK release ni une mesure de performance sur appareil.
+- [x] Après 10 secondes, reprise manuelle proposée sans pourcentage fictif ni redémarrage automatique. Le délai est un choix d’interface, **pas une mesure** de démarrage ou une garantie de récupération.
+- [ ] R8, profils, démarrages, fluidité, RAM, import/export 10 Mo, batterie et taille release : non mesurés sur appareil. Aucun gain Windows ni sur téléphone revendiqué.
+- [ ] Tests sur émulateur/téléphone/Windows, première exécution GitHub et validation de la PWA candidate sur iPhone à réaliser.
+
+## Checklist beta.23 — 3 novembre 2026
+
+- [x] Affichage indéterminé pendant la lecture des résumés et de l’Undo ; aucun faux pourcentage, aucune mesure de vitesse ou de fluidité déduite de cet affichage. La navigation reste composée mais masquée durant l’attente.
+- [x] Suite JVM Linux beta.23 : **530 tests, 522 réussis, huit ignorés faute de fixtures PWA et aucun échec**, sur 76 classes. Lancement incrémental : 6 min 59 s, hors compilations et téléchargements ; ce temps ne prédit pas Windows. Le contrôleur accepte uniquement ces huit omissions attendues ; aucun marqueur CloseGuard reconnu, sans preuve d’absence de fuite. Aucun nouveau parcours PWA n’a été exécuté pour ce lot. Les tests Python réussissent : rapports 19/19, workflow 6/6, archiveur 18/18. APK debug, tests JVM et 57 scénarios instrumentés compilés ; scénarios instrumentés non exécutés. Lint : 0 erreur et 17 avertissements.
+- [x] Ciblage final ViewModel et Undo : 41/41.
+- [x] APK **debug** construit : 12 554 435 octets ; applicationId `com.vigieauto.app`, code 27, min 26, target 36. Ce n’est ni une release optimisée, ni une mesure de téléchargement AAB.
+- [ ] Démarrage à froid/chaud, ouvertures, défilement à 1 000 éléments, import/export 10 Mo, RAM, batterie, taille release, R8, baseline profile et fuites sur appareils : **non mesurés** ; les cibles restent des objectifs, pas des garanties.
+- [ ] Aucun gain de performance Windows ou physique revendiqué ; validation Windows beta.23, GitHub, émulateur, téléphone et iPhone pour la candidate PWA encore à faire. `forkEvery=1` reste inchangé.
+
+## Checklist beta.22 — 2 novembre 2026
+
+- [x] Nettoyage ordonné en tests simulés, sans modification du cycle de vie Room réel ; trois scénarios de régression. Sur Linux, deux avertissements CloseGuard reproduits avant correction ne réapparaissent pas lors de deux ciblages après correction. Le marqueur connu est signalé de façon non bloquante dans les rapports ; sa recherche n’est pas exhaustive. `forkEvery=1` est inchangé.
+- [x] Suite JVM complète : 517 réussis, aucun ignoré ou échec, sur 75 classes ; huit fixtures PWA fictives réutilisées de validations antérieures. Durée incrémentale Linux : 8 min 33 s, hors compilation initiale et génération antérieure des fixtures ; aucune extrapolation Windows. Aucun marqueur CloseGuard reconnu dans ces rapports, sans preuve d’absence de fuite.
+- [x] APK **debug** beta.22 compilé : 12 184 883 octets ; cette taille ne mesure ni une release optimisée ni un téléchargement AAB. Les 57 scénarios instrumentés sont compilés, pas exécutés ici ; lint rapporte 0 erreur et 17 avertissements.
+- [ ] R8, profilage mémoire, fuites sur appareil, baseline profile, mesures de démarrage, défilement, import/export, batterie et taille release : **non mesurés**. Aucun gain de performance de l’application ou des tests sur Windows n’est revendiqué.
+- [ ] Essais sur émulateur et téléphone, validation Windows beta.22, première exécution GitHub et validation iPhone de la PWA candidate : à faire.
+
+## Checklist beta.21 — 2 novembre 2026
+
+- [x] Workflow de compilation/lint/tests JVM préparé ; contrôle strict des résultats et 57 tests instrumentés compilés. Option manuelle API 26 et 36 préparée. Voir [CI-VERIFICATIONS.md](CI-VERIFICATIONS.md).
+- [x] La suite JVM locale recense 514 tests sur 75 classes : **506 réussis, huit ignorés faute de fixtures PWA et aucun échec** ; les rapports réels ont été contrôlés. APK debug et 57 scénarios instrumentés compilés ; lint : 0 erreur et 17 avertissements. Les tests de scripts passent (rapports 17/17, workflow 6/6 et archiveur 16/16), ainsi que l’analyse statique actionlint. Deux avertissements CloseGuard SQLite/Room subsistent dans une simulation, sans cause déterminée.
+- [ ] Diagnostiquer les deux avertissements CloseGuard SQLite/Room vus dans la suite simulée, sans présumer d’une fuite réelle. L’isolation `forkEvery=1` est inchangée.
+- [ ] Première exécution GitHub, tests sur émulateur et téléphone, mesures Windows et performances physiques non effectués ; aucun gain ou objectif chiffré revendiqué. R8 et profils restent à étudier. Les huit ponts peuvent être ignorés en CI si les fixtures PWA sont absentes, sans être comptés comme réussis.
 
 ## Checklist beta.20 / PWA 1.5.2-beta.1 — 2 novembre 2026
 

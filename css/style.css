@@ -1964,3 +1964,51 @@ input[type="radio"] {
     display: inline-flex;
   }
 }
+
+/* Carnet enrichi : les anciennes données restent lisibles et le détail est facultatif. */
+.category-chips { display:flex; flex-wrap:wrap; gap:7px; margin:0 0 9px; }
+.category-chip { display:inline-flex; align-items:center; gap:5px; max-width:100%; border:1px solid var(--line); border-radius:999px; padding:5px 5px 5px 10px; background:var(--surface-alt); color:var(--ink); font-size:12px; }
+.category-chip span { overflow-wrap:anywhere; }
+.category-chip button { border:0; border-radius:50%; width:32px; min-width:32px; height:32px; background:transparent; color:var(--ink); font-size:21px; line-height:1; }
+.service-details { min-width:0; padding:14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-alt); }
+.service-details .form-section-title { margin-bottom:8px; }
+.service-lines { display:flex; flex-direction:column; gap:10px; margin:10px 0; }
+.service-line { display:grid; grid-template-columns:minmax(0, 1fr) minmax(85px, .55fr) 42px; gap:8px; align-items:end; }
+.service-line label { display:block; min-width:0; color:var(--muted); font-size:12px; font-weight:700; }
+.service-line input { display:block; margin-top:5px; }
+.service-remove { width:42px; height:42px; border:1px solid var(--line); color:var(--ink); font-size:24px; line-height:1; }
+.service-total { padding:8px 0; color:var(--ink); }
+.service-total strong { font-size:18px; }
+.detail-warning { color:var(--alert-ink); background:var(--alert-bg); padding:10px; border-radius:8px; line-height:1.5; font-size:12px; margin:8px 0; }
+.map-field { display:flex; gap:6px; align-items:stretch; }
+.map-field input { min-width:0; flex:1; }
+.map-button { min-width:44px; padding:6px; font-size:18px; }
+.energy-label { color:var(--ink); font-size:14px; padding:10px 0; }
+
+/* Dialogue distinct en plein écran, sans gestion de gestes de fermeture par l'app. */
+#category-picker { position:fixed; inset:0; width:100%; max-width:none; height:100vh; height:100dvh; max-height:none; margin:0; padding:0; border:0; border-radius:0; color:var(--ink); background:var(--surface); overflow:hidden; }
+#category-picker:not([open]) { display:none; }
+#category-picker[open] { display:flex; }
+#category-picker::backdrop { background:rgba(10,25,18,.5); }
+.category-picker-shell { width:100%; height:100%; display:flex; flex-direction:column; overflow:hidden; }
+.category-picker-head { display:flex; align-items:center; gap:12px; padding:calc(12px + env(safe-area-inset-top)) 18px 12px; border-bottom:1px solid var(--line); }
+.category-picker-head h2 { color:var(--ink); font-size:19px; margin:0; }
+.category-picker-head p { color:var(--muted); font-size:12px; margin:4px 0 0; }
+.category-back { flex:none; width:48px; height:48px; border:1px solid var(--line); border-radius:10px; background:var(--surface-alt); color:var(--ink); font-size:26px; line-height:1; }
+.category-search { padding:12px 18px; border-bottom:1px solid var(--line); }
+.category-search label { display:block; color:var(--ink); font-size:12px; font-weight:700; margin:0 0 6px; }
+.category-search input { font-size:16px; min-height:46px; }
+.category-results { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; padding:0 18px calc(18px + env(safe-area-inset-bottom)); }
+.category-group h3 { position:relative; margin:18px 0 5px; color:var(--ink); font-size:15px; }
+.category-option { width:100%; min-height:51px; display:flex; gap:10px; align-items:center; text-align:left; padding:10px 8px; border:0; border-bottom:1px solid var(--line); background:transparent; color:var(--ink); }
+.category-option > span:first-child { flex:none; width:25px; font-size:18px; text-align:center; }
+.category-option strong { display:block; font-size:14px; line-height:1.4; overflow-wrap:anywhere; }
+.category-option small { display:block; margin-top:3px; color:var(--muted); font-size:12px; }
+.category-option:hover, .category-option:focus-visible { background:var(--surface-alt); }
+.create-category { color:var(--green); }
+.category-empty { color:var(--muted); padding:16px 4px; }
+@media (max-width:380px) {
+  .service-line { grid-template-columns:minmax(0,1fr) minmax(78px,.6fr) 38px; gap:5px; }
+  .service-remove { width:38px; }
+  .service-details { padding:10px; }
+}
