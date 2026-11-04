@@ -1,0 +1,136 @@
+# Feuille de route — VigieAuto
+
+**Mise à jour : 2 novembre 2026 · PWA familiale : 1.5.1 ; candidate : 1.5.2-beta.1 · Android : 0.4.0-beta.20**
+
+Cette feuille de route distingue ce qui est terminé, ce qui est souhaité et les décisions à prendre. Les priorités des futures étapes sont **des propositions à confirmer**, pas des dates ou engagements de livraison. Le détail des exigences est dans `CAHIER-DES-CHARGES.md` et l’historique des décisions dans `HISTORIQUE.md`.
+
+**Décision après le récapitulatif utilisateur :** terminer la phase 1 avant les nouveaux écrans. Documents est traité en beta.17 ; les trois autres sous-lots de stockage en beta.18 ; l’Undo transactionnel du carnet en beta.19. La candidate de précision est à valider sur iPhone ; essais sur appareils, finitions, CI/R8/profils et mesures restent à faire. Voir [le plan détaillé](PLAN-PRIORITES-APRES-BETA16.md).
+
+**Retour utilisateur après livraison :** Sur le Windows de l’utilisateur, la commande `:app:assembleDebug :app:testDebugUnitTest` présentée comme beta.11 a terminé par `BUILD SUCCESSFUL` en 24 min 27 s, avec 25 tâches exécutées et 27 à jour. L’extrait ne précise ni le nombre de tests réussis ou ignorés, ni la durée des tâches ; lint et tests instrumentés ne figuraient pas dans la commande. Pour le lancement correspondant au rapport Windows de 270 tests, l’utilisateur indique **25 min 26 s** au total : 266 tests réussis, 4 ignorés, aucun échec, et 11 min 19,12 s de durée cumulée des classes. Le rapport contient `CompleteFillCodecTest`, `RoomCompleteFillTest` et `RoomMigrationV6Test`, absents de la beta.11 livrée et présents en beta.12 ; le dossier Windows actuel indique beta.12 (code 16). La durée précédemment indiquée de 24 min 27 s ne doit pas être attribuée à ce rapport sans autre précision. La lecture du numéro de version ne prouve pas que tous les fichiers soient identiques au ZIP livré. Réduire ce temps sans supprimer de tests reste prioritaire.
+
+## Nouveau plan Android en sept phases
+
+Le détail des demandes, des données, du GPS et des outils envisagés est dans `FEUILLE-DE-ROUTE-ANDROID.md`. Phase 1 socle ; phase 2 véhicule complet ; phase 3 carnet ; phase 4 statistiques ; phase 5 GPS ; phase 6 expérience/accessibilité ; phase 7 extras. Les phases et dates ne sont pas des fonctions déjà livrées.
+
+### Phase 5 bis — Stations & Prix carburants
+
+Module indépendant **à faire**, après le socle 0.4.0 stable : carte et derniers prix officiels disponibles, localisation ponctuelle facultative et cache local pour un hors-ligne partiel. Aucun code n’est produit. Le tableau des phases, le lien avec le GPS natif et les précautions de confidentialité figurent dans `FEUILLE-DE-ROUTE-ANDROID.md` ; la fiche complète est dans [`module-stations-carburants.md`](module-stations-carburants.md).
+
+**0.4.0-alpha.1 :** cinq projections typées, index/relations et migration Room v2→v3 ; les JSON complets restent dans des tables auxiliaires pour préserver les 11 collections et leurs documents. WAL et StrictMode debug sont activés ; `VACUUM` automatique n’est pas encore réalisé. Les 94 tests JVM de l’alpha avaient réussi ; les 4 tests instrumentés compilés doivent toujours être exécutés sur un appareil.
+
+**0.4.0-beta.1 :** Hilt, contrats/adaptateurs par module, modèles/mappers, ViewModel testable et chargements hors thread principal. Le moteur JSON reste commun ; 123 tests JVM ont réussi avec les retours fictifs, lint 0 erreur/16 avertissements. Rapports Compose et LeakCanary debug optionnel ; aucune mesure ni analyse de fuite sur appareil. Restent notamment navigation/UX/erreurs/CI et mesures pour la stable.
+
+**0.4.0-beta.2 :** listes Entretien, Pleins et Trajets à composition paresseuse et clés stables ; changement de véhicule/rubrique revient en haut. 9 tests ciblés JVM réussis sans ignoré, compilation debug réussie et lint 0 erreur/16 avertissements. La base et le format JSON ne changent pas ; pas de pagination SQL ni de benchmark physique.
+
+**0.4.0-beta.3 :** Retour depuis un onglet vers l’accueil et depuis CQ vers son onglet d’origine, dialogues prioritaires. 5 tests ciblés JVM réussis sans ignoré, compilation debug réussie et lint 0 erreur/16 avertissements. Pas de modification Room/JSON ; à cette étape la navigation typée et les essais physiques restaient à faire.
+
+**0.4.0-beta.4 :** confirmation avant abandon de saisies modifiées dans les formulaires Android ; les valeurs préremplies seules ne déclenchent pas d’avertissement. 38 tests JVM ciblés réussis sans échec ni ignoré, compilation debug réussie et lint 0 erreur/16 avertissements. Pas de sauvegarde automatique des brouillons ni de changement Room/JSON.
+
+**0.4.0-beta.5 :** suppression différée annulable avant écriture, au moins 10 secondes au premier plan sans action supplémentaire ; pas de corbeille après suppression définitive. 60 tests JVM ciblés réussis sans échec ni ignoré, compilation debug réussie et lint 0 erreur/16 avertissements. Le schéma Room et le JSON ne changent pas.
+
+**0.4.0-beta.6 :** vérification structurelle JSON dans Réglages sans remplacer le carnet, décomptes par collection et garde ViewModel contre l’import depuis ce mode. Elle ne garantit ni complétude, ni fraîcheur, ni ouverture des pièces jointes, ni succès d’une future restauration. Copie temporaire privée non chiffrée ; nettoyage demandé mais non garanti. 98 tests JVM ciblés réussis sans échec ni ignoré, compilation debug réussie et lint 0 erreur/16 avertissements. Schéma Room, format JSON et PWA inchangés.
+
+**0.4.0-beta.7 :** fiche du véhicule actif modifiable sans toucher à la photo, au compteur ni au carnet ; champs inconnus conservés, conflit détecté, transaction et confirmation avant abandon. 181 tests JVM réussis sans échec ni ignoré, compilation debug réussie et lint 0 erreur/16 avertissements. Pont réel PWA avec données fictives, sans essai sur téléphone. Suppression/photo et véhicule complet restent à faire.
+
+**Beta.20 / PWA 1.5.2-beta.1 candidate :** les nombres très précis des extensions restent numériques et sont réexportés sans arrondi dans les scénarios testés. Un nombre fonctionnel trop précis ou trop grand est refusé avant remplacement ; les données déjà arrondies ne peuvent pas être reconstituées. Le thème et les propriétés supplémentaires des points CQ édités sont préservés. Base PWA IndexedDB 2→3 ; retour direct à 1.5.1 sur la même base bloqué. La PWA 1.5.1 demeure la référence familiale jusqu’aux essais réels ; aucun iPhone n’a été testé. Room 15 et JSON v3 inchangés côté Android. Voir [PRECISION-SAUVEGARDES.md](PRECISION-SAUVEGARDES.md). Deux tests ciblés Android `PrecisionBridgeTest` réussis par Gradle (retour Chromium), retour WebKit contrôlé séparément par Gradle dans Room, 30 tests unitaires PWA, parcours d’interface et migration 1.5.1 → candidate testés sur Chromium et WebKit automatisés, sept scénarios consommation et archives Android/PWA 15/15 chacune. APK debug beta.20 et 57 scénarios instrumentés compilés ; lint 0 erreur/17 avertissements. Aucun scénario instrumenté n’a été exécuté. La suite Android complète beta.20, Windows beta.20 et les appareils réels ne sont pas revendiqués. Une première tentative Gradle a perdu son daemon ; les contrôles ciblés séparés ont ensuite réussi, sans diagnostic certain ni gain Windows mesuré.
+
+**0.4.0-beta.19 :** Room 15 et migration 14→15 : suppression immédiate des entretiens, pleins, trajets et rappels ; image typée relue et conservée dans la même transaction, restauration complète dans une autre transaction. Une seule annulation, au moins 10 secondes au premier plan ; reprise après réouverture avant 24 h. Une deuxième suppression réussie ou un import réussi invalide l’annulation précédente ; export sans élément supprimé. Conflits d’identifiant, véhicule recréé et second trajet actif refusés ; sauvegarde externe indispensable. Voir `UNDO-CARNET.md` et `MIGRATION-V14-V15.md`. 512 tests JVM sur 74 classes réussis, sans échec ni ignoré, avec sept fichiers fictifs ; lint 0 erreur/17 avertissements. La suite incrémentale Linux a pris 7 min 35 s, hors compilations initiales et génération des fixtures ; ce temps ne prédit pas Windows. Pont fictif Undo Room → vraie PWA Chromium → Room vérifié ; PWA 20/20, consommation 7/7, archiveurs Android 14/14 et PWA 11/11. APK debug compilé et 57 scénarios instrumentés compilés mais non exécutés sur appareil ou émulateur. Trois avertissements CloseGuard SQLite/Room en tests simulés restent à diagnostiquer ; aucun essai Windows beta.19 ni benchmark physique. `forkEvery=1` inchangé.
+
+**0.4.0-beta.18 :** Room 14 : trois migrations séparées 11→12 (modèles CQ), 12→13 (contrôles effectués) et 13→14 (réglages). Chaque migration valide, écrit, relit dans SQLite et compare avant de retirer les anciens blocs de sa collection, en transaction. Les onze collections reconnues sont désormais reconstruites depuis des champs ou nœuds typés et leurs seules valeurs/extensions, sans copie JSON complète auxiliaire. Les projections et la table historique `compat_chunks` restent dans le schéma ; des blocs pour valeurs longues et pièces jointes restent nécessaires. Aucun nouvel écran ni modification du format JSON v3 ou de la PWA 1.5.1. 490 tests JVM sur 72 classes réussis, zéro échec ni ignoré, avec sept fichiers fictifs ; lint 0 erreur/17 avertissements. La suite incrémentale a pris 9m 28s sous Linux, hors compilation initiale et génération des fixtures ; cette durée ne prédit pas le temps Windows. APK debug compilé et 54 scénarios instrumentés compilés mais non exécutés sur appareil ou émulateur. Aucun essai Windows beta.18 ni benchmark physique ; `forkEvery=1` inchangé. La phase 1 reste inachevée : Undo immédiat transactionnel, validation sur émulateur puis téléphone, finitions, CI/R8/profils et mesures, et fidélité numérique PWA restent à faire. Ces onze catégories concernent le rangement des données, pas un pourcentage d’avancement de l’application.
+
+**0.4.0-beta.17 :** Room 11 : les documents rejoignent les sept collections déjà typées comme huitième source complète ; migration 10→11 transactionnelle, contrôle et relecture SQLite puis comparaison avant retrait des anciens blocs complets. Les pièces jointes longues restent découpées et vérifiées ; trois collections conservent leur JSON complet auxiliaire. 428 tests JVM réussis sans échec ni ignoré avec cinq fichiers fictifs ; lint 0 erreur/17 avertissements. 59 tests ciblés réussis. APK debug et 39 scénarios instrumentés compilés ; aucun scénario instrumenté n’a été exécuté sur appareil ou émulateur. Aucun benchmark physique ; Undo immédiat et trois sous-lots restent à réaliser ; sauvegarde externe vérifiée indispensable. Voir `MIGRATION-V10-V11.md`.
+
+**0.4.0-beta.16 :** Room 10 : les symptômes rejoignent véhicules, interventions, pleins/recharges, trajets, rappels et dépenses comme septième source complète typée ; migration 9→10 transactionnelle, contrôle et relecture SQLite puis comparaison avant retrait des anciens blocs complets des symptômes. Quatre collections conservent leur JSON complet auxiliaire. 395 tests JVM réussis sans échec ni ignoré avec quatre fichiers fictifs ; lint 0 erreur/17 avertissements. 126 tests ciblés réussis. APK debug et 34 scénarios instrumentés compilés ; aucun scénario instrumenté n’a été exécuté sur appareil ou émulateur. Aucun benchmark physique ; Undo immédiat encore à faire ; sauvegarde externe vérifiée indispensable. Voir `MIGRATION-V9-V10.md`.
+
+**0.4.0-beta.15 :** Room 9 : les dépenses rejoignent véhicules, interventions, pleins/recharges, trajets et rappels comme sixième source complète typée ; migration 8→9 transactionnelle, contrôle et relecture SQLite puis comparaison avant retrait des anciens blocs complets des dépenses. Cinq collections conservent leur JSON complet auxiliaire. 365 tests JVM réussis sans échec ni ignoré avec quatre fichiers fictifs ; lint 0 erreur/17 avertissements. 116 tests ciblés réussis. APK debug et 29 scénarios instrumentés compilés ; aucun scénario instrumenté n’a été exécuté sur appareil ou émulateur. Aucun benchmark physique ; Undo immédiat encore à faire ; sauvegarde externe vérifiée indispensable. Voir `MIGRATION-V8-V9.md`.
+
+**0.4.0-beta.14 :** Room 8 : les rappels rejoignent les véhicules, interventions, pleins/recharges et trajets comme sources complètes typées ; migration 7→8 transactionnelle, contrôle et relecture SQLite puis comparaison avant retrait des anciens blocs complets des rappels. Six collections conservent leur JSON complet auxiliaire. 337 tests JVM réussis sans échec ni ignoré avec quatre fichiers fictifs ; lint 0 erreur/17 avertissements. 84 tests ciblés réussis. APK debug et 25 scénarios instrumentés compilés ; aucun scénario instrumenté n’a été exécuté sur appareil ou émulateur. Aucun benchmark physique ; Undo immédiat encore à faire ; sauvegarde externe vérifiée indispensable. Voir `MIGRATION-V7-V8.md`.
+
+**0.4.0-beta.13 :** Room 7 : véhicules, interventions, pleins/recharges et trajets ont une source complète typée ; migration 6→7 transactionnelle avec vérification, relecture SQLite et comparaison avant retrait des anciens blocs des trajets. Sept collections gardent leur JSON complet auxiliaire. 304 tests JVM réussis sans échec ni ignoré avec quatre fichiers fictifs ; lint 0 erreur/17 avertissements. 34 tests ciblés réussis. APK debug et 21 scénarios instrumentés compilés ; aucun scénario instrumenté n’a été exécuté sur appareil ou émulateur. Aucun benchmark physique ; Undo immédiat encore à faire ; sauvegarde externe vérifiée indispensable. Voir `MIGRATION-V6-V7.md`.
+
+**0.4.0-beta.12 :** Room 6 : véhicules, interventions et pleins/recharges complets typés ; migration 5→6 transactionnelle, relecture de SQLite et comparaison avant retrait des anciens blocs complets des pleins. Huit collections gardent leur JSON complet auxiliaire. 270 tests JVM réussis, sans échec ni ignoré avec les fichiers fictifs ; lint 0 erreur/17 avertissements. 108 tests ciblés réussis ; 17 tests instrumentés compilés, non exécutés sur appareil ou émulateur ; aucune mesure physique. Undo immédiat encore à faire ; sauvegarde externe vérifiée indispensable. Voir `MIGRATION-V5-V6.md`.
+
+**0.4.0-beta.11 :** Room 5 : véhicules et interventions complets typés ; migration 4→5 transactionnelle, relecture et comparaison avant retrait des anciens blocs des interventions. Neuf collections gardent leur JSON complet auxiliaire. 244 tests JVM réussis, sans échec ni ignoré avec les jeux de pont fictifs ; lint 0 erreur/17 avertissements. 72 tests ciblés réussis ; tests instrumentés compilés mais non exécutés sur appareil ou émulateur ; aucune mesure physique. Undo immédiat encore à faire ; sauvegarde externe vérifiée indispensable. Voir `MIGRATION-V4-V5.md`.
+
+**0.4.0-beta.10 :** Room 4 : véhicules complets typés, migration 3→4 transactionnelle avec contrôle de fidélité ; 10 autres collections encore en JSON complet auxiliaire. 224 tests JVM réussis sans échec ni ignoré, avec les jeux de pont fictifs ; lint 0 erreur/17 avertissements. Tests instrumentés compilés mais non exécutés sur appareil/émulateur ; aucune mesure physique. Undo immédiat à faire ; aucune nouvelle fonction d’interface. Voir `MIGRATION-V3-V4.md`.
+
+**0.4.0-beta.9 :** correctif ciblé du test Windows intermittent : SQLite natif pour les tests JVM Windows x64 et attente de la fermeture des flux du ViewModel. Sur Linux : 204 tests JVM réussis, sans échec ni ignoré, avec les jeux de pont fictifs déjà générés ; lint 0 erreur/17 avertissements. Les 10 tests ciblés ont aussi réussi quatre fois en mode NATIVE et quatre fois en mode LEGACY, avec un processeur actif. Depuis, la commande ciblée puis les tests JVM avec assemblage debug ont réussi sur le Windows de l’utilisateur ; les migrations instrumentées restent à exécuter. Aucun changement fonctionnel, de schéma ou de format.
+
+**0.4.0-beta.8 :** identité `com.vigieauto.app` fixée, navigation typée des écrans existants, résultats succès/erreur uniformisés au bord du ViewModel et garde préparatoire de fidélité. Room reste v3 avec JSON complets sources ; la suppression reste différée, pas d’Undo après suppression. 200 tests JVM réussis, sans échec ni ignoré ; lint 0 erreur/17 avertissements ; compilation debug et des tests instrumentés réussie. Pont Android → vraie PWA 1.5.1 sous Chromium → Android sur données fictives ; tests PWA 20/20, archiveur Android 12/12 et PWA 11/11.
+
+Les performances demandées (démarrage, réactivité, fps, import/export, taille, mémoire, batterie) sont des objectifs **à mesurer**, pas des valeurs déjà atteintes. `PERFORMANCES.md` contient les protocoles et points de vigilance.
+
+## Terminé dans la PWA
+
+| Étape | Résultat |
+|---|---|
+| Carnet local | ✅ Véhicules, entretien, pleins, dépenses, rappels dans l’app, contrôles qualité, symptômes, documents, statistiques et JSON manuel. |
+| Design et identité | ✅ Sauge et Cyan, clair/sombre selon le téléphone ; cinq onglets, accès CQ, bouton +, nom et logo VigieAuto. |
+| Installation initiale | ✅ L’utilisateur indique avoir publié/installé l’application sur Android. Les détails des essais sur son téléphone ne sont pas documentés ; l’aperçu de développement reste temporaire. |
+| Trajets manuels | ✅ Saisie manuelle, chronomètre, historique par véhicule et coût énergétique indicatif. Les trois types sont déclarés, pas calculés. |
+| GPS facultatif — première étape | ✅ Estimation de distance page visible, permission, pause, reprise, interruption détectée et correction à l’arrivée, sans sauvegarde de la trace. ❌ Le fonctionnement continu écran éteint ou app fermée n’est pas garanti. |
+| Suggestions véhicules communes | ✅ Référentiel français v1, recherche, saisie libre et mémorisation ; formulaire de véhicule sur la PWA 1.5.0 et Android 0.2.0, avec migration Room et pont JSON. |
+| Carnet Android — première reprise | ✅ Android 0.3.0 : entretiens, rappels, pleins/recharges et trajets manuels ajoutables, modifiables et supprimables ; compteur corrigeable et alertes dans l’app seulement. |
+| Logo corrigé | ✅ Image fournie sans bord blanc ajoutée dans les icônes Android 0.3.0 et PWA 1.5.1 ; Android adapte le masque. |
+| Documentation et rangement | ✅ Historique, cahier des charges et feuille de route tenus ; script d’archives et tests ; trois dernières archives versionnées conservées. |
+
+## Stratégie retenue : Android natif + PWA familiale
+
+L’utilisateur retient **Android Kotlin/Compose pour l’usage avancé** et la **PWA pour la famille sur iPhone**. Les bases sont indépendantes et s’échangent des fichiers JSON manuellement ; ce n’est pas une synchronisation ni un partage en direct.
+
+1. **Lot A — fondation Android 0.1.0 :** projet séparé `VigieAuto-Android`, écran Compose, navigation, thèmes, Room et pont JSON. Consultation partielle seulement, sans ajout ni GPS/Bluetooth ; vérifications et limites détaillées dans l’historique et le projet Android.
+2. **Lot B — reprise du carnet :** création/sélection des véhicules réalisées en 0.2.0 ; Android 0.3.0 ajoute entretiens, rappels, pleins/recharges, trajets manuels et correction du compteur, avec édition/suppression des entrées. La fiche courante est éditable depuis beta.7 ; il reste la suppression, la photo et les champs enrichis des véhicules, puis CQ, dépenses, symptômes, documents et statistiques. Tester les migrations Room et la compatibilité JSON.
+3. **Lot C — trajets avancés Android :** GPS facultatif avec service de premier plan et notification, puis Bluetooth assisté ; matériel, permissions, démarrage possible et limites Android à tester. NFC reste ultérieur et facultatif.
+4. **Lot D — Web famille :** garder la PWA, documenter l’installation Safari et tester sur de vrais iPhone. Aucun Bluetooth automatique ou synchronisation n’est promis. Vérifier qu’une adresse HTTPS réelle est accessible.
+
+L’identifiant `com.vigieauto.app` est fixé par l’utilisateur ; une clé de signature de production reste à définir et la disponibilité sur un store n’est pas vérifiée. Avant toute migration, conserver la PWA et un export vérifié ; les imports remplacent les données du destinataire.
+
+L’adresse publique copiée a renvoyé 404 depuis notre accès. Cela ne permet pas de conclure sur l’installation locale ; vérifier l’adresse et ne pas effacer de données sans sauvegarde.
+
+## Prochaines étapes PWA conservées
+
+### 1. Déployer et essayer le GPS sur le téléphone déjà installé
+
+- Sauvegarder les données depuis l’application installée, puis publier **le contenu** du ZIP 1.5.1 au même emplacement et à la même adresse HTTPS que la version actuelle. Voir `INSTALLER.md` ; aucune mise à jour du site de l’utilisateur n’est effectuée automatiquement depuis cet espace de travail.
+- Rouvrir l’app en ligne et vérifier **Réglages → version 1.5.1**, les données existantes, l’icône et le fonctionnement hors ligne.
+- À l’arrêt, tester la permission, le signal, la distance sur un court déplacement en sécurité, les interruptions et la correction à l’arrivée. Les tests automatisés utilisent des positions simulées et ne remplacent pas cet essai réel.
+- Si nécessaire, ajuster le filtre GPS et l’interface en fonction des observations, sans prétendre suivre en continu application fermée ou écran éteint.
+
+### 2. Déclenchement par NFC ou Bluetooth — demandé, à décider avant développement
+
+- **NFC :** piste d’un badge NDEF associé à un véhicule, lu après lancement volontaire d’un scan dans l’application visible et téléphone déverrouillé. Vérifier la présence de NFC sur le téléphone et disposer d’un badge compatible. Aucun déclenchement universel depuis une PWA fermée n’est promis.
+- **Bluetooth :** étudier le matériel exact. Web Bluetooth vise les périphériques BLE et ne garantit pas la détection automatique d’un autoradio classique ni l’exécution dans un service worker.
+- **À décider :** matériel disponible, association au véhicule et action attendue à l’approche/à la deuxième lecture. L’Android natif est désormais choisi ; le Bluetooth assisté viendrait au lot C après le GPS, avec permissions, restrictions et essais réels. NFC reste une piste distincte.
+
+### 3. Renforcer les sauvegardes — demandé, méthode à définir
+
+- Garder l’export/import JSON manuels complets, avec copies externes ; le fichier n’est pas chiffré.
+- Étudier un rappel de sauvegarde dans l’application, par exemple après 30 jours, sans faire croire qu’un téléchargement garantit une copie externe.
+- Étudier la demande de sauvegarde automatique dans un dossier ou sur Google Drive personnel : permissions, compatibilité, état de réussite visible, gestion des erreurs et secours manuel. Aucune automatisation ni synchronisation Drive n’existe actuellement.
+- **À valider :** solution, fréquence, éventuelle protection des sauvegardes et consentement si cloud. Le cloud exige une connexion et modifie le périmètre local ; il doit rester facultatif. Un PDF éventuel ne remplacerait pas une sauvegarde complète restaurable.
+
+### 4. Autres améliorations — selon les priorités de l’utilisateur
+
+- Trajets : filtres, récurrences et questions facultatives utiles ; toute conservation d’une trace GPS précise nécessiterait une décision explicite. Score éco non arbitré.
+- Carnet : étudier le rattachement de documents à une intervention, les rapports PDF et d’autres demandes à venir.
+- Évaluer les notifications application fermée selon la plateforme sans promettre une planification fiable par le seul service worker.
+- OBD, OCR, stations, import Drivvo et synchronisation multi-appareils ne sont pas implémentés ; ne les ajouter qu’après choix explicite du périmètre.
+
+## En continu à chaque évolution
+
+1. Enregistrer les demandes et décisions dans `HISTORIQUE.md` ; actualiser cette feuille de route, `CAHIER-DES-CHARGES.md`, `FEUILLE-DE-ROUTE-ANDROID.md`, `PERFORMANCES.md` et surtout `RECAPITULATIF-FONCTIONS.md`, avec des statuts honnêtes.
+2. Protéger les données existantes : migrations IndexedDB versionnées si nécessaire, import d’anciens JSON compatible et restauration atomique ; rappeler l’export avant mise à jour ou changement d’adresse.
+3. Tester les calculs, l’interface, les tailles d’écran, l’accessibilité, les thèmes, le hors-ligne et les parcours concernés. Tester les migrations et les exports/imports lorsque les données changent.
+4. Vérifier l’installation et les permissions sur de vrais appareils lorsque la fonctionnalité en dépend ; distinguer ces essais des tests automatisés.
+5. Versionner chaque branche indépendamment : pour la PWA, `package.json`, `package-lock.json`, `sw.js` et `APP_VERSION` ; pour Android, Gradle `versionName`/`versionCode`, schémas Room et migrations. Actualiser la documentation puis tester avant l’archivage. Les deux projets ont un script `scripts/creer-archive.py` avec `--dry-run`.
+6. Ranger le workspace : conserver **les deux sources complètes** et, normalement, **trois ZIP de versions de projet** : la nouvelle version, la dernière PWA stable familiale et, pendant une préversion Android, le dernier Android stable. Le troisième emplacement disponible est sinon complété selon les versions/dates. Les ZIP inconnus, corrompus ou les doublons contradictoires sont conservés et signalés même si cela dépasse trois fichiers ; les sauvegardes personnelles ne sont pas supprimées.
+
+## Archives conservées après cette livraison
+
+1. `VigieAuto-Android-v0.4.0-beta.19.zip` — préversion des fondations, dossier racine `VigieAuto`.
+2. `VigieAuto-Android-v0.3.0.zip` — dernière version stable Android précédente ; ce ZIP historique conserve son ancienne racine `VigieAuto-Android`.
+3. `VigieAuto-v1.5.1.zip` — PWA familiale inchangée.
+
+Ce sont les trois archives de projet conservées. Le lot documentaire Stations n’avait pas régénéré les ZIP de code à lui seul ; la fiche Stations et les documents communs actualisés sont inclus dans l’archive beta.19 et restent aussi dans les deux dossiers sources. La PWA 1.5.1 reste inchangée et son ZIP reflète sa livraison initiale. L’ancienne archive beta.12 était immuable ; le retour Windows reçu ensuite a été consigné dans les sources et a été repris dans beta.13 et conservé depuis beta.14. Les sauvegardes personnelles ne sont pas des archives de projet à supprimer.
+
+Depuis beta.15, l’option `--sans-nettoyage` permet de conserver les anciennes archives jusqu’à une vérification indépendante ; la rétention peut ensuite être lancée séparément. L’archiveur Android vérifie avant rétention CRC, racine, liste exacte, mode du lanceur et correspondance SHA-256 de chaque fichier avec la source ; un refus garde les anciennes archives. Ne retirer une ancienne archive de projet identifiée qu’après création et vérification de la nouvelle, en protégeant la PWA familiale et le repli Android stable. Les ZIP de données personnelles ou de provenance inconnue ne sont pas touchés.

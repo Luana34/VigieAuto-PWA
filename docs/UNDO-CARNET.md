@@ -1,0 +1,26 @@
+# Annuler une suppression du carnet — beta.19
+
+## Pour l’utilisateur
+
+Après confirmation, l’entretien, le plein, le trajet ou le rappel disparaît **immédiatement** du carnet Android. Le bandeau « Élément supprimé » propose **Annuler** : cette action restaure l’élément, elle ne se contente pas d’arrêter une suppression en attente. « Terminer » abandonne l’annulation. Une éventuelle sauvegarde JSON créée avant la suppression reste inchangée ; le véhicule et un rappel éventuellement créé lors d’un entretien sont conservés.
+
+- Une seule suppression est annulable à la fois. Une nouvelle suppression réussie rend la précédente définitive ; la confirmation le signale. Si la nouvelle suppression échoue, l’annulation précédente reste disponible.
+- L’élément supprimé est absent des exports effectués pendant cette fenêtre. Une fois restauré, il figure à nouveau dans les exports suivants. Les sauvegardes déjà créées ne sont jamais réécrites automatiquement.
+- La navigation, l’édition, la vérification et l’export restent utilisables. Un import est possible : la confirmation prévient qu’un import **réussi** rendra l’annulation précédente indisponible, car il remplace le carnet. Un import échoué conserve à la fois les données antérieures et l’annulation.
+- Le bandeau reste disponible au moins **10 secondes au premier plan**, ou davantage si le réglage d’accessibilité du système le demande. Le compte à rebours repart à zéro après un passage en arrière-plan, une recréation d’écran ou la fermeture d’un formulaire/confirmation. « Terminer » le clôt immédiatement.
+- L’image d’annulation est enregistrée localement : après fermeture et réouverture de l’application, elle réapparaît si elle a moins de **24 heures** et n’a pas été terminée ou remplacée. À partir de 24 heures, elle est périmée, y compris si l’application est restée en arrière-plan ; elle est nettoyée lors de la prochaine ouverture ou tentative de restauration. Aucun réveil en arrière-plan n’est programmé : si l’application n’est jamais rouverte, l’image périmée peut rester sur le disque. Une horloge reculée peut retarder ce nettoyage, par prudence contre une perte accidentelle.
+- Une restauration est refusée si un élément de même identifiant existe déjà, si le véhicule d’origine a été supprimé ou recréé, ou si elle recréerait un second trajet en cours. Une simple modification du véhicule, notamment de son kilométrage, reste possible et n’est pas écrasée. En cas d’échec, l’image reste disponible tant que la fenêtre n’est pas terminée ou périmée.
+
+**Ce n’est pas une sauvegarde.** L’image et les données restent dans le stockage privé local de l’application, sans chiffrement supplémentaire de VigieAuto. Après « Terminer » ou expiration, l’image n’est plus accessible par l’application ; SQLite et le stockage du téléphone ne garantissent pas l’effacement physique immédiat des anciens octets. Désinstallation, perte du téléphone, panne, corruption, manque d’espace ou import remplacent ou peuvent rendre les données irrécupérables. Avant de mettre à jour ou manipuler des données importantes, exportez et vérifiez plusieurs copies JSON sur un autre support sûr. Les JSON ne sont pas chiffrés.
+
+## Contrat technique
+
+- `deleteJournal` vérifie l’empreinte de l’entrée affichée, l’existence et la génération du parent, reconstruit et contrôle l’entrée complète, l’encode en arbre de valeurs typées et blocs SHA, relit cet arbre, puis supprime l’entrée active et sa projection dans **la même transaction Room**. Une seule image est conservée ; le remplacement éventuel de la précédente est lui aussi dans cette transaction. Échec ou annulation avant commit : rollback.
+- L’Undo relit et contrôle l’image, refuse toute collision, vérifie la génération stable du parent et le chronomètre global, reconstruit les tables complètes et projections puis supprime l’image dans **une seconde transaction**. Un échec ne doit pas laisser une entrée partielle ni supprimer l’image.
+- La génération du véhicule subsiste lors d’une édition et change quand le véhicule est supprimé/recréé. Un import réussi invalide l’Undo dans la même transaction que le remplacement ; un export prend un instantané Room et n’exporte pas l’image.
+- L’image utilise les tables `journal_undo*`, un arbre typé réemployant le codec d’arbre et les blocs vérifiés des réglages, pas un JSON complet auxiliaire de l’entrée active. Le fichier d’échange reste JSON v3 ; la PWA n’obtient pas l’historique Undo.
+- Au chargement du ViewModel, les écritures sont momentanément bloquées jusqu’à lecture/nettoyage de l’Undo. Si cette lecture échoue, elles restent bloquées par précaution et un message demande de relancer l’application. Les tests de réouverture d’une base simulent la reprise du processus ; ils ne sont pas un essai réel d’arrêt forcé Android.
+
+## Limites de validation
+
+Robolectric, Compose simulé, tests de migration et pont PWA sont complémentaires, sans remplacer une migration et des essais sur émulateur puis téléphone. Pas de garantie zéro défaut, pas de performance mesurée, pas de test d’une panne matérielle réelle. La précision des grands nombres dans la PWA reste un problème distinct non corrigé : conserver la copie Android d’origine avant échange. Le changement de thème et l’édition de points CQ PWA ont aussi les limites documentées en beta.18.
