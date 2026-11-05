@@ -1,6 +1,10 @@
 # Où en est VigieAuto ?
 
-**Actualisation du 5 novembre 2026 — Android 0.4.0-beta.28 et PWA 1.5.2-beta.3 candidate :** premier lot dépenses Android : liste par véhicule, tri, total, ajout, édition, suppression avec Undo, kilométrage facultatif sans changer le compteur. La PWA candidate reprend les catégories et avertissements ; Room 15 et JSON v3 restent inchangés. Aucun lien automatique avec un plein ni détection des doublons ; photo de justificatif et choix de devise restent à développer. Sauvegarder chaque appareil avant import ou essai. [Détails et limites](DEPENSES-BETA28.md).
+**Actualisation du 5 novembre 2026 — PWA 1.5.2-beta.5 candidate / Android 0.4.0-beta.30 :** ajout, modification et retrait du kilométrage facultatif des dépenses dans la PWA, déjà disponibles sur Android ; ce champ ne change pas le compteur du véhicule. La beta.30 Android ne modifie pas le code métier. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](KILOMETRAGE-DEPENSES-BETA30.md).
+
+**Historique du 5 novembre 2026 — Android 0.4.0-beta.29 et PWA 1.5.2-beta.4 candidate :** une photo facultative par dépense, à ajouter depuis la liste après enregistrement ; aperçu, remplacement et retrait explicites. Android convertit les nouvelles photos en JPEG sans EXIF ; la PWA garde le fichier et ses métadonnées éventuelles. Sauvegardes JSON non chiffrées. Room 15, IndexedDB 4 et JSON v3 inchangés. Devise réglable et liaison plein/dépense sans double comptage restent à faire. [Détails, limites et confidentialité](JUSTIFICATIFS-BETA29.md). [Contrôles et limites des essais](VALIDATION-BETA29.md).
+
+**Historique du 5 novembre 2026 — Android 0.4.0-beta.28 et PWA 1.5.2-beta.3 candidate :** premier lot dépenses Android : liste par véhicule, tri, total, ajout, édition, suppression avec Undo, kilométrage facultatif sans changer le compteur. La PWA candidate reprend les catégories et avertissements ; Room 15 et JSON v3 restent inchangés. Aucun lien automatique avec un plein ni détection des doublons ; photo de justificatif et choix de devise restent à développer. Sauvegarder chaque appareil avant import ou essai. [Détails et limites](DEPENSES-BETA28.md).
 
 **Vérifications beta.28 :** sous Linux, 592 tests JVM réussis, huit anciens ponts ignorés faute de fixtures, aucun échec ; APK debug construit, lint sans erreur et 61 scénarios instrumentés compilés mais non exécutés. Le nouveau pont dépenses a été vérifié sous Chromium et WebKit Linux, sans essai Windows, téléphone ou iPhone.
 
@@ -8,7 +12,7 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Point au 5 novembre 2026 · Android 0.4.0-beta.28 · PWA familiale 1.5.1**
+**Point au 5 novembre 2026 · Android 0.4.0-beta.30 · PWA familiale 1.5.1**
 
 ## La réponse courte
 
@@ -21,7 +25,7 @@ Nous avançons maintenant sur les **fonctions principales sans attendre les essa
 - Ajouter plusieurs véhicules, les sélectionner, modifier les principales informations et corriger le compteur. Les marques et modèles restent libres avec des suggestions hors ligne.
 - **Nouveau en beta.26 :** choisir une photo du véhicule actif dans la galerie ou les fichiers, l’afficher, la remplacer ou la retirer après confirmation. La conversion est locale et bornée ; la photo précédente ne change pas en cas d’annulation ou d’échec. Pas de prise de vue directe ni d’annulation après remplacement/retrait. [Détails et limites](PHOTO-VEHICULE.md).
 - Ajouter, modifier et supprimer les **entretiens, pleins/recharges, rappels et trajets manuels**. La dernière suppression du carnet peut être annulée sous les conditions d’[UNDO-CARNET.md](UNDO-CARNET.md).
-- Consulter partiellement les contrôles qualité importés. Un premier écran dépenses permet liste, tri, total et saisie ; les justificatifs et la liaison restent à faire. Les symptômes et documents importés sont conservés et réexportables, mais leurs écrans Android complets restent à faire.
+- Consulter partiellement les contrôles qualité importés. Un écran dépenses permet liste, tri, total et saisie, ainsi qu’un justificatif photo ; la devise et la liaison restent à faire. Les symptômes et documents importés sont conservés et réexportables, mais leurs écrans Android complets restent à faire.
 - Exporter un JSON, vérifier sa structure sans restaurer, puis importer après confirmation. **Importer remplace le carnet destinataire ; ce n’est pas une fusion.** Utiliser les thèmes Sauge ou Cyan.
 
 Les rappels sont visibles dans l’application et utilisent des jours et/ou kilomètres. **Il n’y a pas encore de notification lorsque l’application est fermée.** Les propositions fondées sur les habitudes sont décidées, mais non implémentées.
@@ -30,7 +34,7 @@ Les rappels sont visibles dans l’application et utilisent des jours et/ou kilo
 
 La PWA familiale 1.5.1 dispose déjà notamment des contrôles qualité, dépenses, symptômes, documents et statistiques. Son GPS est facultatif et dépend de la page visible ; un suivi continu écran éteint n’est pas garanti. L’installation et le stockage restent liés à l’adresse du site.
 
-La **candidate 1.5.2-beta.3** reprend les corrections de précision et les améliorations du carnet, puis ajoute les catégories et avertissements de dépenses décrits ci-dessus. L’utilisateur indique avoir installé **beta.1** depuis GitHub Pages sur Android et importé sa sauvegarde sans perte constatée ; aucune vérification indépendante exhaustive n’est revendiquée et elle **n’a pas été validée sur iPhone**. La PWA 1.5.1 peut arrondir certains grands nombres ; conserver les sauvegardes originales. La base mise à niveau par la candidate ne se rouvre pas directement avec l’ancienne version. Voir [PRECISION-SAUVEGARDES.md](PRECISION-SAUVEGARDES.md).
+La **candidate 1.5.2-beta.5** reprend les corrections de précision et le carnet, et permet un justificatif photo local par dépense. Les métadonnées de la photo PWA peuvent rester présentes. L’utilisateur indique avoir installé **beta.1** depuis GitHub Pages sur Android et importé sa sauvegarde sans perte constatée ; aucune vérification indépendante exhaustive n’est revendiquée et elle **n’a pas été validée sur iPhone**. La PWA 1.5.1 peut arrondir certains grands nombres ; conserver les sauvegardes originales. La base mise à niveau par la candidate ne se rouvre pas directement avec l’ancienne version. Voir [PRECISION-SAUVEGARDES.md](PRECISION-SAUVEGARDES.md).
 
 ## Vérifications de beta.26
 

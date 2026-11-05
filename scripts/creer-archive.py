@@ -98,6 +98,8 @@ def main() -> None:
         raise RuntimeError("La version du cache de sw.js ne correspond pas à package.json.")
     if '"./js/maintenance.js"' not in sw:
         raise RuntimeError("Le module du carnet enrichi manque au cache hors ligne.")
+    if '"./js/expense-receipt.js"' not in sw:
+        raise RuntimeError("Le module des justificatifs manque au cache hors ligne.")
     index = (PROJECT / "index.html").read_text(encoding="utf-8")
     if 'id="category-picker"' not in index or f"?v=vigie-{version}" not in index:
         raise RuntimeError("Sélecteur de catégories ou version des icônes absent de index.html.")
@@ -136,7 +138,9 @@ def main() -> None:
                 f"{ROOT_NAME}/js/maintenance.js", f"{ROOT_NAME}/css/style.css", f"{ROOT_NAME}/css/themes.css",
                 f"{ROOT_NAME}/js/catalogue.js", f"{ROOT_NAME}/data/brands_models_fr.json",
                 f"{ROOT_NAME}/tests/maintenance.test.js", f"{ROOT_NAME}/tests/carnet-enrichi.cjs",
-                f"{ROOT_NAME}/tests/depenses.test.js", f"{ROOT_NAME}/tests/depenses-interface.cjs", f"{ROOT_NAME}/docs/DEPENSES-BETA28.md",
+                f"{ROOT_NAME}/tests/depenses.test.js", f"{ROOT_NAME}/tests/depenses-interface.cjs", f"{ROOT_NAME}/docs/DEPENSES-BETA28.md", f"{ROOT_NAME}/docs/KILOMETRAGE-DEPENSES-BETA30.md",
+                f"{ROOT_NAME}/js/expense-receipt.js", f"{ROOT_NAME}/tests/justificatifs.test.js", f"{ROOT_NAME}/tests/justificatifs-interface.cjs", f"{ROOT_NAME}/docs/JUSTIFICATIFS-BETA29.md",
+                f"{ROOT_NAME}/tests/fixtures/justificatif.png", f"{ROOT_NAME}/tests/fixtures/justificatif-gps-fictif.jpg",
                 f"{ROOT_NAME}/tests/precise-json.test.js", f"{ROOT_NAME}/tests/precision-interface.cjs", f"{ROOT_NAME}/docs/PRECISION-SAUVEGARDES.md",
                 f"{ROOT_NAME}/docs/CARNET-PWA-BETA2.md", f"{ROOT_NAME}/docs/CARNET-ANDROID-BETA27.md", f"{ROOT_NAME}/docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md",
                 f"{ROOT_NAME}/docs/PLAN-PRIORITES-APRES-BETA16.md",

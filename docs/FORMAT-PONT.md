@@ -1,4 +1,6 @@
-# Pont de sauvegarde PWA familiale 1.5.1 / candidate 1.5.2-beta.4 ↔ Android 0.4.0-beta.29
+# Pont de sauvegarde PWA familiale 1.5.1 / candidate 1.5.2-beta.5 ↔ Android 0.4.0-beta.30
+
+**PWA beta.5 / Android beta.30 :** `expenses[].odometer` est un champ facultatif déjà utilisé sur Android ; la PWA l’édite désormais sans changer le compteur du véhicule. Structures inconnues ou valeurs trop précises : conserver sans modifier. [Détails](KILOMETRAGE-DEPENSES-BETA30.md).
 
 **Beta.29 / PWA beta.4 :** extension facultative `vigieExpenseReceipt` version 1 pour une photo par dépense ; les structures futures sont conservées mais non éditées. Voir [JUSTIFICATIFS-BETA29.md](JUSTIFICATIFS-BETA29.md). JSON v3, Room 15 et IndexedDB 4 restent inchangés.
 

@@ -8,6 +8,7 @@ import {
   centsAsNumber, sumCents, fuelSuggestions, mapsSearchUrl,
 } from "./maintenance.js";
 import { consumeGpsFix } from "./gps.js";
+import { inspectExpenseReceipt, receiptPreviewUrl, withExpenseReceipt, validateReceiptFile, requireReceiptRecordSize } from "./expense-receipt.js";
 import {
   SUGGESTION_SETTING_ID, AUTRE_MARQUE, AUTRE_MODELE, FUEL_CHOICES,
   normalise, validateSuggestionSetting, rememberVehicle, brandSuggestions, modelSuggestions,
@@ -32,11 +33,12 @@ import {
   demoRecords,
   SERVICE_CATEGORIES,
   EXPENSE_CATEGORIES,
+  expenseMileage,
   SYMPTOM_CATEGORIES,
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.3";
+const APP_VERSION = "1.5.2-beta.5";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -126,6 +128,9 @@ const gps = {
 };
 const app = $("#app");
 const modal = $("#modal");
+// Instantanés pris à l'ouverture : même une lecture de fichier asynchrone ne
+// peut écraser une modification effectuée depuis un autre onglet.
+let expenseDraft = null, receiptDraft = null;
 const VALID_THEMES = new Set(["sauge", "cyan", "auto"]);
 const darkScheme = window.matchMedia?.("(prefers-color-scheme: dark)") || null;
 function storedTheme(records) {
@@ -914,7 +919,7 @@ function expensesView() {
   return `${pageHeading("Autres dépenses", "Assurance, péages, stationnement… tout compte.", addButton("Ajouter une dépense", "add-expense"))}
     <div class="summary-grid">${metric("Total enregistré", money(sum), "", "Hors montants des pleins et interventions", "receipt")}${metric("Dépenses", number(rows.length), "", "Pour ce véhicule", "chart")}${metric("Dernière dépense", rows[0] ? shortDate(rows[0].date) : "—", "", "Selon la date enregistrée", "calendar")}</div>
     <div class="note-line">${I("info")} Les pleins et interventions sont enregistrés séparément. Les doublons saisis manuellement ne sont pas détectés et peuvent être comptés deux fois.</div>
-    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("receipt", "blue")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${esc(expenseCategoryLabel(x.category))}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${money(x.amount)}</div>${rowButtons("expense", x.id)}</div>`).join("") : empty("receipt", "Aucune autre dépense", "Enregistrez une assurance, un péage ou un achat.", "add-expense", "Ajouter une dépense")}</div>`;
+    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("receipt", "blue")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${esc(expenseCategoryLabel(x.category))}${expenseMileage(x).display ? ` · ${esc(expenseMileage(x).display)} km` : ""}${x.notes ? `<br>${esc(x.notes)}` : ""}<br><button type="button" class="receipt-link" data-action="expense-receipt" data-id="${esc(x.id)}">${inspectExpenseReceipt(x).state === "empty" ? "Ajouter un justificatif" : "Voir le justificatif"}</button></div></div><div class="list-amount">${money(x.amount)}</div>${rowButtons("expense", x.id)}</div>`).join("") : empty("receipt", "Aucune autre dépense", "Enregistrez une assurance, un péage ou un achat.", "add-expense", "Ajouter une dépense")}</div>`;
 }
 function remindersView() {
   const v = getVehicle();
@@ -1491,6 +1496,9 @@ function fillForm(id = "") {
 }
 function expenseForm(id = "") {
   const x = recordById("expenses", id) || {};
+  if (id && !x.id) throw new Error("Cette dépense n’existe plus. Rechargez la page.");
+  const mileage = expenseMileage(x);
+  expenseDraft = { id, expected: x.id ? structuredClone(x) : null, vehicle: structuredClone(getVehicle()), mileageEditable: mileage.editable, mileageTouched: false };
   const category = typeof x.category === "string" ? x.category : "";
   // Une catégorie d'une autre version ne doit pas être remplacée par le premier choix.
   const choices = x.id && !category ? { "": "Non renseignée", ...EXPENSE_CATEGORIES }
@@ -1505,10 +1513,39 @@ function expenseForm(id = "") {
     form: "expense",
     id,
     body: `<div class="form-grid">
-    <p class="form-help full-width">Les pleins et entretiens sont séparés. Les doublons saisis manuellement ne sont pas détectés.</p>
-    ${field("title", "Intitulé", x.title, { required: true, full: true, placeholder: "Assurance auto" })}${categoryField}${field("date", "Date", x.date || today(), { type: "date", required: true })}${field("amount", "Montant (€)", x.amount ?? "", { type: "number", min: 0, step: "0.01", required: true })}${area("notes", "Notes", x.notes, { placeholder: "Facultatif…" })}</div>`,
+    <p class="form-help full-width">Les pleins et entretiens sont séparés. Les doublons saisis manuellement ne sont pas détectés. Après enregistrement, vous pourrez ajouter une photo de justificatif depuis la liste.</p>
+    ${field("title", "Intitulé", x.title, { required: true, full: true, placeholder: "Assurance auto" })}${categoryField}${field("date", "Date", x.date || today(), { type: "date", required: true })}${field("amount", "Montant (€)", x.amount ?? "", { type: "number", min: 0, step: "0.01", required: true })}
+    ${mileage.editable ? field("odometer", "Kilométrage (facultatif)", mileage.input, { type: "number", min: 0, step: "any", help: "Ce kilométrage décrit la dépense ; il ne modifie pas le compteur du véhicule." }) : '<p class="form-help full-width">Kilométrage d’une autre version ou valeur non prise en charge : il est conservé sans modification.</p>'}
+    ${area("notes", "Notes", x.notes, { placeholder: "Facultatif…" })}</div>`,
+  });
+  modal.querySelector('[name="odometer"]')?.addEventListener("input", () => {
+    if (expenseDraft?.id === id) expenseDraft.mileageTouched = true;
   });
 }
+function expenseReceiptForm(id) {
+  const x = recordById("expenses", id);
+  if (!x) throw new Error("Cette dépense n’existe plus. Rechargez la page.");
+  const info = inspectExpenseReceipt(x);
+  if (info.state === "unsupported") {
+    contentModal("Justificatif", esc(x.title || "Dépense"), `<p>Ce justificatif utilise une structure inconnue ou une autre version. Il est conservé dans la sauvegarde, mais ne peut pas être modifié ici.</p>`);
+    return;
+  }
+  receiptDraft = { id, expected: structuredClone(x) };
+  const src = receiptPreviewUrl(info.dataUrl);
+  const preview = info.state === "empty" ? '<p>Aucune photo de justificatif.</p>'
+    : src ? `<img class="receipt-preview" src="${esc(src)}" alt="Photo du justificatif"><p class="receipt-preview-error" hidden>Photo conservée, mais aperçu indisponible.</p>`
+    : '<p>Photo conservée, mais aperçu indisponible ou trop volumineux.</p>';
+  formModal({ title: "Justificatif photo", subtitle: esc(x.title || "Dépense"), form: "expense-receipt", id,
+    submit: "Enregistrer le justificatif", body: `<div class="form-grid">
+      <div class="field full-width">${preview}</div>
+      <label class="field full-width"><span class="field-label">${info.state === "present" ? "Remplacer la photo" : "Choisir une photo"}</span><input type="file" name="receiptPhoto" accept="image/jpeg,image/png,image/webp,image/gif"><small>JPG, PNG, WebP ou GIF · 5 Mio maximum. Les fichiers HEIC doivent être convertis en JPEG si le téléphone ne les fournit pas ainsi. Le remplacement prend effet seulement à l’enregistrement.</small></label>
+      ${info.state === "present" ? checkbox("removeReceipt", "Retirer la photo du carnet") : ""}
+      <p class="form-help full-width">Une photo par dépense. La PWA conserve le fichier choisi tel quel : il peut contenir des métadonnées, dont la position GPS. La photo est locale et incluse dans les sauvegardes JSON non chiffrées. Retrait ou remplacement sans annulation ; la galerie et les anciennes sauvegardes restent intactes.</p>
+    </div>` });
+  const image = modal.querySelector(".receipt-preview");
+  image?.addEventListener("error", () => { image.hidden = true; const message = modal.querySelector(".receipt-preview-error"); if (message) message.hidden = false; }, { once: true });
+}
+
 function reminderForm(id = "") {
   const x = recordById("reminders", id) || {};
   formModal({
@@ -1819,7 +1856,8 @@ async function saveForm(form) {
       {store:"fills", id:record.id, expected:x.id ? x : null},
     ]);
   } else if (type === "expense") {
-    x = recordById("expenses", id) || {};
+    if (!expenseDraft || expenseDraft.id !== id) throw new Error("Formulaire périmé : fermez et rechargez la page.");
+    x = expenseDraft.expected || {};
     record = {
       ...x,
       id: x.id || uid(),
@@ -1832,11 +1870,40 @@ async function saveForm(form) {
       ...(x.id ? {} : { createdAt: now }),
       updatedAt: now,
     };
+    // Les valeurs absentes/nulles et les extensions inconnues restent intactes
+    // si l'utilisateur n'a pas modifié le champ. Aucune écriture du véhicule.
+    if (expenseDraft.mileageEditable && (!x.id || expenseDraft.mileageTouched)) {
+      const mileage = asNumber(d, "odometer", { optional: true });
+      if (mileage === null) delete record.odometer;
+      else record.odometer = mileage;
+    }
     if (x.id && record.category === "" && x.category == null) {
       if (Object.prototype.hasOwnProperty.call(x, "category")) record.category = null;
       else delete record.category;
     }
-    await apply([put("expenses", record)]);
+    await applyJournalChecked([put("expenses", record)], [
+      { store: "expenses", id: record.id, expected: expenseDraft.expected },
+      { store: "vehicles", id: expenseDraft.vehicle.id, expected: expenseDraft.vehicle },
+    ]);
+  } else if (type === "expense-receipt") {
+    const draft = receiptDraft;
+    if (!draft || draft.id !== id) throw new Error("Formulaire périmé : fermez et rechargez la page.");
+    const file = d.get("receiptPhoto"), remove = d.has("removeReceipt");
+    if (remove && file?.size) throw new Error("Choisissez de remplacer ou de retirer la photo, pas les deux.");
+    if (!remove && !file?.size) { modal.close(); return; }
+    let dataUrl = null;
+    if (!remove) {
+      await validateReceiptFile(file);
+      dataUrl = await readAttachment(file, true);
+    }
+    // Le formulaire ne peut pas être fermé pendant la lecture, et l'instantané
+    // est revérifié dans la même transaction IndexedDB que l'écriture.
+    if (!modal.open || !form.isConnected || receiptDraft !== draft) throw new Error("Opération annulée : aucune photo n’a été modifiée.");
+    record = { ...withExpenseReceipt(draft.expected, dataUrl), updatedAt: now };
+    // Marge de sécurité pour le lecteur JSON Android (16 Mio caractères/objet,
+    // 32 Mio UTF-8). Les anciennes dépenses restent importables sans validation nouvelle.
+    if (!remove) requireReceiptRecordSize(record);
+    await applyJournalChecked([put("expenses", record)], [{ store: "expenses", id, expected: draft.expected }]);
   } else if (type === "reminder") {
     x = recordById("reminders", id) || {};
     const dueDate = dateValue(d, "dueDate"),
@@ -1994,10 +2061,13 @@ async function deleteVehicle(id) {
 async function deleteItem(store, id, label) {
   const x = recordById(store, id);
   if (!x) return;
-  if (!confirm(`Supprimer ${label} ? Cette action est irréversible.`)) return;
+  if (!confirm(`Supprimer ${label}${store === "expenses" ? " et son éventuel justificatif" : ""} ? Cette action est irréversible.`)) return;
   const deletingGps = store === "trips" && x.status === "running" && x.method === "gps" && !state.demo;
   if (deletingGps) await quiesceGps();
-  try { await apply([del(store, id)]); }
+  try {
+    if (store === "expenses") await applyJournalChecked([del(store, id)], [{ store, id, expected: structuredClone(x) }]);
+    else await apply([del(store, id)]);
+  }
   finally { if (deletingGps) await endGpsMutation(); }
   render();
   toast(state.demo ? "Supprimé dans l’aperçu." : "Élément supprimé.");
@@ -2358,7 +2428,9 @@ function describeError(error) {
     return "Espace de stockage insuffisant. Exportez vos données et libérez de la place sur l’appareil.";
   return error?.message || "Une erreur est survenue. Réessayez.";
 }
+modal.addEventListener("cancel", (event) => { if (modal.dataset.saving === "true") event.preventDefault(); });
 modal.addEventListener("close", () => {
+  if (!modal.open) { expenseDraft = null; receiptDraft = null; }
   if (!gps.finishTripId) return;
   const id = gps.finishTripId;
   gps.finishTripId = null;
@@ -2417,6 +2489,7 @@ document.addEventListener("click", async (event) => {
     }
     switch (action) {
       case "close-modal":
+        if (modal.dataset.saving === "true") break;
         if (categoryPicker.open) closeCategoryPicker();
         modal.close();
         break;
@@ -2623,6 +2696,9 @@ document.addEventListener("click", async (event) => {
       case "edit-expense":
         if (mustHaveVehicle()) expenseForm(id);
         break;
+      case "expense-receipt":
+        if (mustHaveVehicle()) expenseReceiptForm(id);
+        break;
       case "delete-expense":
         await deleteItem("expenses", id, "cette dépense");
         break;
@@ -2730,6 +2806,11 @@ document.addEventListener("submit", async (event) => {
   const button = form.querySelector("[type=submit]"),
     errorBox = form.querySelector(".form-error");
   button.disabled = true;
+  const lockModal = form.dataset.form === "expense-receipt";
+  if (lockModal) {
+    modal.dataset.saving = "true";
+    form.querySelectorAll('[data-action="close-modal"]').forEach((control) => { control.disabled = true; });
+  }
   errorBox.classList.remove("visible");
   try {
     await saveForm(form);
@@ -2740,6 +2821,10 @@ document.addEventListener("submit", async (event) => {
     errorBox.scrollIntoView({ block: "nearest" });
   } finally {
     button.disabled = false;
+    if (lockModal) {
+      delete modal.dataset.saving;
+      form.querySelectorAll('[data-action="close-modal"]').forEach((control) => { control.disabled = false; });
+    }
   }
 });
 document.addEventListener("input", (event) => {

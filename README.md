@@ -1,6 +1,6 @@
 # VigieAuto — carnet de bord automobile
 
-VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.3, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
+VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.5, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
 
 **Candidate de test, non validée sur iPhone réel.** La version familiale 1.5.1 reste disponible. Cette candidate protège les nombres précis des extensions JSON, refuse avant remplacement les valeurs fonctionnelles impossibles à utiliser sans arrondi, et conserve les extensions du thème et des points CQ édités. Elle ne reconstitue pas les chiffres déjà perdus. La candidate ajoute le carnet enrichi ; l’IndexedDB passe de 2 ou 3 à 4 : les anciennes PWA ne peuvent pas rouvrir directement la base mise à niveau. Sauvegardez chaque appareil avant tout essai ; voir [Précision des sauvegardes](docs/PRECISION-SAUVEGARDES.md).
 
@@ -8,6 +8,10 @@ Pour savoir quoi faire du ZIP et installer la PWA sur Android, consultez [INSTAL
 
 ### Documents de suivi du projet
 
+- [Kilométrage facultatif des dépenses : usage et limites](docs/KILOMETRAGE-DEPENSES-BETA30.md)
+
+- [Justificatifs photo des dépenses : usage, confidentialité et limites](docs/JUSTIFICATIFS-BETA29.md)
+- [Tests réalisés pour la candidate et limites](docs/VALIDATION-BETA29.md)
 - [Premier lot dépenses Android et compatibilité PWA beta.3](docs/DEPENSES-BETA28.md)
 - [Nouveautés et limites du carnet PWA beta.2](docs/CARNET-PWA-BETA2.md)
 - [Récapitulatif complet des fonctions Android et PWA](docs/RECAPITULATIF-FONCTIONS.md) — à actualiser à chaque mise à jour
@@ -58,7 +62,7 @@ La préférence est enregistrée localement dans IndexedDB. Elle est incluse dan
 - Trajets **manuels** : chronomètre démarré et terminé par l’utilisateur, ou trajet ajouté après coup ; distance et profil saisis, historique et coût énergétique indicatif fondé sur les pleins valides.
 - Trajets **GPS facultatifs** : depuis Trajets, choisissez « Avec GPS » et confirmez avant la demande d’autorisation. L’app estime la distance pendant que la page est visible ; elle enregistre le total et les interruptions, **sans stocker automatiquement les coordonnées ni une trace de l’itinéraire**. À l’arrêt, terminez le trajet et vérifiez/corrigez la distance proposée. La mesure peut être incomplète ou imprécise ; le mode manuel reste disponible.
 - Entretiens avec lignes de pièces/opérations chiffrées et main-d’œuvre séparée, plusieurs catégories et recherche plein écran ; pleins avec sous-types de carburant libres ; autres dépenses et rappels par date et/ou kilométrage. Le détail est facultatif et les anciens montants sont conservés.
-- **Dépenses :** les catégories de la candidate correspondent à celles du premier écran Android beta.28. Une dépense et un plein restent indépendants ; les doublons manuels ne sont pas détectés et les statistiques peuvent les additionner deux fois. La candidate PWA n’édite pas le kilométrage d’une dépense.
+- **Dépenses :** les catégories de la candidate correspondent à celles du premier écran Android beta.28. Une dépense et un plein restent indépendants ; les doublons manuels ne sont pas détectés et les statistiques peuvent les additionner deux fois. La candidate PWA permet d’ajouter ou de modifier un kilométrage facultatif sans changer le compteur du véhicule. Après enregistrement, une photo facultative est ajoutée depuis la liste ; JPG, PNG, WebP ou GIF jusqu’à 5 Mio. Elle reste incluse dans les sauvegardes non chiffrées et peut conserver des métadonnées GPS. [Détails](docs/JUSTIFICATIFS-BETA29.md).
 - Bouton facultatif de recherche Google Maps depuis le lieu d’intervention ou la station : il envoie le texte au service externe, qui nécessite généralement Internet ; aucun choix d’application de cartes ni résultat exact n’est garanti.
 - Six listes de contrôle préchargées, listes personnalisables, exécution et historique.
 - Journal de symptômes, documents locaux (images ou PDF de 5 Mo maximum par fichier), statistiques et graphique des six derniers mois.
@@ -102,7 +106,7 @@ Les fichiers sont statiques ; aucun serveur applicatif n’est nécessaire. Un h
 
 Pour tester sans toucher à la base familiale, choisissez un appareil de test ou une **origine différente** (protocole, domaine ou port). Un autre chemin sur le même domaine — par exemple deux dépôts du même compte GitHub Pages — peut partager IndexedDB. Un changement de domaine, de port, de navigateur ou d’appareil peut entraîner un stockage différent. **Exportez avant le changement, puis importez la sauvegarde dans la nouvelle installation.** L’aperçu fourni pendant le développement n’est pas un hébergement pérenne.
 
-**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Ensuite seulement, si vous décidez la mise à jour, remplacez les fichiers de l’application par ceux de cette version. La base locale garde son ancien nom interne ; la candidate passe IndexedDB de la version 2 ou 3 à 4 sans ajouter de collection. Une installation plus ancienne ajoute au besoin la collection des trajets. Fermez les autres onglets de l’ancienne version avant la mise à jour. La sauvegarde est désormais au format 3 ; les formats VigieAuto 2 et CQ Auto 1 restent importables. Les anciennes versions ne savent pas nécessairement lire les nouvelles données ou sauvegardes : ne revenez pas en arrière sans précaution. Laissez l’application ouverte en ligne le temps que la nouvelle version soit mise en cache, puis rechargez-la. Si l’ancienne interface reste affichée, fermez et rouvrez l’application en ligne. Vérifiez **Réglages → en bas de page → version 1.5.2-beta.3**. **Ne supprimez pas les données du navigateur pour forcer une mise à jour** : cela pourrait effacer votre carnet.
+**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Ensuite seulement, si vous décidez la mise à jour, remplacez les fichiers de l’application par ceux de cette version. La base locale garde son ancien nom interne ; la candidate passe IndexedDB de la version 2 ou 3 à 4 sans ajouter de collection. Une installation plus ancienne ajoute au besoin la collection des trajets. Fermez les autres onglets de l’ancienne version avant la mise à jour. La sauvegarde est désormais au format 3 ; les formats VigieAuto 2 et CQ Auto 1 restent importables. Les anciennes versions ne savent pas nécessairement lire les nouvelles données ou sauvegardes : ne revenez pas en arrière sans précaution. Laissez l’application ouverte en ligne le temps que la nouvelle version soit mise en cache, puis rechargez-la. Si l’ancienne interface reste affichée, fermez et rouvrez l’application en ligne. Vérifiez **Réglages → en bas de page → version 1.5.2-beta.5**. **Ne supprimez pas les données du navigateur pour forcer une mise à jour** : cela pourrait effacer votre carnet.
 
 ### Installer sur téléphone
 
@@ -126,6 +130,7 @@ npm install
 npx playwright install chromium
 npm run test:interface
 npm run test:carnet
+npm run test:justificatifs
 npm run test:catalogue
 npm run test:logo
 npm run test:archive

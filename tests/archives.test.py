@@ -32,7 +32,9 @@ class ArchiveTests(unittest.TestCase):
         paths = [
             "README.md", "INSTALLER.md", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
             "js/gps.js", "js/precise-json.js", "js/maintenance.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
-            "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md",
+            "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md", "docs/KILOMETRAGE-DEPENSES-BETA30.md",
+            "js/expense-receipt.js", "tests/justificatifs.test.js", "tests/justificatifs-interface.cjs", "docs/JUSTIFICATIFS-BETA29.md",
+            "tests/fixtures/justificatif.png", "tests/fixtures/justificatif-gps-fictif.jpg",
             "tests/precise-json.test.js", "tests/precision-interface.cjs", "docs/PRECISION-SAUVEGARDES.md",
             "docs/CARNET-PWA-BETA2.md", "docs/CARNET-ANDROID-BETA27.md", "docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md", "docs/PLAN-PRIORITES-APRES-BETA16.md",
             "js/catalogue.js", "data/brands_models_fr.json",
@@ -68,7 +70,7 @@ class ArchiveTests(unittest.TestCase):
         icon = f"./icons/icon.png?v=vigie-{version}"
         (self.project / "manifest.webmanifest").write_text(json.dumps({"icons": [{"src": icon}]}))
         (self.project / "index.html").write_text(f'<link href="{icon}"><dialog id="category-picker"></dialog>')
-        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}"; const FILES = ["./js/maintenance.js", "{icon}"];')
+        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}"; const FILES = ["./js/maintenance.js", "./js/expense-receipt.js", "{icon}"];')
 
     def run_script(self, *args):
         return subprocess.run(["python3", str(self.project / "scripts/creer-archive.py"), *args],
@@ -161,7 +163,9 @@ class ArchiveTests(unittest.TestCase):
 
     def test_missing_enriched_carnet_files_never_prunes(self):
         for rel in ("js/maintenance.js", "js/db.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
-                    "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md",
+                    "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md", "docs/KILOMETRAGE-DEPENSES-BETA30.md",
+                    "js/expense-receipt.js", "tests/justificatifs.test.js", "tests/justificatifs-interface.cjs", "docs/JUSTIFICATIFS-BETA29.md",
+                    "tests/fixtures/justificatif.png", "tests/fixtures/justificatif-gps-fictif.jpg",
                     "docs/CARNET-PWA-BETA2.md", "docs/CARNET-ANDROID-BETA27.md", "docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md",
                     "docs/PLAN-PRIORITES-APRES-BETA16.md"):
             with self.subTest(missing=rel):
@@ -181,6 +185,7 @@ class ArchiveTests(unittest.TestCase):
     def test_versions_selector_and_offline_cache_are_checked(self):
         mutations = (
             ("sw.js", lambda s: s.replace('"./js/maintenance.js"', '"./js/autre.js"'), "cache"),
+            ("sw.js", lambda s: s.replace('"./js/expense-receipt.js"', '"./js/autre.js"'), "cache"),
             ("index.html", lambda s: s.replace('category-picker', 'autre-dialogue'), "Sélecteur"),
             ("index.html", lambda s: s.replace('vigie-2.0.0', 'vigie-1.0.0'), "version"),
             ("manifest.webmanifest", lambda s: s.replace('vigie-2.0.0', 'vigie-1.0.0'), "version"),

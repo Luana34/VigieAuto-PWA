@@ -1,10 +1,16 @@
 # Historique du projet VigieAuto
 
-**Dernière mise à jour : 5 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.4 · Android 0.4.0-beta.29**
+**Dernière mise à jour : 5 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.5 · Android 0.4.0-beta.30**
 
 Ce journal rassemble les demandes, les décisions, les réalisations, les corrections et les limites du projet. Il est tenu au fil des échanges : chaque évolution doit être ajoutée ici, sans effacer les décisions précédentes, et les changements de périmètre doivent être indiqués explicitement.
 
 > **Reconstitution :** les premières étapes ci-dessous sont établies à partir du contexte conservé et des versions du projet. Les dates et la formulation exacte de toutes les anciennes demandes ne sont pas disponibles. Les éléments dont le statut est incertain sont marqués comme tels ; ce document n’invente pas de validation manquante.
+
+## Poursuite — kilométrage des dépenses et accélération
+
+L’utilisatrice demande de poursuivre et rappelle que le lot précédent a encore pris 47 minutes. Décision : livrer un lot plus petit, regrouper les changements et les tests ciblés, sans suppression des contrôles de sauvegarde ni d’audit des ZIP. Aucun temps futur n’est garanti.
+
+La PWA candidate beta.5 ajoute l’édition facultative du kilométrage d’une dépense, déjà disponible sur Android depuis beta.28. Le compteur du véhicule n’est pas modifié ; les formats inconnus ou trop précis restent intacts. Android beta.30 ne modifie pas le code métier et inclut la documentation et le scénario d’échange actualisés. [Détails](KILOMETRAGE-DEPENSES-BETA30.md). Devise et lien plein/dépense restent à développer. Les tests ciblés Linux comprennent 13/13 scénarios Android, 49/49 unitaires PWA et le pont complet fictif sous Chromium/WebKit ; APK debug assemblé. Suite complète, lint et instrumentés non relancés dans ce lot.
 
 ## Poursuite — justificatifs photo de dépenses
 

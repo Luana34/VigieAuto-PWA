@@ -86,13 +86,13 @@ Le passage ciblé puis la suite complète Linux de beta.19 ont aussi émis des a
 
 ## Vérifier rapidement avant la suite complète
 
-Dans Android Studio, extraire beta.22 dans un nouveau dossier propre, l’ouvrir comme décrit dans `INSTALLER-ANDROID.md` et attendre la synchronisation. Depuis le terminal PowerShell à la racine du dossier `VigieAuto` (copier le `local.properties` si nécessaire) :
+Dans Android Studio, extraire beta.29 dans un nouveau dossier propre, l’ouvrir comme décrit dans `INSTALLER-ANDROID.md` et attendre la synchronisation. Depuis le terminal PowerShell à la racine du dossier `VigieAuto` (copier le `local.properties` si nécessaire) :
 
 ```powershell
 .\gradlew.bat :app:testDebugUnitTest --rerun --tests "com.vigieauto.app.MainNavigationBackTest" --tests "com.vigieauto.app.RobolectricSqliteConfigurationTest"
 ```
 
-Attendu : `BUILD SUCCESSFUL` et les 13 tests de ces deux classes réussis, sans test ignoré. Une première compilation ou un téléchargement peut prendre du temps ; on ne promet pas de durée. En cas d’échec, transmettre la trace complète et le fichier HTML `app\build\reports\tests\testDebugUnitTest\index.html` ou l’exception et ses causes. Ne pas partager de sauvegarde personnelle ni les fichiers privés.
+Attendu dans les sources beta.29 : `BUILD SUCCESSFUL` et les 14 tests de ces deux classes réussis, sans test ignoré. Une première compilation ou un téléchargement peut prendre du temps ; on ne promet pas de durée. En cas d’échec, transmettre la trace complète et le fichier HTML `app\build\reports\tests\testDebugUnitTest\index.html` ou l’exception et ses causes. Ne pas partager de sauvegarde personnelle ni les fichiers privés.
 
 Pour cibler la migration et l’Undo introduits en beta.19 et conservés dans beta.22 :
 
@@ -106,7 +106,7 @@ Ces contrôles utilisent Robolectric ou la JVM ; ils ne remplacent pas un appare
 .\gradlew.bat :app:testDebugUnitTest :app:lintDebug
 ```
 
-Sans les huit fichiers de retour d’échange fictifs générés séparément (sept historiques et un de précision), les huit tests de pont conditionnels sont marqués ignorés ; cela doit être distingué de tests réussis. Depuis beta.13, une garde les signale avant initialisation Robolectric ; les assertions restent présentes. Un chemin personnel invalide échoue. `forkEvery=1` reste inchangé ; aucun gain Windows ni validation Windows beta.22 n’est revendiqué ici. Les tests instrumentés Room sont séparés : `.\gradlew.bat :app:connectedDebugAndroidTest` sur émulateur ou téléphone de test, après sauvegarde, car cette commande peut installer l’APK et migrer une base existante. Le rapport utilisateur beta.12 correspond à 25 min 26 s.
+Sans les huit fichiers de retour d’échange fictifs générés séparément (sept historiques et un de précision), les huit tests de pont conditionnels sont marqués ignorés ; cela doit être distingué de tests réussis. Depuis beta.13, une garde les signale avant initialisation Robolectric ; les assertions restent présentes. Un chemin personnel invalide échoue. `forkEvery=1` reste inchangé ; aucun gain Windows ni validation Windows beta.29 n’est revendiqué ici. Les tests instrumentés Room sont séparés : `.\gradlew.bat :app:connectedDebugAndroidTest` sur émulateur ou téléphone de test, après sauvegarde, car cette commande peut installer l’APK et migrer une base existante. Le rapport utilisateur beta.12 correspond à 25 min 26 s.
 
 ## Option : exécuter aussi les huit tests de pont PWA
 

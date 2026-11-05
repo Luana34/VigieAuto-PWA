@@ -73,6 +73,7 @@ async function serve(directory) {
     let migrated=await db(p);assert.deepEqual(migrated.vehicles,old.vehicles);assert.deepEqual(migrated.trips,old.trips);assert.deepEqual(migrated.documents,old.documents);
     assert.equal(migrated.settings.find(x=>x.id==='theme').value,'cyan');assert.equal(await p.evaluate(()=>window.__calls),0);
     assert.ok(await p.evaluate(async()=>!!await caches.match(new URL('./js/gps.js',location.href).href)));
+    assert.ok(await p.evaluate(async()=>!!await caches.match(new URL('./js/expense-receipt.js',location.href).href)));
     // Restaurer une vraie sauvegarde de la version précédente, en gardant son chrono manuel.
     await p.locator('#import-file').setInputFiles({name:'avant-v2.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(oldBackup))});
     await p.waitForFunction(()=>document.querySelector('#toast')?.textContent.includes('importée'));

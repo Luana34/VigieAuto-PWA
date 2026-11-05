@@ -32,6 +32,17 @@ export const EXPENSE_CATEGORIES = {
   controle: "Contrôle technique",
   autre: "Autre",
 };
+/** Le compteur est facultatif et peut être une extension future inconnue.
+ * Ne jamais convertir un objet ou un marqueur numérique précis en Number. */
+export function expenseMileage(record) {
+  const value = record?.odometer;
+  if (value === null || value === undefined) return { editable: true, input: "", display: "" };
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || Object.is(value, -0) || value > Number.MAX_SAFE_INTEGER)
+    return { editable: false, input: "", display: "" };
+  const text = String(value);
+  return { editable: true, input: text, display: text.replace(".", ",") };
+}
+
 export const SYMPTOM_CATEGORIES = {
   bruit: "Bruit",
   fuite: "Fuite",

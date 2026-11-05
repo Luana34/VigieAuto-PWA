@@ -1,6 +1,6 @@
 # Performance et fluidité — objectifs et méthode
 
-**Document vivant · 4 novembre 2026.** Intégré à la phase 1, à réviser à chaque version. Ces chiffres sont des **objectifs souhaités**, pas des mesures actuelles ni des garanties sur tous les appareils. Aucun profilage sur téléphone réel ni benchmark macro n’est revendiqué pour l’alpha ou la bêta. Une migration de plusieurs années de données peut exceptionnellement durer plus longtemps ; l’information et la préservation priment sur le délai.
+**Document vivant · 5 novembre 2026.** Intégré à la phase 1, à réviser à chaque version. Ces chiffres sont des **objectifs souhaités**, pas des mesures actuelles ni des garanties sur tous les appareils. Aucun profilage sur téléphone réel ni benchmark macro n’est revendiqué pour l’alpha ou la bêta. Une migration de plusieurs années de données peut exceptionnellement durer plus longtemps ; l’information et la préservation priment sur le délai.
 
 **Précisions après beta.16 :** profils de référence, R8, CI et mesures restent à réaliser dans la phase 1. Le gain hypothétique de 20 à 40 % avec des profils n’est pas garanti ; une photo de 12 Mo ramenée vers 100 Ko est une cible indicative dépendant de la qualité et de l’image. Tester séparément sur émulateur et téléphone ; les 34 scénarios instrumentés beta.16 sont compilés, non exécutés ici. Voir [PLAN-PRIORITES-APRES-BETA16.md](PLAN-PRIORITES-APRES-BETA16.md).
 
@@ -54,6 +54,20 @@ Un calcul SQL ne doit pas mélanger des agrégats imbriqués incorrectement : la
 
 - [x] Décision de phase 3 consignée dans [le plan des priorités](PLAN-PRIORITES-APRES-BETA16.md#35-enrichissement-des-écrans-existants) ; aucun code, aucune version ni aucune donnée de l’application modifiés.
 - [ ] Les mesures sur appareil, la validation de la CI et les éléments non cochés ci-dessous restent à faire. Aucun nouveau benchmark ou test d’application n’est revendiqué pour cette mise à jour documentaire.
+
+## Checklist kilométrage PWA beta.5 / Android beta.30 — 5 novembre 2026
+
+- [x] Kilométrage de dépense facultatif sans changement du compteur du véhicule ; données absentes/nulles et structures futures préservées dans les scénarios testés.
+- [x] 49 tests unitaires PWA réussis ; parcours PWA sous Chromium et WebKit Linux, y compris migration beta.4 → beta.5 et cache hors ligne. Pas de migration Room/IndexedDB ni de changement métier Android. APK debug 12 450 081 octets ; 13/13 tests ciblés Android et pont fictif dans les deux navigateurs réussis. Suite complète, lint et instrumentés non relancés pour ce lot.
+- [ ] Temps, mémoire, fluidité et import/export à mesurer sur les appareils ciblés. Aucun essai Windows, téléphone ou Safari iOS réel revendiqué.
+
+## Checklist justificatifs Android beta.29 et PWA beta.4 — 5 novembre 2026
+
+- [x] Android lit l’image uniquement sur demande depuis la dépense complète ; la projection de liste ne la charge pas. Conversion bornée (entrée 12 Mio, JPEG 3 Mio, 1 600 px) et aperçu réduit.
+- [x] PWA : fichier de 5 Mio maximum, aperçu borné et protection transactionnelle contre les conflits entre onglets de cette candidate ; les objets et sauvegardes restent potentiellement lourds.
+- [x] APK debug local **12 450 081 octets**, non inclus dans le ZIP source ; ce n’est ni une release ni une mesure sur téléphone. 112 tests Android ciblés et 47 tests unitaires PWA réussis ; pont fictif et hors-ligne simulé sous Chromium/WebKit Linux. Lint 0 erreur/20 avertissements/3 indications ; 61 instrumentés compilés non exécutés. La suite JVM complète beta.29 n’a pas été relancée. [Détails](VALIDATION-BETA29.md).
+- [ ] Mesurer sur les appareils visés : démarrage froid <1 s, chaud <300 ms, écran <100 ms, 60 fps sur 1 000 éléments, import 10 Mo <3 s, export <2 s, APK <15 Mo, RAM <100 Mo. Aucun résultat de performance téléphone n’est revendiqué.
+- [ ] Vérifier sur Windows, émulateur et appareils Android réels ainsi que sur Safari iOS réel, avec sauvegardes fictives et copies externes. La phase 1 ne devient pas stable de ce seul fait.
 
 ## Checklist dépenses Android beta.28 et PWA beta.3 — 5 novembre 2026
 

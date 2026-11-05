@@ -2012,3 +2012,9 @@ input[type="radio"] {
   .service-remove { width:38px; }
   .service-details { padding:10px; }
 }
+
+/* Justificatif local d'une dépense ; l'image n'est chargée qu'à la demande. */
+.receipt-link { border: 0; padding: 5px 0; background: transparent; color: var(--primary, #2f6b52); text-decoration: underline; font: inherit; cursor: pointer; }
+.receipt-link:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.receipt-preview { display: block; max-width: 100%; max-height: 360px; width: auto; height: auto; object-fit: contain; border-radius: 10px; }
+.receipt-preview[hidden] { display: none; }

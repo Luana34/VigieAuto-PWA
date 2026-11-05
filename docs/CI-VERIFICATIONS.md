@@ -1,6 +1,10 @@
 # Vérifications automatiques Android
 
-**Android 0.4.0-beta.28 · 5 novembre 2026**
+**Android 0.4.0-beta.30 · 5 novembre 2026**
+
+**Beta.30 :** code métier Android inchangé ; fixture de pont dépenses mise à jour après édition du kilométrage en PWA. Treize tests ciblés réussis sous Linux, pas de suite complète ni de porte CI globale relancée. [Détails](KILOMETRAGE-DEPENSES-BETA30.md).
+
+**Beta.29 :** le contrôleur de rapports exige aussi les scénarios critiques des justificatifs : extensions inconnues, conflits, rollback, Undo avec une image volumineuse, confirmation UI, sélecteur et retour PWA. La fixture de pont est locale ; l’exécution du navigateur reste séparée. Aucun essai physique, Windows ou GitHub n’est sous-entendu. [Détails](JUSTIFICATIFS-BETA29.md).
 
 **Beta.28 :** le contrôleur exige aussi les scénarios critiques de dépenses : validation, total fiable, isolation véhicule, conflit, rollback et conservation de l’Undo, navigation simulée et retour PWA en Room. La fixture fictive de retour dépenses est livrée ; les huit anciens retours sans fichiers externes peuvent toujours être ignorés et sont comptés séparément. Aucun lancement GitHub ni essai physique n’est sous-entendu. Voir [DEPENSES-BETA28.md](DEPENSES-BETA28.md).
 

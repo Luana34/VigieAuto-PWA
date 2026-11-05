@@ -1,12 +1,16 @@
 # VigieAuto — récapitulatif des fonctions
 
-**Actualisation du 5 novembre 2026 — Android 0.4.0-beta.28 et PWA 1.5.2-beta.3 candidate :** premier lot dépenses Android : liste par véhicule, tri, total, ajout, édition, suppression avec Undo, kilométrage facultatif sans changer le compteur. La PWA candidate reprend les catégories et avertissements ; Room 15 et JSON v3 restent inchangés. Aucun lien automatique avec un plein ni détection des doublons ; photo de justificatif et choix de devise restent à développer. Sauvegarder chaque appareil avant import ou essai. [Détails et limites](DEPENSES-BETA28.md).
+**Actualisation du 5 novembre 2026 — PWA 1.5.2-beta.5 candidate / Android 0.4.0-beta.30 :** ajout, modification et retrait du kilométrage facultatif des dépenses dans la PWA, déjà disponibles sur Android ; ce champ ne change pas le compteur du véhicule. La beta.30 Android ne modifie pas le code métier. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](KILOMETRAGE-DEPENSES-BETA30.md).
+
+**Historique du 5 novembre 2026 — Android 0.4.0-beta.29 et PWA 1.5.2-beta.4 candidate :** une photo facultative par dépense, à ajouter depuis la liste après enregistrement ; aperçu, remplacement et retrait explicites. Android convertit les nouvelles photos en JPEG sans EXIF ; la PWA garde le fichier et ses métadonnées éventuelles. Sauvegardes JSON non chiffrées. Room 15, IndexedDB 4 et JSON v3 inchangés. Devise réglable et liaison plein/dépense sans double comptage restent à faire. [Détails, limites et confidentialité](JUSTIFICATIFS-BETA29.md). [Contrôles et limites des essais](VALIDATION-BETA29.md).
+
+**Historique du 5 novembre 2026 — Android 0.4.0-beta.28 et PWA 1.5.2-beta.3 candidate :** premier lot dépenses Android : liste par véhicule, tri, total, ajout, édition, suppression avec Undo, kilométrage facultatif sans changer le compteur. La PWA candidate reprend les catégories et avertissements ; Room 15 et JSON v3 restent inchangés. Aucun lien automatique avec un plein ni détection des doublons ; photo de justificatif et choix de devise restent à développer. Sauvegarder chaque appareil avant import ou essai. [Détails et limites](DEPENSES-BETA28.md).
 
 **Android beta.27 et PWA 1.5.2-beta.2 candidate — carnet enrichi :** lignes de pièces et total, catégories multiples avec sélecteur plein écran, sous-type libre et recherche Google Maps volontaire existent dans les deux préversions. JSON v3 et Room 15 restent inchangés. La PWA candidate utilise IndexedDB 4 : sauvegarde externe avant essai, sans retour direct à l’ancienne base. Les vérifications automatisées ne remplacent pas les essais Android réel ou Safari iOS. Voir [Android beta.27](CARNET-ANDROID-BETA27.md) et [PWA beta.2](CARNET-PWA-BETA2.md).
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Document vivant : à actualiser à chaque mise à jour**, même lorsqu’elle est uniquement technique. Dernière mise à jour : 5 novembre 2026. Il distingue la PWA familiale **1.5.1**, la PWA candidate **1.5.2-beta.3** et le projet Android **0.4.0-beta.28**. La bêta est une préversion de développement, pas la version 0.4.0 stable ; les étapes futures ci-dessous ne sont pas des fonctions disponibles.
+**Document vivant : à actualiser à chaque mise à jour**, même lorsqu’elle est uniquement technique. Dernière mise à jour : 5 novembre 2026. Il distingue la PWA familiale **1.5.1**, la PWA candidate **1.5.2-beta.5** et le projet Android **0.4.0-beta.30**. La bêta est une préversion de développement, pas la version 0.4.0 stable ; les étapes futures ci-dessous ne sont pas des fonctions disponibles.
 
 **Décision du 4 novembre — carnet :** détails multi-pièces, catégories par familles et sélecteur plein écran, liens cartes, sous-types carburant et compatibilité JSON à vérifier ; un premier lot existe dans la **PWA beta.2 candidate et Android beta.27** ; les essais réels restent à faire. L’utilisateur indique avoir installé la candidate sur Android et importé son JSON sans perte constatée ; iPhone non disponible. [Détails](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet).
 
@@ -38,7 +42,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Fonctions communes
 
-| Fonction | PWA 1.5.2-beta.3 candidate | Android 0.4.0-beta.28 |
+| Fonction | PWA 1.5.2-beta.5 candidate | Android 0.4.0-beta.30 |
 |---|---|---|
 | Utilisation en français, plusieurs véhicules, fonctionnement local | Oui | Oui |
 | Sans compte, abonnement, pub, serveur de synchronisation ou télémétrie dans l’application | Oui | Oui |
@@ -94,9 +98,9 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Dépenses, contrôles qualité, symptômes et documents
 
-| Rubrique | PWA 1.5.2-beta.2 candidate | Android 0.4.0-beta.27 |
+| Rubrique | PWA 1.5.2-beta.5 candidate | Android 0.4.0-beta.30 |
 |---|---|---|
-| Dépenses diverses et résumé des coûts saisis | Disponible, sans détection des doublons | Liste, tri, total et saisie/édition/suppression avec Undo ; kilométrage facultatif ; justificatif, devise et lien sans double comptage à faire |
+| Dépenses et justificatif photo | Dépenses, kilométrage facultatif et une photo ; EXIF éventuelles conservées ; sans détection des doublons | Liste, tri, total, saisie/édition/suppression avec Undo ; une photo facultative convertie en JPEG sans EXIF ; devise et lien sans double comptage à faire |
 | CQ, modèles de checklists et historique | Six modèles de départ ; modèles personnalisables, points individuels déplaçables ou supprimables, et contrôles | Consultation partielle des données importées ; création/édition complètes à développer |
 | Symptômes | Journal d’observations et conseils de prudence | Symptômes importés conservés dans Room et exportables en JSON ; écran complet à développer |
 | Documents et photos | Ajouter, télécharger et supprimer images/PDF jusqu’à 5 Mio via le formulaire ; pas d’édition d’un document existant | Conservation typée dans Room et import/export ; aucun nouvel écran Documents |
@@ -212,7 +216,7 @@ La beta.9 ne modifie aucune fonction du carnet : elle corrige la configuration e
 
 ## Ce qui est prévu mais pas encore réalisé
 
-Phases futures : terminer le véhicule Android (suppression, prise de vue et autres champs) ; justificatifs et liaison des dépenses, CQ/symptômes/documents complets ; statistiques ; GPS Android facultatif puis Bluetooth assisté de l’autoradio ; notifications, widgets, recherche et accessibilité ; partage familial, flotte et tablette. Stations après 0.4.0 stable. Voir [le plan](PLAN-PRIORITES-APRES-BETA16.md).
+Phases futures : terminer le véhicule Android (suppression, prise de vue et autres champs) ; devise et liaison des dépenses, CQ/symptômes/documents complets ; statistiques ; GPS Android facultatif puis Bluetooth assisté de l’autoradio ; notifications, widgets, recherche et accessibilité ; partage familial, flotte et tablette. Stations après 0.4.0 stable. Voir [le plan](PLAN-PRIORITES-APRES-BETA16.md).
 
 **Stations & Prix carburants :** module Android futur spécifié, non implémenté et prévu après le socle 0.4.0 stable. Il envisage des prix officiels, une localisation ponctuelle facultative et un cache local partiel. La carte, la source, les services réseau et leurs implications pour la confidentialité restent à vérifier. Voir [`module-stations-carburants.md`](module-stations-carburants.md).
 
