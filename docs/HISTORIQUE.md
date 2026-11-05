@@ -1,10 +1,33 @@
 # Historique du projet VigieAuto
 
-**Dernière mise à jour : 4 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.2 · Android 0.4.0-beta.26**
+**Dernière mise à jour : 5 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.4 · Android 0.4.0-beta.29**
 
 Ce journal rassemble les demandes, les décisions, les réalisations, les corrections et les limites du projet. Il est tenu au fil des échanges : chaque évolution doit être ajoutée ici, sans effacer les décisions précédentes, et les changements de périmètre doivent être indiqués explicitement.
 
 > **Reconstitution :** les premières étapes ci-dessous sont établies à partir du contexte conservé et des versions du projet. Les dates et la formulation exacte de toutes les anciennes demandes ne sont pas disponibles. Les éléments dont le statut est incertain sont marqués comme tels ; ce document n’invente pas de validation manquante.
+
+## Poursuite — justificatifs photo de dépenses
+
+À la demande « Poursuis », la PWA candidate puis Android ajoutent un justificatif photo facultatif par dépense. Le parcours, les formats, les limites de taille et les différences de métadonnées sont détaillés dans [JUSTIFICATIFS-BETA29.md](JUSTIFICATIFS-BETA29.md). Les contrôles de conflit sont étendus aux écritures PWA de dépenses ; une version future inconnue est conservée sans modification. Une suppression Android avec Undo restaure également le justificatif, mais remplacer ou retirer uniquement la photo ne se défait pas. Aucune devise réglable ni liaison plein/dépense n’est déclarée réalisée.
+
+
+**Contrôles beta.29 / PWA beta.4 :** 112/112 tests Android ciblés et 47/47 tests unitaires PWA réussis sous Linux ; pont fictif Room ↔ PWA sous Chromium et WebKit Linux, y compris photo EXIF fictive et données futures. APK debug assemblé ; 61 instrumentés compilés mais non exécutés. La suite JVM complète beta.29, Windows, émulateur, téléphone et Safari iOS n’ont pas été testés. [Résultats et limites](VALIDATION-BETA29.md).
+
+## Poursuite — premier lot dépenses Android et compatibilité PWA
+
+L’utilisatrice rappelle que des délais de 45 minutes à 1 h 20 à chaque évolution lui paraissent trop longs ; elle souhaite conserver le sérieux tout en accélérant. Méthode retenue : regrouper les modifications avant compilation, exécuter d’abord les tests ciblés selon le risque, éviter les répétitions et réserver les suites complètes aux changements sensibles ou aux jalons. Les tests de sauvegarde et le contrôle indépendant des archives restent maintenus. Aucun gain ni durée Windows ne sont promis sans mesure ; les tests réussis ne prouvent pas l’absence totale d’erreurs.
+
+À « Poursuis », développement du premier lot dépenses Android et adaptation des catégories de la PWA candidate beta.3. La liste est filtrée par véhicule ; tri, total, création, modification, suppression avec Undo et kilométrage facultatif sans effet sur le compteur sont disponibles. Les catégories et extensions inconnues des jeux testés restent conservées, ainsi que les catégories absentes/nulles. Une panne de lecture n’est pas présentée comme une liste vide.
+
+Aucun plein ou entretien ne crée automatiquement de dépense ; les saisies distinctes peuvent être comptées deux fois dans les statistiques PWA. Des avertissements le précisent. Liaison compatible sans double comptage après modifications et échanges, justificatifs photo et devise réglable restent à faire. JSON v3, Room 15 et IndexedDB 4 inchangés. [Détails](DEPENSES-BETA28.md).
+
+Suite JVM Linux : 600 tests, 592 réussis, huit anciens retours de pont ignorés faute de fixtures, aucun échec. Pont dépenses fictif Room ↔ PWA vérifié sous Chromium et WebKit Linux ; PWA : 41 tests unitaires réussis. Pas de test sur téléphone, émulateur, Windows ou Safari iOS.
+
+La suite complète contient 88 classes et a demandé 9 min 54 s dans cet environnement Linux, hors compilation initiale et téléchargements ; ce temps ne prédit pas Windows. Deux messages Robolectric de décodeur d’image non implémenté ont été émis sans échec. Aucun marqueur CloseGuard connu n’a été détecté, sans prouver l’absence de fuite. Les migrations de la PWA 1.5.1 et beta.2 vers beta.3 ont été testées sous les deux moteurs ; les scénarios carnet ont ignoré un ancien échange, faute du ZIP beta.1.
+
+L’APK debug local a été assemblé : 12 433 697 octets, SHA-256 `09ac11c2d85849dbd26c3b7c9aa7ebfe7b8e2e99ead4adef536c00595e9ceca6`, identifiant `com.vigieauto.app`, code 32, min 26/target 36. Seule la permission interne du récepteur figure dans cet APK. Une bibliothèque graphique a été empaquetée sans réduction de ses symboles. Ce n’est pas une release signée ni une validation des performances. Les 61 scénarios instrumentés sont compilés, non exécutés. Lint debug : zéro erreur, 20 avertissements et deux indications.
+
+Un premier lancement ciblé a révélé trois erreurs dans les scénarios de test : une méthode de fixture JUnit ne retournait pas `void`, une assertion vérifiait tout le texte au lieu d’un fragment, et le titre de l’accueil était hors de la zone visible après retour. Ces tests ont été corrigés puis les trois classes relancées avec succès (20 tests) ; les six tests Room de la classe bloquée ont alors réellement été exécutés. Ces erreurs ne prouvent pas une validation physique.
 
 ## Premières étapes — demande initiale et première application
 
@@ -693,3 +716,15 @@ Après la demande de poursuivre, développement PWA d’abord : lignes de pièce
 **Contrôles Linux :** 39/39 tests unitaires et 17/17 tests de l’archiveur ; parcours du carnet enrichi, conflits, conservation d’extensions, écrans 320 px/paysage/tablette, thème sombre, retours des PWA 1.5.1/beta.1 et hors-ligne vérifiés sous Chromium et WebKit Playwright. Migrations 1.5.1 et beta.1 → beta.2 réussies sur les deux moteurs. Parcours interface, trajets, GPS simulé, catalogue et logo testés sous Chromium ; contrôles de précision sur onze collections fictives sous les deux moteurs. Les fixtures de précision sont créées à partir des données fictives du projet, sans exécution Room pour ce lot.
 
 **Corrections lors des contrôles finaux :** conservation des montants globaux historiques à plus de deux décimales ; retrait de l’état de lecture seule accessible après suppression de la dernière ligne ; réouverture rapide du sélecteur différée jusqu’au retour d’historique précédent pour éviter une fermeture accidentelle. Scénarios testés sous Chromium et WebKit Linux. Une tentative WebKit de précision hors ligne a échoué pendant l’exécution de plusieurs suites en parallèle ; des passages antérieurs puis une reprise isolée ont réussi. Cause non déterminée ; aucune garantie de persistance hors ligne sur iPhone réel n’en découle.
+
+## 4 novembre 2026 — Portage du carnet enrichi : Android 0.4.0-beta.27
+
+L’utilisateur demande de poursuivre après la livraison de la candidate PWA 1.5.2-beta.2. Les six choix de la phase 3 sont portés sur Android : lignes de pièces/opérations, coûts exacts en centimes et main-d’œuvre séparée ; plusieurs catégories et recherche plein écran à partir des neuf familles standard et d’« Autre… » personnel ; recherche Google Maps sur action volontaire ; sous-type de carburant/recharge libre et récents par véhicule. Les gestes système, le service de cartes et les appareils restent à vérifier en situation réelle. Quantité et fournisseur/référence par pièce restent à trancher ; pas d’OBD, de GPS natif ni de Bluetooth automobile ajoutés à ce lot.
+
+JSON v3 et Room 15 inchangés : les extensions PWA sont stockées dans les enregistrements, les anciens champs de coûts restent utilisables et les 15 schémas Room sont identiques à beta.26. Un ancien coût sans détail n’est pas converti sans confirmation. Si une ancienne version a modifié le total, la divergence est signalée et préservée jusqu’au recalcul confirmé. Les extensions futures sont verrouillées, les champs supplémentaires imbriqués sont conservés tant que leurs lignes subsistent, et une transaction couvre l’intervention, les catégories personnelles, le rappel et le compteur ; une édition périmée est refusée.
+
+**Contrôles :** suite Android JVM Linux **581 cas : 573 réussis, 8 ignorés**, zéro échec, 84 classes ; lancement incrémental 7 min 40 s sans les compilations/téléchargements. Deux messages de décodeur d’image non implémenté proviennent de l’environnement simulé pendant une suite néanmoins réussie. Le nouveau parcours fictif export Room → import et édition de la vraie candidate PWA → import et édition Room → retour PWA réussit séparément sous Chromium et WebKit Linux, y compris la conservation d’un grand nombre imbriqué. Sept tests Compose du nouveau formulaire réussissent également séparément. Archiveur 21/21, contrôleur des rapports 23/23, workflow 7/7, contrôleur R8 22/22 ; les référentiels d’entretien Android et PWA sont identiques. Aucun résultat GitHub, Windows, émulateur, téléphone, iPhone ou performance réelle ne peut en être déduit.
+
+**Assemblage :** APK debug compilé, identifiant `com.vigieauto.app`, code 31, min 26/target 36 et 12 384 149 octets ; lint debug 0 erreur, 20 avertissements et 1 indication. Les 61 scénarios instrumentés ont été compilés mais non exécutés : pas d’appareil connecté ni KVM. L’APK debug est un contrôle local, non inclus dans le ZIP source ; sa taille ne prouve pas la taille d’une release. Une première tentative groupant recompilation et tests a perdu son daemon sous pression mémoire avant les reprises séparées réussies.
+
+Une sauvegarde JSON externe vérifiée reste indispensable avant un essai : l’import remplace le carnet de destination. La PWA familiale 1.5.1 et la candidate beta.2 sont conservées séparément de la nouvelle archive Android ; la candidate PWA fait passer IndexedDB en version 4 et ne permet pas d’ouvrir directement cette base avec les anciennes versions. Le socle reste en bêta ; les phases principales peuvent progresser sans attendre un téléphone, qui reste nécessaire à la validation physique.

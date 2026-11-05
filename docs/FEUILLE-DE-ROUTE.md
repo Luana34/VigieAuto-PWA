@@ -1,14 +1,20 @@
 # Feuille de route — VigieAuto
 
-**PWA 1.5.2-beta.2 candidate — carnet enrichi :** multi-pièces avec total, catégories multiples en plein écran, catégorie libre, sous-type de carburant et recherche Google Maps volontaire sont développés côté PWA ; Android beta.26 ne les propose pas encore. Le JSON v3 conserve les totaux historiques, avec extensions facultatives ; les scénarios testés et limites sont dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md). IndexedDB passe à 4 : sauvegarde externe avant essai ; aucun retour direct sur la base par beta.1/1.5.1. Pas de validation iPhone ni d’échange Android beta.26 pour ces nouveautés.
+**Actualisation du 5 novembre 2026 — Android 0.4.0-beta.29 et PWA 1.5.2-beta.4 candidate :** une photo facultative par dépense, à ajouter depuis la liste après enregistrement ; aperçu, remplacement et retrait explicites. Android convertit les nouvelles photos en JPEG sans EXIF ; la PWA garde le fichier et ses métadonnées éventuelles. Sauvegardes JSON non chiffrées. Room 15, IndexedDB 4 et JSON v3 inchangés. Devise réglable et liaison plein/dépense sans double comptage restent à faire. [Détails, limites et confidentialité](JUSTIFICATIFS-BETA29.md). [Contrôles et limites des essais](VALIDATION-BETA29.md).
 
-**Mise à jour : 4 novembre 2026 · PWA familiale : 1.5.1 ; candidate : 1.5.2-beta.2 · Android : 0.4.0-beta.26**
+**Historique du 5 novembre 2026 — Android 0.4.0-beta.28 et PWA 1.5.2-beta.3 candidate :** premier lot dépenses Android : liste par véhicule, tri, total, ajout, édition, suppression avec Undo, kilométrage facultatif sans changer le compteur. La PWA candidate reprend les catégories et avertissements ; Room 15 et JSON v3 restent inchangés. Aucun lien automatique avec un plein ni détection des doublons ; photo de justificatif et choix de devise restent à développer. Sauvegarder chaque appareil avant import ou essai. [Détails et limites](DEPENSES-BETA28.md).
+
+**Android beta.27 et PWA 1.5.2-beta.2 candidate — carnet enrichi :** lignes de pièces et total, catégories multiples avec sélecteur plein écran, sous-type libre et recherche Google Maps volontaire existent dans les deux préversions. JSON v3 et Room 15 restent inchangés. La PWA candidate utilise IndexedDB 4 : sauvegarde externe avant essai, sans retour direct à l’ancienne base. Les vérifications automatisées ne remplacent pas les essais Android réel ou Safari iOS. Voir [Android beta.27](CARNET-ANDROID-BETA27.md) et [PWA beta.2](CARNET-PWA-BETA2.md).
+
+**Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
+
+**Mise à jour : 5 novembre 2026 · PWA familiale : 1.5.1 ; candidate : 1.5.2-beta.4 · Android : 0.4.0-beta.29**
 
 Cette feuille de route distingue ce qui est terminé, ce qui est souhaité et les décisions à prendre. Les choix explicitement décidés sont indiqués ; les autres priorités futures restent **à confirmer**, sans date ni engagement de livraison. Le détail des exigences est dans `CAHIER-DES-CHARGES.md` et l’historique des décisions dans `HISTORIQUE.md`.
 
 **Progression actualisée :** avancer sur les phases principales sans attendre les essais sur téléphone, tout en gardant la phase 1 ouverte jusqu’à validation réelle. GPS natif puis Bluetooth autoradio assisté avant l’essai en voiture, sans OBD. Voir [le plan détaillé](PLAN-PRIORITES-APRES-BETA16.md) et [le parcours demandé](BLUETOOTH-GPS-VOITURE.md).
 
-**Décision du 4 novembre — carnet :** détails multi-pièces, catégories par familles et sélecteur plein écran, liens cartes, sous-types carburant et compatibilité JSON à vérifier ; un premier lot existe dans la **PWA beta.2 candidate** ; le portage Android et les essais réels restent à faire. L’utilisateur indique avoir installé la candidate sur Android et importé son JSON sans perte constatée ; iPhone non disponible. [Détails](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet).
+**Décision du 4 novembre — carnet :** détails multi-pièces, catégories par familles et sélecteur plein écran, liens cartes, sous-types carburant et compatibilité JSON à vérifier ; un premier lot existe dans la **PWA beta.2 candidate et Android beta.27** ; les essais réels restent à faire. L’utilisateur indique avoir installé la candidate sur Android et importé son JSON sans perte constatée ; iPhone non disponible. [Détails](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet).
 
 **Beta.26 — photo du véhicule actif :** depuis l’accueil, choisir dans le sélecteur système une image d’au plus 12 Mio ; l’application applique l’orientation EXIF lorsqu’elle est reconnue, la réduit en JPEG de 1 600 px au plus et 3 Mio au plus, sans recopier les métadonnées, puis affiche un aperçu. Remplacement et retrait sont confirmés et sans Undo ; la photo précédente n’est pas perdue si l’import échoue. Les photos importées illisibles ou trop grosses sont conservées. Room 15, JSON v3 et PWA ne changent pas ; aucune permission générale de galerie, caméra, GPS, Bluetooth ou réseau n’est ajoutée. Prise de vue directe et aperçus de tous les véhicules restent à faire. [Détails](PHOTO-VEHICULE.md).
 
@@ -105,7 +111,7 @@ Les performances demandées (démarrage, réactivité, fps, import/export, taill
 L’utilisateur retient **Android Kotlin/Compose pour l’usage avancé** et la **PWA pour la famille sur iPhone**. Les bases sont indépendantes et s’échangent des fichiers JSON manuellement ; ce n’est pas une synchronisation ni un partage en direct.
 
 1. **Lot A — fondation Android 0.1.0 :** projet séparé `VigieAuto-Android`, écran Compose, navigation, thèmes, Room et pont JSON. Consultation partielle seulement, sans ajout ni GPS/Bluetooth ; vérifications et limites détaillées dans l’historique et le projet Android.
-2. **Lot B — reprise du carnet :** création/sélection des véhicules réalisées en 0.2.0 ; Android 0.3.0 ajoute entretiens, rappels, pleins/recharges, trajets manuels et correction du compteur, avec édition/suppression des entrées. La fiche courante est éditable depuis beta.7 ; la photo du véhicule actif est ajoutée en beta.26 ; il reste la suppression, la prise de vue directe et les champs enrichis des véhicules, puis CQ, dépenses, symptômes, documents et statistiques. Tester les migrations Room et la compatibilité JSON.
+2. **Lot B — reprise du carnet :** création/sélection des véhicules réalisées en 0.2.0 ; Android 0.3.0 ajoute entretiens, rappels, pleins/recharges, trajets manuels et correction du compteur, avec édition/suppression des entrées. La fiche courante est éditable depuis beta.7 ; la photo du véhicule actif est ajoutée en beta.26 ; il reste la suppression, la prise de vue directe et les champs enrichis des véhicules, puis CQ, dépenses (devise et liaison), symptômes, documents et statistiques. Tester les migrations Room et la compatibilité JSON.
 3. **Lot C — trajets avancés Android :** GPS facultatif avec service de premier plan et notification, puis Bluetooth assisté ; matériel, permissions, démarrage possible et limites Android à tester. NFC reste ultérieur et facultatif.
 4. **Lot D — Web famille :** garder la PWA, documenter l’installation Safari et tester sur de vrais iPhone. Aucun Bluetooth automatique ou synchronisation n’est promis. Vérifier qu’une adresse HTTPS réelle est accessible.
 
@@ -153,7 +159,7 @@ L’adresse publique copiée a renvoyé 404 depuis notre accès. Cela ne permet 
 
 ## Archives conservées après cette livraison
 
-1. `VigieAuto-Android-v0.4.0-beta.26.zip` — préversion des fondations, dossier racine `VigieAuto`.
+1. `VigieAuto-Android-v0.4.0-beta.27.zip` — préversion Android et carnet enrichi, dossier racine `VigieAuto`.
 2. `VigieAuto-v1.5.2-beta.2.zip` — PWA candidate, encore à valider sur iPhone.
 3. `VigieAuto-v1.5.1.zip` — PWA familiale stable inchangée.
 

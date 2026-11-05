@@ -1,8 +1,14 @@
 # VigieAuto Android — demandes et priorités après 0.4.0-beta.16
 
+**Actualisation du 5 novembre 2026 — Android 0.4.0-beta.28 et PWA 1.5.2-beta.3 candidate :** premier lot dépenses Android : liste par véhicule, tri, total, ajout, édition, suppression avec Undo, kilométrage facultatif sans changer le compteur. La PWA candidate reprend les catégories et avertissements ; Room 15 et JSON v3 restent inchangés. Aucun lien automatique avec un plein ni détection des doublons ; photo de justificatif et choix de devise restent à développer. Sauvegarder chaque appareil avant import ou essai. [Détails et limites](DEPENSES-BETA28.md).
+
 **Document de référence des demandes · actualisé le 4 novembre 2026.** Ce plan reprend le récapitulatif détaillé fourni par l’utilisateur après la beta.16 et complète, sans l’effacer, la [feuille de route Android](FEUILLE-DE-ROUTE-ANDROID.md). Il s’agit de besoins et d’objectifs **à réaliser**, pas de fonctions déjà disponibles. La base du projet au moment de la décision était Android **0.4.0-beta.16** ; le sous-lot Documents a ensuite été traité en **0.4.0-beta.17**, puis les trois autres sous-lots en **0.4.0-beta.18**, identifiant inchangé `com.vigieauto.app`. La PWA familiale reste **1.5.1** et l’échange est manuel par JSON.
 
-## Actualisation des priorités — beta.26
+## Actualisation des priorités — beta.27
+
+Le carnet enrichi est maintenant porté sur Android, après la PWA candidate ; vérifier [ses limites](CARNET-ANDROID-BETA27.md). La priorité suivante reste la progression des phases principales, puis GPS natif et Bluetooth autoradio avec confirmation, sans OBD. Les tests physiques et la stabilité du socle restent ouverts.
+
+## Bilan antérieur — beta.26
 
 **Décision actualisée du 4 novembre :** avancer par lots fonctionnels cohérents (véhicules, carnet, statistiques, puis GPS natif et Bluetooth d’autoradio assisté) sans attendre les essais sur téléphone. Le scénario d’autoradio déjà associé propose le démarrage, l’utilisateur confirme, le GPS du téléphone mesure vitesse, distance et durée ; la déconnexion propose l’arrêt et l’enregistrement, sans OBD ni démarrage silencieux. GPS et Bluetooth restent facultatifs, avec permissions au bon moment et recours manuel. Ce parcours est **à développer** ; voir [BLUETOOTH-GPS-VOITURE.md](BLUETOOTH-GPS-VOITURE.md). La phase 1 reste ouverte : ni les validations réelles ni la stabilité ne sont acquises.
 
@@ -99,7 +105,7 @@ Sélecteur visible en haut pour changer rapidement, avatar ou couleur par véhic
 
 ### 3.1 Dépenses
 
-Liste triable par date, catégorie et montant ; ajout avec date, catégorie, montant, description, kilométrage et photo de justificatif. Catégories : entretien, carburant, assurance, péage, stationnement, amende, contrôle technique, accessoire, autre. Demande d’un lien automatique entre un plein et une dépense carburant, avec mécanisme empêchant tout double comptage, y compris après modification, suppression et import/réimport. Devise paramétrable, euro par défaut. Les dépenses importées sont déjà conservées, mais l’écran Android complet reste à faire.
+Liste triable par date, catégorie et montant ; ajout avec date, catégorie, montant, description, kilométrage et photo de justificatif. Catégories : entretien, carburant, assurance, péage, stationnement, amende, contrôle technique, accessoire, autre. Demande d’un lien automatique entre un plein et une dépense carburant, avec mécanisme empêchant tout double comptage, y compris après modification, suppression et import/réimport. Devise paramétrable, euro par défaut. Un premier écran Android existe depuis beta.28 (liste, tri, total, saisie, édition et Undo) ; justificatif, devise et liaison sans double comptage restent à faire.
 
 ### 3.2 CQ et checklists
 
@@ -145,13 +151,13 @@ Types carte grise, assurance, contrôle technique, facture, permis et autre ; ph
 - **Trajets** : type domicile-travail/pro/loisir/vacances, conditions pluie/neige/nuit/bouchons, péages et notes. Des champs et trajets manuels existent déjà ; compléter sans écraser les valeurs importées.
 
 <a id="enrichissement-carnet"></a>
-### 3.6 Enrichissement du formulaire d’entretien (PWA candidate ; Android à développer)
+### 3.6 Enrichissement du formulaire d’entretien (PWA candidate et Android beta.27)
 
-Décision du 4 novembre 2026, après essai de la PWA 1.5.2-beta.1 installée depuis GitHub Pages sur Android, **selon le retour de l’utilisateur**. La comparaison avec Drivvo a fait apparaître des manques ergonomiques et fonctionnels à combler, d’abord dans la PWA puis dans Android. L’iPhone n’a pas pu être testé, faute d’appareil disponible. La décision initiale était documentaire ; **la PWA candidate 1.5.2-beta.2 en réalise depuis un premier lot**, détaillé dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md). Le portage Android reste à développer.
+Décision du 4 novembre 2026, après essai de la PWA 1.5.2-beta.1 installée depuis GitHub Pages sur Android, **selon le retour de l’utilisateur**. La comparaison avec Drivvo a fait apparaître des manques ergonomiques et fonctionnels à combler, d’abord dans la PWA puis dans Android. L’iPhone n’a pas pu être testé, faute d’appareil disponible. La décision initiale était documentaire ; **la PWA candidate 1.5.2-beta.2 en réalise depuis un premier lot**, détaillé dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md). Le portage Android est disponible en beta.27 ; les essais réels restent à faire. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
 #### 3.6.1 Détail multi-pièces et multi-opérations
 
-Avant la candidate PWA beta.2, le formulaire ne proposait qu’un coût global pour les pièces et un pour la main-d’œuvre : une révision avec distribution, pompe à eau et filtres obligeait à additionner et ne conservait pas ce détail. Android beta.26 conserve encore ce fonctionnement global.
+Avant la candidate PWA beta.2, le formulaire ne proposait qu’un coût global pour les pièces et un pour la main-d’œuvre : une révision avec distribution, pompe à eau et filtres obligeait à additionner et ne conservait pas ce détail. Android beta.26 conservait ce fonctionnement global ; beta.27 propose le détail.
 
 **Comportement demandé :** bouton « + Ajouter une pièce / opération » ; chaque ligne comporte un libellé et un coût en euros et peut être supprimée par « × ». Le coût total des pièces est la somme des lignes ; la main-d’œuvre reste distincte et s’ajoute au total global. Plusieurs catégories peuvent être associées au même entretien.
 
@@ -161,7 +167,7 @@ Avant la candidate PWA beta.2, le formulaire ne proposait qu’un coût global p
 
 Au clic sur « Catégorie », ouvrir une page plein écran superposée au formulaire. Une flèche « ← » et le bouton ou geste Retour du téléphone permettent d’en sortir ; **la sélection explicite d’une catégorie ferme aussi la vue**, conformément à la précision ultérieure. Le glissement vertical sert au défilement et ne doit pas déclencher volontairement la fermeture ; même objectif pour le glissement latéral. Recherche en haut avec filtrage en direct : hors recherche, afficher les familles et leurs en-têtes ; pendant la recherche, masquer ces en-têtes et rappeler la famille de chaque résultat. Prévoir « Autre… » pour une saisie libre mémorisée localement. Quand la recherche n’a aucun résultat, proposer en premier « Créer la catégorie “…” ».
 
-Les catégories personnelles ne doivent pas être écrasées. Les gestes imposés par le navigateur ou le système ne sont pas tous interceptables de façon garantie ; préserver le brouillon et vérifier notamment Safari iOS et les gestes de retour réels. La PWA candidate fournit le sélecteur décrit ; les gestes système, Safari iOS et le portage Android restent à tester ou développer.
+Les catégories personnelles ne doivent pas être écrasées. Les gestes imposés par le navigateur ou le système ne sont pas tous interceptables de façon garantie ; préserver le brouillon et vérifier notamment Safari iOS et les gestes de retour réels. La PWA candidate et Android beta.27 fournissent ce sélecteur ; gestes système et Safari iOS restent à tester sur appareils réels.
 
 #### 3.6.3 Liste de catégories organisée par familles
 
@@ -188,7 +194,7 @@ La PWA candidate ouvre actuellement une recherche Google Maps sur action explici
 
 #### 3.6.5 Sous-types de carburant pour les pleins
 
-La PWA candidate propose un sous-type libre, suggéré selon l’énergie actuelle du véhicule et les pleins précédents du même véhicule ; anciens pleins sans sous-type valides et non modifiés rétroactivement. Elle n’ajoute pas encore de sélecteur d’énergie par plein ; Android reste à développer.
+La PWA candidate propose un sous-type libre, suggéré selon l’énergie actuelle du véhicule et les pleins précédents du même véhicule ; anciens pleins sans sous-type valides et non modifiés rétroactivement. Elle n’ajoute pas encore de sélecteur d’énergie par plein ; Android beta.27 propose le sous-type libre et les suggestions de charge pour les kWh.
 
 | Énergie | Sous-types proposés |
 |---|---|
@@ -209,7 +215,7 @@ Le sous-type ne change pas automatiquement le calcul de consommation : comparais
 
 #### 3.6.7 Priorité PWA avant Android
 
-Pour **ces évolutions du carnet**, un premier lot est développé dans la PWA 1.5.2-beta.2 candidate ; le portage Android viendra après stabilisation du format et tests. L’utilisateur indique que la candidate 1.5.2-beta.1 a été installée depuis GitHub Pages et que l’import de son JSON personnel s’est déroulé sans perte constatée ; ce retour n’est pas une certification indépendante de toutes les données. L’iPhone étant indisponible, revalider plus tard gestes Safari, écrans plein écran, ouverture des cartes et persistance locale. Le GPS natif puis Bluetooth autoradio sans OBD restent distinctement prévus avant l’essai en voiture ; le socle n’est pas déclaré stable.
+Pour **ces évolutions du carnet**, un premier lot est développé dans la PWA 1.5.2-beta.2 candidate et porté sur Android beta.27 ; essais réels à poursuivre. L’utilisateur indique que la candidate 1.5.2-beta.1 a été installée depuis GitHub Pages et que l’import de son JSON personnel s’est déroulé sans perte constatée ; ce retour n’est pas une certification indépendante de toutes les données. L’iPhone étant indisponible, revalider plus tard gestes Safari, écrans plein écran, ouverture des cartes et persistance locale. Le GPS natif puis Bluetooth autoradio sans OBD restent distinctement prévus avant l’essai en voiture ; le socle n’est pas déclaré stable.
 
 ## Priorité 4 — Statistiques et tableaux de bord
 

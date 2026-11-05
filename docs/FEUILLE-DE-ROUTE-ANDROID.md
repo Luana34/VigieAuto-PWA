@@ -1,8 +1,14 @@
 # Feuille de route technique Android — VigieAuto
 
-**PWA 1.5.2-beta.2 candidate — carnet enrichi :** multi-pièces avec total, catégories multiples en plein écran, catégorie libre, sous-type de carburant et recherche Google Maps volontaire sont développés côté PWA ; Android beta.26 ne les propose pas encore. Le JSON v3 conserve les totaux historiques, avec extensions facultatives ; les scénarios testés et limites sont dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md). IndexedDB passe à 4 : sauvegarde externe avant essai ; aucun retour direct sur la base par beta.1/1.5.1. Pas de validation iPhone ni d’échange Android beta.26 pour ces nouveautés.
+**Actualisation du 5 novembre 2026 — Android 0.4.0-beta.29 et PWA 1.5.2-beta.4 candidate :** une photo facultative par dépense, à ajouter depuis la liste après enregistrement ; aperçu, remplacement et retrait explicites. Android convertit les nouvelles photos en JPEG sans EXIF ; la PWA garde le fichier et ses métadonnées éventuelles. Sauvegardes JSON non chiffrées. Room 15, IndexedDB 4 et JSON v3 inchangés. Devise réglable et liaison plein/dépense sans double comptage restent à faire. [Détails, limites et confidentialité](JUSTIFICATIFS-BETA29.md). [Contrôles et limites des essais](VALIDATION-BETA29.md).
 
-**Document vivant · 4 novembre 2026.** La PWA familiale continue séparément. Cette feuille enregistre la demande de l’utilisateur et le plan proposé ; elle ne transforme pas les fonctions futures en fonctions déjà réalisées. Les numéros et durées futures sont indicatifs, sans engagement de résultat ni de date. L’état réel est dans `RECAPITULATIF-FONCTIONS.md`.
+**Historique du 5 novembre 2026 — Android 0.4.0-beta.28 et PWA 1.5.2-beta.3 candidate :** premier lot dépenses Android : liste par véhicule, tri, total, ajout, édition, suppression avec Undo, kilométrage facultatif sans changer le compteur. La PWA candidate reprend les catégories et avertissements ; Room 15 et JSON v3 restent inchangés. Aucun lien automatique avec un plein ni détection des doublons ; photo de justificatif et choix de devise restent à développer. Sauvegarder chaque appareil avant import ou essai. [Détails et limites](DEPENSES-BETA28.md).
+
+**Android beta.27 et PWA 1.5.2-beta.2 candidate — carnet enrichi :** lignes de pièces et total, catégories multiples avec sélecteur plein écran, sous-type libre et recherche Google Maps volontaire existent dans les deux préversions. JSON v3 et Room 15 restent inchangés. La PWA candidate utilise IndexedDB 4 : sauvegarde externe avant essai, sans retour direct à l’ancienne base. Les vérifications automatisées ne remplacent pas les essais Android réel ou Safari iOS. Voir [Android beta.27](CARNET-ANDROID-BETA27.md) et [PWA beta.2](CARNET-PWA-BETA2.md).
+
+**Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
+
+**Document vivant · 5 novembre 2026.** La PWA familiale continue séparément. Cette feuille enregistre la demande de l’utilisateur et le plan proposé ; elle ne transforme pas les fonctions futures en fonctions déjà réalisées. Les numéros et durées futures sont indicatifs, sans engagement de résultat ni de date. L’état réel est dans `RECAPITULATIF-FONCTIONS.md`.
 
 **Progression actualisée :** après les migrations beta.17/18 et Undo beta.19, avancer sur les phases principales sans attendre les essais sur téléphone ; GPS natif puis Bluetooth d’autoradio assisté avant l’essai en voiture. La phase 1 reste ouverte : appareils/émulateur, GitHub, R8, profils, mesures et candidate PWA sur iPhone sont à valider. Voir [les priorités](PLAN-PRIORITES-APRES-BETA16.md) et [le parcours Bluetooth/GPS](BLUETOOTH-GPS-VOITURE.md).
 
@@ -40,7 +46,7 @@ Application de suivi universelle, gratuite, en français, hors ligne, sans publi
 |---|---|---|
 | 1 — Socle solide | Room, architecture, tests, erreurs, navigation, performance | **0.4.0-beta.26 partielle** ; essais sur appareil, finitions, mesures et stable à faire |
 | 2 — Véhicule complet | Édition/suppression/photo, multi-véhicule, champs enrichis et recherche | **Entamée : fiche beta.7, photo galerie beta.26** ; suppression, prise de vue directe et compléments à faire |
-| 3 — Carnet complet | Dépenses, CQ, symptômes, documents, enrichissements des entrées | À faire |
+| 3 — Carnet complet | Dépenses, CQ, symptômes, documents, enrichissements des entrées | En cours : premier lot dépenses et carnet enrichi ; reste à compléter |
 | 4 — Statistiques | Tableau de bord, calculs corrects, graphiques, rapports | À faire |
 | 5 — GPS natif | Enregistrement volontaire, service, historique, carte éventuelle | À faire ; contraintes et confidentialité à préciser |
 | **5 bis — Stations & Prix** | **Carte, prix officiels, localisation ponctuelle** | **À faire ; dépend du 0.4.0 stable** |

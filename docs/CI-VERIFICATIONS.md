@@ -1,6 +1,10 @@
 # Vérifications automatiques Android
 
-**Android 0.4.0-beta.26 · 4 novembre 2026**
+**Android 0.4.0-beta.28 · 5 novembre 2026**
+
+**Beta.28 :** le contrôleur exige aussi les scénarios critiques de dépenses : validation, total fiable, isolation véhicule, conflit, rollback et conservation de l’Undo, navigation simulée et retour PWA en Room. La fixture fictive de retour dépenses est livrée ; les huit anciens retours sans fichiers externes peuvent toujours être ignorés et sont comptés séparément. Aucun lancement GitHub ni essai physique n’est sous-entendu. Voir [DEPENSES-BETA28.md](DEPENSES-BETA28.md).
+
+**Beta.27 :** le contrôleur de rapports exige les scénarios critiques du carnet enrichi : précision, conversion confirmée, préservation des extensions et conflits, transaction, recherche et navigation du sélecteur. Le test de retour Room utilise une fixture locale par défaut ; il ne remplace pas le parcours PWA séparé. Les huit anciens tests de pont sans fixtures externes restent explicitement ignorables. Aucun lancement GitHub ou essai physique n’est sous-entendu.
 
 **Beta.26 :** le contrôleur JVM exige sept nouveaux scénarios critiques photo, dont la présence du lecteur AndroidX ; le manifeste compte 57 migrations et quatre tests photo instrumentés. Les tests graphiques natifs Robolectric API 34 n’ont pas été validés sur Windows ici. Avant la correction EXIF : suite JVM complète **548 réussis et 8 ignorés**, lint zéro erreur/20 avertissements et 61 scénarios instrumentés compilés mais non exécutés. Après remplacement par AndroidX : APK debug compilé, **73/73 tests ciblés réussis** et pont photo fictif Android ↔ PWA stable et candidate vérifié sous Chromium. La suite complète et le lint n’ont pas été relancés après la correction ; la recompilation des instrumentés après correction n’est pas confirmée. Aucun essai Android beta.26 sur Windows, GitHub, émulateur ou téléphone. Aucun lancement GitHub n’est revendiqué.
 

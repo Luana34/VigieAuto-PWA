@@ -2,6 +2,8 @@
 
 **4 novembre 2026 · candidate PWA, pas une version familiale stable.** Ce lot développe d’abord côté PWA les décisions du [plan §3.6](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet). Il n’ajoute pas ces écrans à Android 0.4.0-beta.26. Les essais automatisés sur ordinateur ne remplacent ni Android réel ni Safari iOS ; l’iPhone n’est pas disponible.
 
+**Actualisation Android :** le portage du carnet est disponible dans [Android beta.27](CARNET-ANDROID-BETA27.md), après beta.26 ; les essais réels restent ouverts.
+
 ## Ce qui est disponible dans cette candidate
 
 - **Entretien :** ajout/suppression de lignes « pièce / opération », chacune avec un libellé et un coût en euros à deux décimales. La somme des centimes est exacte ; le champ de coût des pièces est calculé et la main-d’œuvre reste distincte. Le total affiché comprend les deux, sans ajouter une seconde fois les lignes. Aucun fournisseur, référence ou quantité par ligne n’est encore ajouté.

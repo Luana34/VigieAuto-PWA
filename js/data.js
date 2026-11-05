@@ -20,6 +20,8 @@ export const SERVICE_CATEGORIES = {
   autre: "Autre",
 };
 export const EXPENSE_CATEGORIES = {
+  entretien: "Entretien",
+  carburant: "Carburant",
   assurance: "Assurance",
   taxes: "Taxes",
   peage: "Péage",
@@ -27,6 +29,7 @@ export const EXPENSE_CATEGORIES = {
   lavage: "Lavage",
   pieces: "Accessoires / pièces",
   amende: "Amende",
+  controle: "Contrôle technique",
   autre: "Autre",
 };
 export const SYMPTOM_CATEGORIES = {

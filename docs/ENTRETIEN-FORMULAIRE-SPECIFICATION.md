@@ -1,6 +1,6 @@
 # Spécification proposée — entretiens et pleins
 
-**Décision du 4 novembre 2026 · phase 3.** Premier lot disponible dans la **PWA 1.5.2-beta.2 candidate** ; Android n’est pas encore porté. Le détail des champs réellement utilisés, des limites et des tests est dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md). L’utilisateur indique avoir installé la candidate PWA 1.5.2-beta.1 depuis GitHub Pages sur Android et importé sa sauvegarde sans perte constatée. C’est son retour d’usage, pas un contrôle indépendant exhaustif. Aucun iPhone n’étant disponible, Safari iOS reste à valider ultérieurement. Le texte ci-dessous conserve la demande et les exemples de conception ; l’état réel de la candidate, qui n’est pas la version stable, figure dans le document lié.
+**Décision du 4 novembre 2026 · phase 3.** Premier lot disponible dans la **PWA 1.5.2-beta.2 candidate** ; le portage Android est disponible en beta.27, avec ses limites décrites dans [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md). Le détail des champs réellement utilisés, des limites et des tests est dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md). L’utilisateur indique avoir installé la candidate PWA 1.5.2-beta.1 depuis GitHub Pages sur Android et importé sa sauvegarde sans perte constatée. C’est son retour d’usage, pas un contrôle indépendant exhaustif. Aucun iPhone n’étant disponible, Safari iOS reste à valider ultérieurement. Le texte ci-dessous conserve la demande et les exemples de conception ; l’état réel de la candidate, qui n’est pas la version stable, figure dans le document lié.
 
 ## 1. Nomenclature complète proposée par l’utilisateur
 
@@ -125,7 +125,7 @@ Les icônes et libellés sont indicatifs et à vérifier pour l’accessibilité
 - Ouverture par le champ « Catégorie », dans une vue plein écran superposée au formulaire. La liste défile verticalement sans qu’un glissement vers le bas ou latéral ne déclenche volontairement sa fermeture.
 - Fermeture prévue par flèche « ← », retour du téléphone ou sélection explicite d’une catégorie. Le texte initial indiquait seulement flèche/retour ; la précision ultérieure inclut aussi la sélection explicite.
 - Recherche fixe en haut, filtrage immédiat dès la saisie : hors recherche, afficher les familles et leurs en-têtes ; pendant la recherche, masquer les en-têtes de familles et rappeler la famille parente de chaque résultat. Si aucun résultat ne correspond, proposer en premier « Créer la catégorie “…” », avec saisie libre enregistrée localement.
-- La candidate PWA utilise une vue HTML/CSS plein écran et l’historique `popstate` ; sur Android, `DialogProperties(usePlatformDefaultWidth = false)` et `BackHandler` restent des pistes non implémentées, à valider. Tailwind n’est pas une dépendance imposée ; la PWA est actuellement en CSS/JS vanilla.
+- La candidate PWA utilise une vue HTML/CSS plein écran et l’historique `popstate` ; sur Android beta.27, `DialogProperties(usePlatformDefaultWidth = false)` et `BackHandler` sont utilisés ; les gestes réels restent à valider. Tailwind n’est pas une dépendance imposée ; la PWA est actuellement en CSS/JS vanilla.
 - **Limite :** les gestes du système et du navigateur, particulièrement le retour Safari iOS, ne peuvent pas être garantis interceptables dans tous les cas. Il faudra tester les gestes réellement disponibles, préserver le brouillon et éviter de promettre qu’aucune fermeture système n’est possible.
 
 ## 3. Structure JSON proposée par l’utilisateur — exemple conceptuel
@@ -173,13 +173,13 @@ Cet exemple est conservé tel que demandé pour discuter des données ; **il n�
 }
 ```
 
-**Conception à vérifier avant développement :** conserver l’enveloppe et les champs obligatoires réels de JSON v3 ; placer les détails facultatifs à l’intérieur des enregistrements existants, pas dans de nouvelles collections ou propriétés racine que le lecteur Android actuel refuse. Pour l’ancienne lecture, `parts` doit rester la somme des pièces et `labor` la main-d’œuvre ; le total global affiché est leur somme. Si un total supplémentaire est retenu, il doit rester cohérent et ne pas être compté deux fois. Les noms définitifs des extensions, la gestion des modifications par d’anciennes versions, la précision des prix et les migrations sont à tester, pas garantis. Les anciens entretiens sans détail restent inchangés.
+**Conception initiale et état réalisé :** conserver l’enveloppe et les champs obligatoires réels de JSON v3 ; placer les détails facultatifs à l’intérieur des enregistrements existants, pas dans de nouvelles collections ou propriétés racine que le lecteur Android refuse. Pour l’ancienne lecture, `parts` reste la somme des pièces et `labor` la main-d’œuvre ; le total global affiché est leur somme. Les noms et garde-fous retenus sont décrits dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md) et [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md). Les cas couverts par les tests ne garantissent pas tous les échanges réels. Les anciens entretiens sans détail ne sont pas convertis automatiquement.
 
-L’exemple contient `lieu_url`, mais la demande fonctionnelle privilégie l’envoi du **nom saisi** seulement, sans stockage supplémentaire d’URL, d’adresse ni de coordonnées par VigieAuto : ne pas rendre ce champ obligatoire et trancher la contradiction avant tout développement. Les champs de lieu/station existants restent conservés. Garder les sauvegardes originales : les anciennes versions peuvent normaliser des champs, et la PWA 1.5.1 peut arrondir certains nombres précis.
+L’exemple contient `lieu_url`, mais le choix retenu en beta.2/beta.27 est l’envoi du **nom saisi** seulement, sans stockage supplémentaire d’URL, d’adresse ni de coordonnées par VigieAuto. Les champs de lieu/station existants restent conservés. Garder les sauvegardes originales : les anciennes versions peuvent normaliser des champs, et la PWA 1.5.1 peut arrondir certains nombres précis.
 
 ## 4. Exemple initial JavaScript pour une recherche cartographique
 
-Code initial fourni par l’utilisateur, non repris tel quel. La candidate PWA ouvre une recherche Google Maps équivalente après action explicite ; le portage Android reste à faire :
+Code initial fourni par l’utilisateur, non repris tel quel. La candidate PWA et Android beta.27 ouvrent une recherche Google Maps équivalente après action explicite :
 
 ```javascript
 /**

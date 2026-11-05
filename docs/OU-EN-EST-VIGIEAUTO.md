@@ -1,8 +1,14 @@
 # Où en est VigieAuto ?
 
-**PWA 1.5.2-beta.2 candidate — carnet enrichi :** multi-pièces avec total, catégories multiples en plein écran, catégorie libre, sous-type de carburant et recherche Google Maps volontaire sont développés côté PWA ; Android beta.26 ne les propose pas encore. Le JSON v3 conserve les totaux historiques, avec extensions facultatives ; les scénarios testés et limites sont dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md). IndexedDB passe à 4 : sauvegarde externe avant essai ; aucun retour direct sur la base par beta.1/1.5.1. Pas de validation iPhone ni d’échange Android beta.26 pour ces nouveautés.
+**Actualisation du 5 novembre 2026 — Android 0.4.0-beta.28 et PWA 1.5.2-beta.3 candidate :** premier lot dépenses Android : liste par véhicule, tri, total, ajout, édition, suppression avec Undo, kilométrage facultatif sans changer le compteur. La PWA candidate reprend les catégories et avertissements ; Room 15 et JSON v3 restent inchangés. Aucun lien automatique avec un plein ni détection des doublons ; photo de justificatif et choix de devise restent à développer. Sauvegarder chaque appareil avant import ou essai. [Détails et limites](DEPENSES-BETA28.md).
 
-**Point au 4 novembre 2026 · Android 0.4.0-beta.26 · PWA familiale 1.5.1**
+**Vérifications beta.28 :** sous Linux, 592 tests JVM réussis, huit anciens ponts ignorés faute de fixtures, aucun échec ; APK debug construit, lint sans erreur et 61 scénarios instrumentés compilés mais non exécutés. Le nouveau pont dépenses a été vérifié sous Chromium et WebKit Linux, sans essai Windows, téléphone ou iPhone.
+
+**Android beta.27 et PWA 1.5.2-beta.2 candidate — carnet enrichi :** lignes de pièces et total, catégories multiples avec sélecteur plein écran, sous-type libre et recherche Google Maps volontaire existent dans les deux préversions. JSON v3 et Room 15 restent inchangés. La PWA candidate utilise IndexedDB 4 : sauvegarde externe avant essai, sans retour direct à l’ancienne base. Les vérifications automatisées ne remplacent pas les essais Android réel ou Safari iOS. Voir [Android beta.27](CARNET-ANDROID-BETA27.md) et [PWA beta.2](CARNET-PWA-BETA2.md).
+
+**Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
+
+**Point au 5 novembre 2026 · Android 0.4.0-beta.28 · PWA familiale 1.5.1**
 
 ## La réponse courte
 
@@ -15,7 +21,7 @@ Nous avançons maintenant sur les **fonctions principales sans attendre les essa
 - Ajouter plusieurs véhicules, les sélectionner, modifier les principales informations et corriger le compteur. Les marques et modèles restent libres avec des suggestions hors ligne.
 - **Nouveau en beta.26 :** choisir une photo du véhicule actif dans la galerie ou les fichiers, l’afficher, la remplacer ou la retirer après confirmation. La conversion est locale et bornée ; la photo précédente ne change pas en cas d’annulation ou d’échec. Pas de prise de vue directe ni d’annulation après remplacement/retrait. [Détails et limites](PHOTO-VEHICULE.md).
 - Ajouter, modifier et supprimer les **entretiens, pleins/recharges, rappels et trajets manuels**. La dernière suppression du carnet peut être annulée sous les conditions d’[UNDO-CARNET.md](UNDO-CARNET.md).
-- Consulter partiellement les contrôles qualité importés. Les dépenses, symptômes et documents importés sont conservés et réexportables, mais leurs écrans Android complets restent à faire.
+- Consulter partiellement les contrôles qualité importés. Un premier écran dépenses permet liste, tri, total et saisie ; les justificatifs et la liaison restent à faire. Les symptômes et documents importés sont conservés et réexportables, mais leurs écrans Android complets restent à faire.
 - Exporter un JSON, vérifier sa structure sans restaurer, puis importer après confirmation. **Importer remplace le carnet destinataire ; ce n’est pas une fusion.** Utiliser les thèmes Sauge ou Cyan.
 
 Les rappels sont visibles dans l’application et utilisent des jours et/ou kilomètres. **Il n’y a pas encore de notification lorsque l’application est fermée.** Les propositions fondées sur les habitudes sont décidées, mais non implémentées.
@@ -24,7 +30,7 @@ Les rappels sont visibles dans l’application et utilisent des jours et/ou kilo
 
 La PWA familiale 1.5.1 dispose déjà notamment des contrôles qualité, dépenses, symptômes, documents et statistiques. Son GPS est facultatif et dépend de la page visible ; un suivi continu écran éteint n’est pas garanti. L’installation et le stockage restent liés à l’adresse du site.
 
-La **candidate 1.5.2-beta.2** reprend les corrections de précision de beta.1 et ajoute les améliorations du carnet décrites ci-dessus. L’utilisateur indique avoir installé **beta.1** depuis GitHub Pages sur Android et importé sa sauvegarde sans perte constatée ; aucune vérification indépendante exhaustive n’est revendiquée et elle **n’a pas été validée sur iPhone**. La PWA 1.5.1 peut arrondir certains grands nombres ; conserver les sauvegardes originales. La base mise à niveau par la candidate ne se rouvre pas directement avec l’ancienne version. Voir [PRECISION-SAUVEGARDES.md](PRECISION-SAUVEGARDES.md).
+La **candidate 1.5.2-beta.3** reprend les corrections de précision et les améliorations du carnet, puis ajoute les catégories et avertissements de dépenses décrits ci-dessus. L’utilisateur indique avoir installé **beta.1** depuis GitHub Pages sur Android et importé sa sauvegarde sans perte constatée ; aucune vérification indépendante exhaustive n’est revendiquée et elle **n’a pas été validée sur iPhone**. La PWA 1.5.1 peut arrondir certains grands nombres ; conserver les sauvegardes originales. La base mise à niveau par la candidate ne se rouvre pas directement avec l’ancienne version. Voir [PRECISION-SAUVEGARDES.md](PRECISION-SAUVEGARDES.md).
 
 ## Vérifications de beta.26
 
@@ -34,7 +40,7 @@ Les tests simulés sur ordinateur ne remplacent ni les scénarios instrumentés 
 
 ## Suite retenue
 
-1. Pour les nouveaux entretiens/pleins demandés (multi-pièces, catégories, cartes, sous-types), premier lot développé en **PWA beta.2 candidate**, puis à porter sur Android ; les essais réels et les échanges Android restent à faire. Continuer véhicules, carnet, contrôles et statistiques en conservant les données.
+1. Pour les nouveaux entretiens/pleins demandés (multi-pièces, catégories, cartes, sous-types), premier lot développé en **PWA beta.2 candidate et Android beta.27** ; les essais réels restent à faire. Continuer véhicules, carnet, contrôles et statistiques en conservant les données.
 2. Développer le **GPS Android facultatif**, puis l’assistance Bluetooth de l’autoradio : connexion d’un appareil déjà associé → proposition de démarrer → confirmation → GPS du téléphone pour la vitesse, la distance et la durée → déconnexion → proposition d’arrêt et de sauvegarde. Aucun OBD n’est nécessaire. **Ce parcours n’est pas encore disponible** ; ses permissions, restrictions et recours manuel sont détaillés dans [BLUETOOTH-GPS-VOITURE.md](BLUETOOTH-GPS-VOITURE.md).
 3. Vérifier ensuite les parcours sur émulateur et téléphone, dont l’essai en voiture, ainsi que la PWA candidate sur iPhone. Première exécution GitHub, R8, profils et mesures restent également ouverts.
 4. Stations et prix des carburants : fonction documentée, **pas avant le socle 0.4.0 stable**. NFC et les autres extras restent distincts et facultatifs.

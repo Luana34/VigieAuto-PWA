@@ -1,10 +1,14 @@
 # VigieAuto — récapitulatif des fonctions
 
-**PWA 1.5.2-beta.2 candidate — carnet enrichi :** multi-pièces avec total, catégories multiples en plein écran, catégorie libre, sous-type de carburant et recherche Google Maps volontaire sont développés côté PWA ; Android beta.26 ne les propose pas encore. Le JSON v3 conserve les totaux historiques, avec extensions facultatives ; les scénarios testés et limites sont dans [CARNET-PWA-BETA2.md](CARNET-PWA-BETA2.md). IndexedDB passe à 4 : sauvegarde externe avant essai ; aucun retour direct sur la base par beta.1/1.5.1. Pas de validation iPhone ni d’échange Android beta.26 pour ces nouveautés.
+**Actualisation du 5 novembre 2026 — Android 0.4.0-beta.28 et PWA 1.5.2-beta.3 candidate :** premier lot dépenses Android : liste par véhicule, tri, total, ajout, édition, suppression avec Undo, kilométrage facultatif sans changer le compteur. La PWA candidate reprend les catégories et avertissements ; Room 15 et JSON v3 restent inchangés. Aucun lien automatique avec un plein ni détection des doublons ; photo de justificatif et choix de devise restent à développer. Sauvegarder chaque appareil avant import ou essai. [Détails et limites](DEPENSES-BETA28.md).
 
-**Document vivant : à actualiser à chaque mise à jour**, même lorsqu’elle est uniquement technique. Dernière mise à jour : 4 novembre 2026. Il distingue la PWA familiale **1.5.1**, la PWA candidate **1.5.2-beta.2** et le projet Android **0.4.0-beta.26**. La bêta est une préversion de développement, pas la version 0.4.0 stable ; les étapes futures ci-dessous ne sont pas des fonctions disponibles.
+**Android beta.27 et PWA 1.5.2-beta.2 candidate — carnet enrichi :** lignes de pièces et total, catégories multiples avec sélecteur plein écran, sous-type libre et recherche Google Maps volontaire existent dans les deux préversions. JSON v3 et Room 15 restent inchangés. La PWA candidate utilise IndexedDB 4 : sauvegarde externe avant essai, sans retour direct à l’ancienne base. Les vérifications automatisées ne remplacent pas les essais Android réel ou Safari iOS. Voir [Android beta.27](CARNET-ANDROID-BETA27.md) et [PWA beta.2](CARNET-PWA-BETA2.md).
 
-**Décision du 4 novembre — carnet :** détails multi-pièces, catégories par familles et sélecteur plein écran, liens cartes, sous-types carburant et compatibilité JSON à vérifier ; un premier lot existe dans la **PWA beta.2 candidate** ; le portage Android et les essais réels restent à faire. L’utilisateur indique avoir installé la candidate sur Android et importé son JSON sans perte constatée ; iPhone non disponible. [Détails](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet).
+**Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
+
+**Document vivant : à actualiser à chaque mise à jour**, même lorsqu’elle est uniquement technique. Dernière mise à jour : 5 novembre 2026. Il distingue la PWA familiale **1.5.1**, la PWA candidate **1.5.2-beta.3** et le projet Android **0.4.0-beta.28**. La bêta est une préversion de développement, pas la version 0.4.0 stable ; les étapes futures ci-dessous ne sont pas des fonctions disponibles.
+
+**Décision du 4 novembre — carnet :** détails multi-pièces, catégories par familles et sélecteur plein écran, liens cartes, sous-types carburant et compatibilité JSON à vérifier ; un premier lot existe dans la **PWA beta.2 candidate et Android beta.27** ; les essais réels restent à faire. L’utilisateur indique avoir installé la candidate sur Android et importé son JSON sans perte constatée ; iPhone non disponible. [Détails](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet).
 
 **Beta.26 — photo du véhicule actif :** depuis l’accueil, choisir dans le sélecteur système une image d’au plus 12 Mio ; l’application applique l’orientation EXIF lorsqu’elle est reconnue, la réduit en JPEG de 1 600 px au plus et 3 Mio au plus, sans recopier les métadonnées, puis affiche un aperçu. Remplacement et retrait sont confirmés et sans Undo ; la photo précédente n’est pas perdue si l’import échoue. Les photos importées illisibles ou trop grosses sont conservées. Room 15, JSON v3 et PWA ne changent pas ; aucune permission générale de galerie, caméra, GPS, Bluetooth ou réseau n’est ajoutée. Prise de vue directe et aperçus de tous les véhicules restent à faire. [Détails](PHOTO-VEHICULE.md).
 
@@ -34,7 +38,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Fonctions communes
 
-| Fonction | PWA 1.5.2-beta.1 candidate | Android 0.4.0-beta.26 |
+| Fonction | PWA 1.5.2-beta.3 candidate | Android 0.4.0-beta.28 |
 |---|---|---|
 | Utilisation en français, plusieurs véhicules, fonctionnement local | Oui | Oui |
 | Sans compte, abonnement, pub, serveur de synchronisation ou télémétrie dans l’application | Oui | Oui |
@@ -44,11 +48,12 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 | Logo VigieAuto fourni, icône adaptée par le système | Oui | Oui |
 | Sélection et dernier véhicule utilisé | Oui | Oui |
 | Création d’un véhicule et correction du compteur | Oui | Oui |
-| Confirmation avant abandon d’un formulaire modifié | Non pour les formulaires ordinaires | Oui : véhicule, compteur, entretien, plein, trajet et rappel |
+| Confirmation avant abandon d’un formulaire modifié | Non pour les formulaires ordinaires | Oui : véhicule, compteur, entretien, plein, trajet, rappel et dépense |
 | Modifier les informations principales d’un véhicule | Oui | Oui, fiche du véhicule actif ; compteur séparé |
 | Modifier la photo ou supprimer un véhicule | Oui | Photo du véhicule actif depuis galerie, remplacement/retrait confirmés ; suppression du véhicule à développer |
 | Marques/modèles hors ligne, recherchables, libres et mémorisés | Oui | Oui |
 | Entretiens, pleins/recharges, rappels et trajets manuels : ajout, modification, suppression | Oui | Oui |
+| Détail d’entretien, catégories, sous-type libre et recherche cartes | Oui, candidate | Oui, beta.27 ; essais appareils réels à faire |
 | Annuler après suppression du carnet | Non : suppression après confirmation | Oui, suppression immédiate puis restauration de la dernière entrée, sous conditions |
 | Rappels dans l’application par date et/ou kilométrage | Oui | Oui |
 | Export/import manuel JSON | Oui | Oui ; import analysé avant confirmation |
@@ -67,15 +72,15 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Entretien et rappels
 
-- Ajouter, consulter, modifier et supprimer les interventions, avec date, compteur, libellé et coûts de pièces/main-d’œuvre. On peut proposer une prochaine échéance en enregistrant un entretien ou créer un rappel distinct.
+- Ajouter, consulter, modifier et supprimer les interventions, avec date, compteur, libellé et coûts de pièces/main-d’œuvre. Dans Android beta.27 et la candidate PWA beta.2 : lignes de pièces facultatives, total, plusieurs catégories avec recherche plein écran et création libre, et carte sur action volontaire. Les anciens montants et extensions inconnues sont protégés ; conversion ou recalcul demandent confirmation. [Détails Android](CARNET-ANDROID-BETA27.md). On peut proposer une prochaine échéance en enregistrant un entretien ou créer un rappel distinct.
 - Les rappels peuvent utiliser une date, un kilométrage ou les deux, un seuil d’avertissement et une récurrence **en jours et/ou kilomètres**. Ils sont affichés dans l’application. « Marquer comme fait » recalcule l’échéance du rappel existant depuis la date et le compteur actuels ; les dimensions sans intervalle ne sont pas reconduites. La récurrence en mois calendaires reste à développer.
 - Les interventions et les rappels restent des entrées distinctes : supprimer une intervention ne supprime pas automatiquement son rappel. Les intervalles ne remplacent pas les préconisations du constructeur.
 - **Décidé pour la phase 3, non implémenté :** mémorisation des intervalles saisis par véhicule et type d’entretien, puis pré-remplissage du rappel, toujours confirmable, modifiable ou désactivable. Pas de base constructeur, de service externe ni de création silencieuse. Deux ou trois saisies cohérentes ne garantissent pas qu’un intervalle soit adapté. Voir [le plan, section 3.5](PLAN-PRIORITES-APRES-BETA16.md#35-enrichissement-des-écrans-existants).
-- Les notifications locales lorsque l’app est fermée, la proposition d’ouvrir un entretien après avoir marqué un rappel « fait » et les catégories/échéances enrichies sont prévues, **non réalisées**.
+- Les notifications locales lorsque l’app est fermée, la proposition d’ouvrir un entretien après avoir marqué un rappel « fait » et les échéances enrichies sont prévues, **non réalisées**.
 
 ## Pleins, recharges et coûts
 
-- Enregistrer, modifier et supprimer les ravitaillements, la date, le compteur, le volume en litres ou kWh, le prix, la station et l’indication plein/recharge complet ou partiel. Le total proposé peut être corrigé.
+- Enregistrer, modifier et supprimer les ravitaillements, la date, le compteur, le volume en litres ou kWh, le prix, la station et l’indication plein/recharge complet ou partiel. Le total proposé peut être corrigé. Un sous-type libre et des suggestions par véhicule sont proposés dans les deux préversions ; la carte s’ouvre uniquement sur demande.
 - **PWA :** consommation moyenne et coût énergétique indicatif calculés entre pleins complets cohérents. Les volumes partiels intermédiaires sont inclus ; litres et kWh ne sont pas mélangés ; un compteur incohérent ou une distance nulle ne produit pas une consommation valide. L’estimation électrique suppose des recharges complètes et comprend les pertes. Un suivi séparé d’hybride rechargeable n’est pas encore proposé.
 - **Android :** le carnet des pleins fonctionne, mais les statistiques de consommation et graphiques ne sont pas encore disponibles.
 - Les montants correspondent aux informations saisies, pas à une estimation garantie du coût total de possession.
@@ -89,9 +94,9 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Dépenses, contrôles qualité, symptômes et documents
 
-| Rubrique | PWA 1.5.2-beta.1 candidate | Android 0.4.0-beta.26 |
+| Rubrique | PWA 1.5.2-beta.2 candidate | Android 0.4.0-beta.27 |
 |---|---|---|
-| Dépenses diverses et résumé des coûts saisis | Disponible | Dépenses importées conservées dans Room et exportables en JSON ; écran complet à développer |
+| Dépenses diverses et résumé des coûts saisis | Disponible, sans détection des doublons | Liste, tri, total et saisie/édition/suppression avec Undo ; kilométrage facultatif ; justificatif, devise et lien sans double comptage à faire |
 | CQ, modèles de checklists et historique | Six modèles de départ ; modèles personnalisables, points individuels déplaçables ou supprimables, et contrôles | Consultation partielle des données importées ; création/édition complètes à développer |
 | Symptômes | Journal d’observations et conseils de prudence | Symptômes importés conservés dans Room et exportables en JSON ; écran complet à développer |
 | Documents et photos | Ajouter, télécharger et supprimer images/PDF jusqu’à 5 Mio via le formulaire ; pas d’édition d’un document existant | Conservation typée dans Room et import/export ; aucun nouvel écran Documents |
@@ -108,7 +113,7 @@ L’application ne remplace ni un professionnel ni un diagnostic mécanique. Pou
 - Pour revenir d’Android vers la PWA : faire d’abord une sauvegarde de la PWA destinataire, exporter depuis Android, puis importer après confirmation. L’import remplace toute sa base locale. Garder les deux copies initiales jusqu’à vérification.
 - Room 15 conserve les cinq projections et reconstruit les onze collections reconnues depuis leurs sources typées et valeurs/extensions, sans copie complète auxiliaire. Les longues valeurs et pièces jointes peuvent rester en blocs vérifiés. Voir `MIGRATION-V11-V12.md`, `MIGRATION-V12-V13.md` et `MIGRATION-V13-V14.md`.
 
-- **Prudence PWA :** la version familiale 1.5.1 conserve ses limites d’arrondi et de propriétés CQ/thème. La candidate 1.5.2-beta.1 protège ces cas testés, mais impose des refus explicites et n’a pas été essayée sur iPhone réel. Sauvegarder avant toute mise à jour ; une base IndexedDB migrée en v3 ne s’ouvre pas directement en 1.5.1.
+- **Prudence PWA :** la version familiale 1.5.1 conserve ses limites d’arrondi et de propriétés CQ/thème. La candidate 1.5.2-beta.2 protège ces cas testés, mais impose des refus explicites et n’a pas été essayée sur iPhone réel. Sauvegarder avant toute mise à jour ; une base IndexedDB migrée en v4 ne s’ouvre pas directement en 1.5.1 ou beta.1.
 
 ## Installation et fonctionnement hors ligne
 
@@ -207,7 +212,7 @@ La beta.9 ne modifie aucune fonction du carnet : elle corrige la configuration e
 
 ## Ce qui est prévu mais pas encore réalisé
 
-Phases futures : terminer le véhicule Android (suppression, prise de vue et autres champs) ; dépenses/CQ/symptômes/documents complets ; statistiques ; GPS Android facultatif puis Bluetooth assisté de l’autoradio ; notifications, widgets, recherche et accessibilité ; partage familial, flotte et tablette. Stations après 0.4.0 stable. Voir [le plan](PLAN-PRIORITES-APRES-BETA16.md).
+Phases futures : terminer le véhicule Android (suppression, prise de vue et autres champs) ; justificatifs et liaison des dépenses, CQ/symptômes/documents complets ; statistiques ; GPS Android facultatif puis Bluetooth assisté de l’autoradio ; notifications, widgets, recherche et accessibilité ; partage familial, flotte et tablette. Stations après 0.4.0 stable. Voir [le plan](PLAN-PRIORITES-APRES-BETA16.md).
 
 **Stations & Prix carburants :** module Android futur spécifié, non implémenté et prévu après le socle 0.4.0 stable. Il envisage des prix officiels, une localisation ponctuelle facultative et un cache local partiel. La carte, la source, les services réseau et leurs implications pour la confidentialité restent à vérifier. Voir [`module-stations-carburants.md`](module-stations-carburants.md).
 

@@ -55,16 +55,34 @@ Un calcul SQL ne doit pas mélanger des agrégats imbriqués incorrectement : la
 - [x] Décision de phase 3 consignée dans [le plan des priorités](PLAN-PRIORITES-APRES-BETA16.md#35-enrichissement-des-écrans-existants) ; aucun code, aucune version ni aucune donnée de l’application modifiés.
 - [ ] Les mesures sur appareil, la validation de la CI et les éléments non cochés ci-dessous restent à faire. Aucun nouveau benchmark ou test d’application n’est revendiqué pour cette mise à jour documentaire.
 
+## Checklist dépenses Android beta.28 et PWA beta.3 — 5 novembre 2026
+
+**Méthode de travail demandée :** regrouper les modifications avant compilation, cibler d’abord les tests pertinents, éviter de rejouer les mêmes vérifications et lancer une suite complète pour les changements sensibles de données/sauvegardes ou un jalon. Ne pas diminuer les contrôles de sauvegarde ni d’archive ; `forkEvery=1` reste inchangé tant qu’une alternative n’est pas fiabilisée, notamment sur Windows. Aucun gain de temps n’est revendiqué sans mesure.
+
+- [x] Tri et total décimal conçus pour une liste par véhicule ; erreurs de lecture et données incomplètes ne sont pas présentées comme des totaux fiables. Pas de pagination : les éléments sont chargés en mémoire.
+- [x] Avertissement : pas de détection des doublons entre dépenses, pleins et entretiens. Justificatifs, devise et liaison sans double comptage restent à faire.
+- [ ] Mesurer sur appareil les cibles : démarrage à froid <1 s, à chaud <300 ms, écran <100 ms, 60 images/s sur 1 000 éléments, import 10 Mo <3 s, export <2 s, APK <15 Mo et RAM <100 Mo. Aucun résultat n’est présumé. L’APK **debug** local pèse 12 433 697 octets ; cela ne valide pas une release ni les autres cibles.
+- [ ] Essais réels Android/Windows/émulateur et Safari iOS, tests de gestes et restauration depuis des sauvegardes distinctes. Ne pas déclarer la phase 1 stable.
+- [x] Suite JVM Linux : 600 tests, 592 réussis, huit anciens retours de pont ignorés faute de fixtures, aucun échec. Pont dépenses fictif Room ↔ PWA vérifié sous Chromium et WebKit Linux ; PWA : 41 tests unitaires réussis. Lint : 0 erreur/20 avertissements/2 indications ; 61 instrumentés compilés mais non exécutés. Pas de test sur téléphone, émulateur, Windows ou Safari iOS.
+
+## Checklist Android beta.27 — 4 novembre 2026
+
+- [x] Recherche de catégories locale avec `LazyColumn`, calcul des lignes en centimes ; requête des derniers pleins limitée à 100 et filtrée par véhicule. Ces choix ne sont pas des mesures de latence ou de fluidité.
+- [x] APK **debug local : 12 384 149 octets** (environ 12,38 Mo décimaux) ; assemblage réussi. Cette taille ne démontre pas la taille d’une release/AAB. L’outil a indiqué n’avoir pas pu réduire les symboles de `libandroidx.graphics.path.so`, empaquetée telle quelle.
+- [x] Parcours fictif Android/Room → candidate PWA → Room → PWA réussi sous Chromium et WebKit Linux ; tests d’interface Compose simulés pour recherche, navigation, défilement et confirmation. Suite JVM 573 réussis/8 ignorés ; lint 0 erreur/20 avertissements/1 indication ; 61 instrumentés compilés mais non exécutés. Ces tests ne remplacent pas un appareil.
+- [ ] Mesurer démarrage, ouverture, 1 000 éléments, FPS, RAM, batterie, import/export de 10 Mo et taille release sur des appareils précisés ; objectifs ci-dessus non garantis.
+- [ ] Vérifier les gestes système, la carte, les sauvegardes personnelles, Windows, un émulateur Android et les téléphones ; iPhone/Safari et CI GitHub restent également à valider.
+
 ## Checklist PWA 1.5.2-beta.2 — 4 novembre 2026
 
 - [x] Détail de pièces, catégories, recherche plein écran, sous-types libres et lien Google Maps volontaire disponibles dans la candidate PWA ; écriture contrôlée en transaction et anciennes valeurs globales conservées dans les cas couverts.
 - [ ] Mesurer sur appareils réels le chargement, la recherche dans la liste, le défilement et la mémoire ; aucun chiffre ni 60 fps garanti. Mesurer l’import/export 10 Mo reste à faire.
-- [ ] Valider Safari iOS réel, les gestes système, Google/Apple Maps et les échanges détaillés avec Android beta.26. Sauvegarder avant le passage IndexedDB 2/3→4 ; retour direct ancien code impossible.
+- [ ] Valider Safari iOS réel, les gestes système, les applications de cartes et les échanges détaillés sur appareils réels avec Android beta.27. Sauvegarder avant le passage IndexedDB 2/3→4 ; retour direct ancien code impossible.
 - [x] 39/39 tests unitaires, 17/17 tests d’archive et scénarios automatiques du carnet, précision et migrations Chromium/WebKit Linux ; les parcours interface, trajets, GPS simulé, catalogue et logo ont été testés sous Chromium. Aucun téléphone réel.
 
 ## Décision documentaire du 4 novembre — carnet PWA puis Android
 
-- [x] Six enrichissements demandés et nomenclature complète consignés ; aucun de ces changements de carnet n’est encore implémenté.
+- [x] Six enrichissements et nomenclature consignés dans le lot documentaire initial, avant leur développement ultérieur en PWA beta.2 puis Android beta.27.
 - [ ] Mesurer sur appareils réels le sélecteur plein écran, recherche, saisies et conservation des données après développement ; Android PWA a fait l’objet d’un retour utilisateur d’installation/import, pas d’un benchmark. iPhone indisponible.
 
 ## Checklist beta.26 — 4 novembre 2026

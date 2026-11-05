@@ -36,7 +36,7 @@ import {
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.2";
+const APP_VERSION = "1.5.2-beta.3";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -460,14 +460,14 @@ function recentActivity() {
 }
 function activityCard() {
   const activities = recentActivity();
-  return `<div class="card activity-card"><div class="card-head"><div><h2>Activité récente</h2><p class="card-kicker">Votre carnet au fil des jours</p></div><button class="section-link" data-route="entretien">Voir le carnet →</button></div><div class="activity-list">${activities.map((x) => `<div class="activity-row">${square(x.icon, x.color)}<div class="activity-body"><div class="activity-title">${esc(x.label)}</div><div class="activity-meta">${shortDate(x.date)}${x.odometer !== undefined && x.odometer !== null ? ` · ${number(x.odometer)} km` : ""}</div></div>${x.amount !== null ? `<div class="activity-amount">${money(x.amount)}</div>` : ""}</div>`).join("") || '<p class="card-intro">Votre activité apparaîtra ici après votre premier enregistrement.</p>'}</div></div>`;
+  return `<div class="card activity-card"><div class="card-head"><div><h2>Activité récente</h2><p class="card-kicker">Votre carnet au fil des jours</p></div><button class="section-link" data-route="entretien">Voir le carnet →</button></div><div class="activity-list">${activities.map((x) => `<div class="activity-row">${square(x.icon, x.color)}<div class="activity-body"><div class="activity-title">${esc(x.label)}</div><div class="activity-meta">${shortDate(x.date)}${typeof x.odometer === "number" && Number.isFinite(x.odometer) ? ` · ${number(x.odometer)} km` : ""}</div></div>${x.amount !== null ? `<div class="activity-amount">${money(x.amount)}</div>` : ""}</div>`).join("") || '<p class="card-intro">Votre activité apparaîtra ici après votre premier enregistrement.</p>'}</div></div>`;
 }
 function spendingCard() {
   const x = spending(scopedFinance());
   const p1 = x.total ? (x.fuel / x.total) * 100 : 0,
     p2 = x.total ? ((x.fuel + x.service) / x.total) * 100 : 0;
   const bg = x.total ? "" : "background:var(--donut-empty);";
-  return `<div class="card spending-card"><div class="card-head"><div><h2>Vos dépenses</h2><p class="card-kicker">Total des montants enregistrés</p></div><button class="section-link" data-route="statistiques">Détails →</button></div><div class="donut-wrap"><div class="donut" style="--a:${p1}%;--b:${p2}%;${bg}"><div class="donut-inner"><strong>${money(x.total)}</strong><span>au total</span></div></div><div class="legend"><div class="legend-row"><i></i><span>Carburant</span><b>${money(x.fuel)}</b></div><div class="legend-row"><i></i><span>Entretien</span><b>${money(x.service)}</b></div><div class="legend-row"><i></i><span>Autres</span><b>${money(x.other)}</b></div></div></div></div>`;
+  return `<div class="card spending-card"><div class="card-head"><div><h2>Vos dépenses</h2><p class="card-kicker">Total des montants enregistrés · doublons non détectés</p></div><button class="section-link" data-route="statistiques">Détails →</button></div><div class="donut-wrap"><div class="donut" style="--a:${p1}%;--b:${p2}%;${bg}"><div class="donut-inner"><strong>${money(x.total)}</strong><span>au total</span></div></div><div class="legend"><div class="legend-row"><i></i><span>Carburant</span><b>${money(x.fuel)}</b></div><div class="legend-row"><i></i><span>Entretien</span><b>${money(x.service)}</b></div><div class="legend-row"><i></i><span>Autres</span><b>${money(x.other)}</b></div></div></div></div>`;
 }
 function outlineCar() {
   return `<svg class="garage-car-line" viewBox="0 0 270 88" fill="none" aria-hidden="true"><path d="M21 60c5-8 15-11 31-14l27-19c9-6 17-9 30-9h46c15 0 28 5 40 16l12 11 28 5c8 2 13 6 15 14l2 5H20z" stroke="currentColor" stroke-width="2"/><path d="M82 45l12-12c5-5 10-7 19-7h38c11 0 20 4 30 13l6 6H82z" stroke="currentColor" stroke-width="1.5"/><circle cx="70" cy="68" r="13" fill="var(--vehicle-wheel)" stroke="currentColor" stroke-width="2"/><circle cx="70" cy="68" r="6" stroke="currentColor"/><circle cx="206" cy="68" r="13" fill="var(--vehicle-wheel)" stroke="currentColor" stroke-width="2"/><circle cx="206" cy="68" r="6" stroke="currentColor"/><path d="M115 26v18M198 52h18M34 53h17" stroke="currentColor" stroke-width="1.4"/></svg>`;
@@ -898,6 +898,11 @@ function fillsView() {
           )
     }</div>`;
 }
+function expenseCategoryLabel(value) {
+  if (typeof value !== "string" || !value) return "Non renseignée";
+  if (Object.prototype.hasOwnProperty.call(EXPENSE_CATEGORIES, value)) return EXPENSE_CATEGORIES[value];
+  return value.length > 200 ? "Catégorie trop longue à afficher" : `Personnalisée : ${value}`;
+}
 function expensesView() {
   if (!getVehicle())
     return requireVehicleView(
@@ -907,8 +912,9 @@ function expensesView() {
   const rows = sortRecent(scoped("expenses"));
   const sum = rows.reduce((s, x) => s + (Number(x.amount) || 0), 0);
   return `${pageHeading("Autres dépenses", "Assurance, péages, stationnement… tout compte.", addButton("Ajouter une dépense", "add-expense"))}
-    <div class="summary-grid">${metric("Total enregistré", money(sum), "", "Hors carburant et entretien", "receipt")}${metric("Dépenses", number(rows.length), "", "Pour ce véhicule", "chart")}${metric("Dernière dépense", rows[0] ? shortDate(rows[0].date) : "—", "", "Selon la date enregistrée", "calendar")}</div>
-    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("receipt", "blue")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${esc(EXPENSE_CATEGORIES[x.category] || "Autre")}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${money(x.amount)}</div>${rowButtons("expense", x.id)}</div>`).join("") : empty("receipt", "Aucune autre dépense", "Enregistrez une assurance, un péage ou un achat.", "add-expense", "Ajouter une dépense")}</div>`;
+    <div class="summary-grid">${metric("Total enregistré", money(sum), "", "Hors montants des pleins et interventions", "receipt")}${metric("Dépenses", number(rows.length), "", "Pour ce véhicule", "chart")}${metric("Dernière dépense", rows[0] ? shortDate(rows[0].date) : "—", "", "Selon la date enregistrée", "calendar")}</div>
+    <div class="note-line">${I("info")} Les pleins et interventions sont enregistrés séparément. Les doublons saisis manuellement ne sont pas détectés et peuvent être comptés deux fois.</div>
+    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("receipt", "blue")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${esc(expenseCategoryLabel(x.category))}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${money(x.amount)}</div>${rowButtons("expense", x.id)}</div>`).join("") : empty("receipt", "Aucune autre dépense", "Enregistrez une assurance, un péage ou un achat.", "add-expense", "Ajouter une dépense")}</div>`;
 }
 function remindersView() {
   const v = getVehicle();
@@ -995,7 +1001,7 @@ function statisticsView() {
   return `${pageHeading("Statistiques", "Comprendre vos dépenses pour mieux anticiper.")}
     <div class="summary-grid">${metric("Dépenses enregistrées", money(all.total), "", "Toutes périodes confondues", "receipt")}${metric("Consommation moyenne", calc.average === null ? "—" : number(calc.average, 2), `${carUnit()}/100 km`, "Sur intervalles complets", "fuel")}${metric("Énergie par kilomètre", perKm === null ? "—" : number(perKm, 3), "€/km", "Sur intervalles complets uniquement", "speed")}</div>
     <div class="split-layout"><div class="card page-card"><div class="card-head"><div><h2>Évolution des dépenses</h2><p class="card-kicker">Montants saisis sur les 6 derniers mois</p></div>${I("chart")}</div><div class="bar-chart">${months.map((m, i) => `<div class="bar-col"><div class="bar ${i === months.length - 1 ? "current" : ""}" style="height:${Math.max(3, (m.total / max) * 105)}px" title="${esc(m.label)} : ${money(m.total)}"></div><span class="bar-label">${esc(m.label)}</span></div>`).join("")}</div><div class="bar-caption"><span>Carburant, entretien et autres dépenses</span><span>Max. ${money(max === 1 && months.every((x) => x.total === 0) ? 0 : max)}</span></div></div>${spendingCard()}</div>
-    <div class="note-line">${I("info")} Ces chiffres ne comprennent que les données saisies ; ils ne constituent pas un coût total de possession exhaustif.</div>`;
+    <div class="note-line">${I("info")} Ces chiffres additionnent les saisies sans détecter les doublons entre dépenses, pleins et entretiens ; ils ne constituent pas un coût total de possession exhaustif.</div>`;
 }
 function settingsView() {
   return `${pageHeading("Paramètres", "Vos données et vos préférences, en toute simplicité.")}
@@ -1485,13 +1491,22 @@ function fillForm(id = "") {
 }
 function expenseForm(id = "") {
   const x = recordById("expenses", id) || {};
+  const category = typeof x.category === "string" ? x.category : "";
+  // Une catégorie d'une autre version ne doit pas être remplacée par le premier choix.
+  const choices = x.id && !category ? { "": "Non renseignée", ...EXPENSE_CATEGORIES }
+    : category && !Object.prototype.hasOwnProperty.call(EXPENSE_CATEGORIES, category) && category.length <= 500
+      ? { [category]: `Personnalisée : ${category}`, ...EXPENSE_CATEGORIES } : EXPENSE_CATEGORIES;
+  const categoryField = category.length > 500
+    ? '<p class="form-help full-width">Catégorie trop longue pour être modifiée ici ; elle sera conservée.</p>'
+    : selectField("category", "Catégorie", x.id ? category : "assurance", choices);
   formModal({
     title: x.id ? "Modifier une dépense" : "Ajouter une dépense",
     subtitle: esc(nameOf(getVehicle())),
     form: "expense",
     id,
     body: `<div class="form-grid">
-    ${field("title", "Intitulé", x.title, { required: true, full: true, placeholder: "Assurance auto" })}${selectField("category", "Catégorie", x.category || "assurance", EXPENSE_CATEGORIES)}${field("date", "Date", x.date || today(), { type: "date", required: true })}${field("amount", "Montant (€)", x.amount ?? "", { type: "number", min: 0, step: "0.01", required: true })}${area("notes", "Notes", x.notes, { placeholder: "Facultatif…" })}</div>`,
+    <p class="form-help full-width">Les pleins et entretiens sont séparés. Les doublons saisis manuellement ne sont pas détectés.</p>
+    ${field("title", "Intitulé", x.title, { required: true, full: true, placeholder: "Assurance auto" })}${categoryField}${field("date", "Date", x.date || today(), { type: "date", required: true })}${field("amount", "Montant (€)", x.amount ?? "", { type: "number", min: 0, step: "0.01", required: true })}${area("notes", "Notes", x.notes, { placeholder: "Facultatif…" })}</div>`,
   });
 }
 function reminderForm(id = "") {
@@ -1810,13 +1825,17 @@ async function saveForm(form) {
       id: x.id || uid(),
       vehicleId: x.vehicleId || v.id,
       title: text(d, "title", true),
-      category: text(d, "category"),
+      category: typeof x.category === "string" && x.category.length > 500 ? x.category : text(d, "category"),
       date: dateValue(d, "date", true),
       amount: asNumber(d, "amount"),
       notes: text(d, "notes"),
-      createdAt: x.createdAt || now,
+      ...(x.id ? {} : { createdAt: now }),
       updatedAt: now,
     };
+    if (x.id && record.category === "" && x.category == null) {
+      if (Object.prototype.hasOwnProperty.call(x, "category")) record.category = null;
+      else delete record.category;
+    }
     await apply([put("expenses", record)]);
   } else if (type === "reminder") {
     x = recordById("reminders", id) || {};

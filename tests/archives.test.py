@@ -32,8 +32,9 @@ class ArchiveTests(unittest.TestCase):
         paths = [
             "README.md", "INSTALLER.md", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
             "js/gps.js", "js/precise-json.js", "js/maintenance.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
+            "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md",
             "tests/precise-json.test.js", "tests/precision-interface.cjs", "docs/PRECISION-SAUVEGARDES.md",
-            "docs/CARNET-PWA-BETA2.md", "docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md", "docs/PLAN-PRIORITES-APRES-BETA16.md",
+            "docs/CARNET-PWA-BETA2.md", "docs/CARNET-ANDROID-BETA27.md", "docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md", "docs/PLAN-PRIORITES-APRES-BETA16.md",
             "js/catalogue.js", "data/brands_models_fr.json",
             "assets/logo-original.png", "icons/icon.png", "icons/apple-touch-icon.png", "tests/logo-interface.cjs", "docs/HISTORIQUE.md",
             "docs/CAHIER-DES-CHARGES.md", "docs/FEUILLE-DE-ROUTE.md", "docs/RECAPITULATIF-FONCTIONS.md",
@@ -160,7 +161,8 @@ class ArchiveTests(unittest.TestCase):
 
     def test_missing_enriched_carnet_files_never_prunes(self):
         for rel in ("js/maintenance.js", "js/db.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
-                    "docs/CARNET-PWA-BETA2.md", "docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md",
+                    "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md",
+                    "docs/CARNET-PWA-BETA2.md", "docs/CARNET-ANDROID-BETA27.md", "docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md",
                     "docs/PLAN-PRIORITES-APRES-BETA16.md"):
             with self.subTest(missing=rel):
                 p = self.project / rel
