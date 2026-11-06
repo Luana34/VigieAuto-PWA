@@ -31,6 +31,9 @@ class ArchiveTests(unittest.TestCase):
         self.project = self.workspace / "cq-auto"
         paths = [
             "README.md", "INSTALLER.md", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
+            "docs/FONDS-SOMBRES-BETA39.md", "tests/themes.test.js", "tests/themes-interface.cjs", "tests/mise-a-jour-beta10.cjs",
+            "tests/mise-a-jour-beta9.cjs", "tests/fixtures/pwa-v5-operations.json", "docs/DEVISES-ANDROID-BETA36.md", "docs/MIGRATION-V16-V17.md",
+            "tests/devises-operations-interface.cjs", "docs/DEVISES-OPERATIONS-BETA8.md", "docs/DEVISES-ANDROID-BETA35.md",
             "js/gps.js", "js/precise-json.js", "js/currency.js", "tests/devises.test.js", "tests/devises-interface.cjs", "docs/DEVISES-PWA-BETA7.md", "js/maintenance.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
             "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md", "docs/KILOMETRAGE-DEPENSES-BETA30.md", "docs/TRI-DEPENSES-BETA31.md",
             "js/expense-receipt.js", "tests/justificatifs.test.js", "tests/justificatifs-interface.cjs", "docs/JUSTIFICATIFS-BETA29.md",
@@ -59,6 +62,25 @@ class ArchiveTests(unittest.TestCase):
         }
         for name, content in self.old.items():
             (self.workspace / name).write_bytes(content)
+
+    def test_missing_beta10_theme_contract_preserves_previous_archives(self):
+        for rel in ("docs/FONDS-SOMBRES-BETA39.md", "tests/themes.test.js", "tests/themes-interface.cjs", "tests/mise-a-jour-beta10.cjs"):
+            path = self.project / rel
+            data = path.read_bytes(); path.unlink()
+            result = self.run_script("--sans-nettoyage")
+            self.assertNotEqual(0, result.returncode, rel)
+            self.assertEqual(6, len(list(self.workspace.glob("*.zip"))))
+            path.write_bytes(data)
+
+    def test_missing_beta9_contract_preserves_previous_archives(self):
+        for rel in ("tests/mise-a-jour-beta9.cjs", "tests/fixtures/pwa-v5-operations.json",
+                    "docs/DEVISES-ANDROID-BETA36.md", "docs/MIGRATION-V16-V17.md"):
+            path = self.project / rel
+            data = path.read_bytes(); path.unlink()
+            result = self.run_script("--sans-nettoyage")
+            self.assertNotEqual(0, result.returncode, rel)
+            self.assertEqual(6, len(list(self.workspace.glob("*.zip"))))
+            path.write_bytes(data)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -160,6 +182,16 @@ class ArchiveTests(unittest.TestCase):
         self.assertFalse((self.workspace / ".VigieAuto-v2.0.0.tmp").exists())
         for name, content in self.old.items():
             self.assertEqual((self.workspace / name).read_bytes(), content)
+
+    def test_missing_currency_operations_contract_preserves_previous_archives(self):
+        for rel in ("tests/devises-operations-interface.cjs", "docs/DEVISES-OPERATIONS-BETA8.md", "docs/DEVISES-ANDROID-BETA35.md"):
+            file = self.project / rel
+            content = file.read_bytes(); file.unlink()
+            result = self.run_script()
+            self.assertNotEqual(result.returncode, 0, rel)
+            self.assertFalse((self.workspace / "VigieAuto-v2.0.0.zip").exists())
+            for name, old in self.old.items(): self.assertEqual((self.workspace / name).read_bytes(), old)
+            file.write_bytes(content)
 
     def test_missing_enriched_carnet_files_never_prunes(self):
         for rel in ("js/maintenance.js", "js/db.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",

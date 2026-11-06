@@ -48,12 +48,12 @@ function installFakeGps() {
 const fill = (p,name,value) => p.locator(`#modal [name="${name}"]`).fill(String(value));
 const submit = async p => {await p.locator('#modal button[type=submit]').click();await p.locator('#modal').waitFor({state:'hidden'});};
 const tab = async (p, route) => {await p.locator(`.mobile-nav [data-route="${route}"]`).click();await p.waitForFunction(r=>document.querySelector(`.mobile-nav [data-route="${r}"]`)?.getAttribute('aria-current')==='page',route);};
-const db = p => p.evaluate(async()=>{const {LocalDatabase}=await import('/js/db.js');const d=await new LocalDatabase().open();const x=await d.readAll();d.db.close();return x;});
+const db = p => p.evaluate(async()=>{const {LocalDatabase, DB_CONTRACT}=await import('/js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT);const x=await d.readAll();d.db.close();return x;});
 async function waitTrip(p,id,{field,value,min}={}) {
   // evaluate attend vraiment la Promesse ; une fonction async dans waitForFunction
   // peut être évaluée comme un objet Promesse immédiatement truthy.
   return p.evaluate(async ({id,field,value,min})=>{
-    const {LocalDatabase}=await import('/js/db.js');const d=await new LocalDatabase().open();
+    const {LocalDatabase, DB_CONTRACT}=await import('/js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT);
     try {
       const deadline=Date.now()+8000;
       while (Date.now()<deadline) {
@@ -278,7 +278,7 @@ async function importBackup(p,data,expected) {
     await b.locator('[data-action=delete-vehicle]').first().click();
     await b.locator('.vehicle-tile').waitFor({state:'hidden'});
     raceData=await db(b);assert.equal(raceData.vehicles.length,0);assert.equal(raceData.trips.length,0);
-    const rejected=await a.evaluate(async vehicleId=>{const {LocalDatabase}=await import('/js/db.js');const d=await new LocalDatabase().open();try{await d.startTrip({id:'late',vehicleId,status:'running'});return false;}catch(e){return /véhicule/i.test(e.message);}finally{d.db.close();}},staleVehicle);
+    const rejected=await a.evaluate(async vehicleId=>{const {LocalDatabase, DB_CONTRACT}=await import('/js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT);try{await d.startTrip({id:'late',vehicleId,status:'running'});return false;}catch(e){return /véhicule/i.test(e.message);}finally{d.db.close();}},staleVehicle);
     assert.equal(rejected,true);await race.close();
     console.log('✓ onglets concurrents : trajet unique, suppression en cascade et refus de véhicule absent');
   } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

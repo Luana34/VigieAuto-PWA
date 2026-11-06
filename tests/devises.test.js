@@ -33,7 +33,7 @@ test('syntaxe des devises et affectations : refus conservateur des données non 
   assert.throws(()=>indexCurrencyAssignments([assignment('x','EUR'),assignment('x','USD')]));
   assert.throws(()=>validateCurrencyAssignments([assignment('introuvable','CHF')],[{id:'ok'}]),/absente/);
   const extension=assignment('ok','CHF',{futur:{modele:1}});
-  assert.deepEqual(validateCurrencyAssignments([extension],[{id:'ok'}]).get('ok'),extension);
+  assert.deepEqual(validateCurrencyAssignments([extension],[{id:'ok'}]).get('expenses:ok'),extension);
 });
 
 test('tri par montant : regroupement par devise puis décroissant, sans comparaison de devises', () => {
@@ -49,4 +49,25 @@ test('nombre de devises borné avant import ou modification', () => {
   const codes=Array.from({length:32},(_,i)=>'A'+String.fromCharCode(65+Math.floor(i/26))+String.fromCharCode(65+i%26));
   assert.equal(indexCurrencyAssignments(codes.slice(0,31).map((c,i)=>assignment(String(i),c))).size,31);
   assert.throws(()=>indexCurrencyAssignments(codes.map((c,i)=>assignment(String(i),c))),/32 devises/);
+});
+
+
+test('identifiants qualifiés : même ID dans trois collections sans collision ni amalgame', () => {
+  const a=(collection,currency)=>({id:currencyAssignmentId('même-id',collection),collection,recordId:'même-id',currency,extension:{futur:true}});
+  const data={fills:[{id:'même-id',total:15}],services:[{id:'même-id',parts:2,labor:3}],expenses:[{id:'même-id',amount:7}]};
+  const idx=validateCurrencyAssignments([a('fills','CHF'),a('services','USD'),a('expenses','SEK')],data);
+  assert.equal(currencyOf(idx,'même-id','fills'),'CHF');assert.equal(currencyOf(idx,'même-id','services'),'USD');
+  assert.equal(currencyOf(idx,'même-id','expenses'),'SEK');assert.equal(currencyOf(idx,'absent','fills'),'EUR');
+  assert.deepEqual(spendingByCurrency(data,idx),[
+    {currency:'CHF',fuel:15,service:0,other:0,total:15},
+    {currency:'SEK',fuel:0,service:0,other:7,total:7},
+    {currency:'USD',fuel:0,service:5,other:0,total:5},
+  ]);
+  assert.throws(()=>validateCurrencyAssignments([a('fills','CHF')],{...data,fills:[]}),/absente/);
+  assert.throws(()=>indexCurrencyAssignments([{...a('fills','CHF'),id:'services:même-id'}]));
+});
+
+test('les euros historiques ne deviennent pas des devises par lecture d’extensions libres', () => {
+  const data={fills:[{id:'f',total:2,currency:'CHF'}],services:[{id:'s',parts:3,labor:4,vigieCurrency:'USD'}],expenses:[]};
+  assert.deepEqual(spendingByCurrency(data,indexCurrencyAssignments([])),[{currency:'EUR',fuel:2,service:7,other:0,total:9}]);
 });

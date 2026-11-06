@@ -152,7 +152,7 @@ async function exportText(p) {
   await go(p,'parametres');
   assert.equal(codec.stringifyBackupJson(codec.parseBackupJson(await exportText(p)).data),snapshot,'rappel inchangé après somme non représentable');
   const gpsOverflow=await p.evaluate(async()=>{
-    const {LocalDatabase}=await import('./js/db.js');const d=await new LocalDatabase().open();
+    const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT);
     const trip=(await d.readAll()).trips.find(x=>x.id==='gps-fictif');
     await d.apply([{store:'trips',type:'put',value:{...trip,gpsDistanceM:Number.MAX_SAFE_INTEGER}}]);
     let reason='';try{await d.updateGpsTrip(trip.id,{addedM:1});}catch(error){reason=error.message;}

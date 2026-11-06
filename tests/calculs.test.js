@@ -6,6 +6,7 @@ import {
   today,
   fillIntervals,
   averageEnergyCostPerKm,
+  energyCostSummary,
   reminderInfo,
   spending,
 } from "../js/calc.js";
@@ -127,4 +128,26 @@ test("coût de recharge distinct du coût en litres, sans diviser par zéro", ()
   ];
   assert.equal(averageEnergyCostPerKm(data, "kWh"), 9 / 200);
   assert.equal(averageEnergyCostPerKm([], "kWh"), null);
+});
+
+
+test("coût partiel multidevise masqué sans perdre la consommation", () => {
+  const data=[fill('a','2026-01-01',1000,40,true,'L',60),fill('b','2026-01-02',1200,10,false,'L',20),fill('c','2026-01-03',1500,20,true,'L',40)];
+  const codes={a:'EUR',b:'CHF',c:'USD'}; const of=x=>codes[x.id];
+  const calc=fillIntervals(data,'L',of);
+  assert.equal(calc.average,6);assert.equal(calc.byId.c.volume,30);
+  assert.equal(calc.byId.c.cost,null);assert.equal(calc.byId.c.costPerKm,null);assert.equal(calc.byId.c.currency,null);
+  assert.equal(energyCostSummary(data,'L',of),null);
+  codes.c='CHF';
+  assert.deepEqual(energyCostSummary(data,'L',of),{value:0.12,currency:'CHF'}); // devise du plein d'ancrage sans incidence
+  assert.equal(fillIntervals(data,'L',of).byId.c.cost,60);
+});
+
+test("moyenne et estimation au km interdites entre intervalles de devises différentes", () => {
+  const data=[fill('a','2026-01-01',1000,40,true,'L',60),fill('b','2026-01-02',1500,30,true,'L',45),fill('c','2026-01-03',2000,20,true,'L',30)];
+  const codes={a:'EUR',b:'CHF',c:'USD'},of=x=>codes[x.id];
+  assert.equal(fillIntervals(data,'L',of).average,5);
+  assert.equal(energyCostSummary(data,'L',of),null);assert.equal(averageEnergyCostPerKm(data,'L',of),null);
+  codes.c='CHF';assert.deepEqual(energyCostSummary(data,'L',of),{value:0.075,currency:'CHF'});
+  assert.equal(energyCostSummary(data,'kWh',of),null);
 });
