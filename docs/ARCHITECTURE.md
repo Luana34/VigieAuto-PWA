@@ -53,9 +53,13 @@ Les migrations 1→2→3→4→5→6→7→8→9→10→11→12→13→14→15 e
 
 `updateVehicleDetails` vérifie l’empreinte dans une transaction Room, refuse un conflit, valide le résultat et actualise valeurs complètes, blocs éventuels, résumé et projection sans remplacement destructif du véhicule. Si marque ou modèle changent, le réglage et l’index de suggestions sont mis à jour dans la même transaction. Compteur, photo, identifiants, rubriques liées et champs non exposés sont conservés. Les suppressions, la photo et les champs enrichis restent à développer. Ces mécanismes et leurs essais simulés ne garantissent pas une absence de panne matérielle ; des copies externes restent nécessaires.
 
-## Calcul de consommation préparatoire
+## Calcul de consommation et observation Room (beta.38)
 
-`CalculateConsumption` est un **cas d’usage pur non relié à un écran Android**. Pour un seul véhicule et une unité, il trie date/compteur/horodatage, utilise deux pleins complets comme bornes, inclut les partiels, refuse les intervalles incohérents ou de distance nulle et calcule une moyenne pondérée. L et kWh ne sont pas additionnés. Les sept scénarios communs sont contrôlés à la fois en Kotlin et avec `cq-auto/js/calc.js`. Pour l’intégrer aux statistiques futures, il faudra fournir les données complètes, normaliser les unités historiques absentes comme la PWA, inclure l’horodatage de départage et vérifier le parcours de bout en bout ; les projections actuelles ne suffisent pas à le promettre.
+`CalculateConsumption` reste un cas d’usage pur partagé par les tests avec la PWA. Depuis beta.38, `TypedRecordDao.observeConsumptionSources` lit pour le véhicule les champs complets bornés, les masques, les affectations de devise et la génération du véhicule, sans charger notes ni extensions. Une jointure gauche conserve les lignes dont la source complète manque : elles rendent le calcul indisponible au lieu d'être écartées.
+
+`ConsumptionDashboard` vérifie identité, date, unité, champs, précision et éventuelles égalités d’ordre ; il applique le calcul séparément à L et kWh **avec toutes les opérations** pour détecter les changements d’unité. Les valeurs `Double` restent des estimations, pas des nombres monétaires exacts ; champs atypiques ou ambigus bloqués prudemment. La PWA peut traiter différemment certains anciens champs manquants ou invalides. La carte Compose compare les versions calculées avec celles de la liste : actualisation et erreurs ne deviennent jamais une moyenne partielle ou un faux zéro.
+
+Ces lectures ne modifient pas Room ni JSON ; des tests incluent un parcours Compose → ViewModel → Room simulé, l’Undo, l’import et la comparaison de sept scénarios avec la PWA. Les deux tris et données en mémoire ne sont pas paginés et leur coût n’est pas mesuré. Voir [le guide](CONSOMMATION-ANDROID-BETA38.md).
 
 ## Retour Android
 

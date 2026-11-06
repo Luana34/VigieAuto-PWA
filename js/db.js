@@ -1,6 +1,6 @@
 // Stockage local. Les écritures groupées ne sont confirmées qu'à la fin de la transaction.
 import { SUGGESTION_SETTING_ID, rememberVehicle } from "./catalogue.js";
-import { CURRENCY_STORE, indexCurrencyAssignments } from "./currency.js";
+import { CURRENCY_STORE, CURRENCY_COLLECTIONS, currencyAssignmentId, indexCurrencyAssignments } from "./currency.js";
 export const STORES = [
   "vehicles",
   "services",
@@ -17,10 +17,13 @@ export const STORES = [
 ];
 const DB_NAME = "cq-auto-local";
 // Conserver ce nom : c’est la même base que CQ Auto sur la même origine.
-// Version 5 : collection séparée des devises, sans modifier les anciens enregistrements.
+// Version 6 : la collection de devises peut aussi référencer pleins et interventions.
 // Une ancienne PWA ne doit pas rouvrir cette base et afficher une devise étrangère en euros.
-// Sauvegarde v3 si aucune affectation, v4 sinon ; conserver un export avant mise à jour.
-const DB_VERSION = 5;
+// Version 6 bloque les anciennes PWA : elles pourraient afficher un plein étranger en euros.
+const DB_VERSION = 6;
+// Contrat explicite d'ouverture : empêche une ancienne interface, servie par
+// son ancien cache pendant une mise à jour, d'utiliser ce nouveau module DB.
+export const DB_CONTRACT = "vigieauto-operations-devises-v6";
 
 /** Comparaison structurelle des enregistrements JSON et des marqueurs numériques
  * Uint8Array ; si l'objet courant a changé, l'édition est refusée avant écriture. */
@@ -41,7 +44,9 @@ export class LocalDatabase {
   constructor() {
     this.db = null;
   }
-  async open() {
+  async open(expectedContract) {
+    if (expectedContract !== DB_CONTRACT)
+      throw new Error("Mise à jour en cours : fermez les anciens onglets VigieAuto et rechargez cette version.");
     if (!("indexedDB" in window))
       throw new Error("IndexedDB est indisponible dans ce navigateur.");
     this.db = await new Promise((resolve, reject) => {
@@ -320,7 +325,7 @@ export class LocalDatabase {
         req.onsuccess = () => {
           const cursor = req.result;
           if (cursor) {
-            if (name === "expenses") tx.objectStore("currencyAssignments").delete(`expenses:${cursor.primaryKey}`);
+            if (CURRENCY_COLLECTIONS.includes(name)) tx.objectStore(CURRENCY_STORE).delete(currencyAssignmentId(cursor.primaryKey, name));
             store.delete(cursor.primaryKey); cursor.continue();
           }
         };

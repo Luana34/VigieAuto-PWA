@@ -1,0 +1,7 @@
+# Migration Room 15 → 16
+
+Android 0.4.0-beta.33 ajoute `currency_assignments` et `currency_assignment_chunks` ; aucune donnée existante n’est transformée. Les dépenses antérieures sans affectation restent en euros implicites. Une affectation contient un code typé et sa référence de dépense ; seules ses extensions inconnues sont stockées en blocs bornés avec empreinte, sans copie de l’objet JSON complet.
+
+La clé étrangère différée autorise une affectation avant sa dépense pendant une transaction d’import, puis vérifie la relation à la validation. La suppression du parent entraîne la suppression de l’affectation et de ses blocs. La migration contrôle aussi les clés étrangères existantes et échoue sans appliquer ses changements en cas d’incohérence. L’Undo v15 existant est conservé. Les dépenses munies d’une affectation sont cependant en lecture seule sur Android beta.33, car l’image d’Undo ne porte pas encore cette affectation.
+
+Tests Robolectric Linux : passage d’une vraie structure v15 contenant des données, contrôle des euros implicites et réexport, vérification d’un Undo conservé, simulation d’une clé étrangère corrompue avec rollback ; chaîne historique également vérifiée par groupes. Deux tests instrumentés supplémentaires sont compilés, mais **non exécutés**. Sauvegarde externe vérifiée avant toute migration ; les anciennes versions ne rouvrent pas directement Room 16 et un JSON v4 n’est pas accepté par Android beta.32. Aucun essai sur appareil réel n’est revendiqué.

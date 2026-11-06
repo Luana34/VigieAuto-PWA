@@ -1,6 +1,8 @@
-# Pont de sauvegarde PWA familiale 1.5.1 / candidate 1.5.2-beta.7 / Android 0.4.0-beta.32 : compatibilité selon le format
+# Pont de sauvegarde PWA beta.9 / Android beta.38 : compatibilité par format
 
-**Attention :** une sauvegarde PWA beta.7 avec affectation de devise est en **format 4** et n’est pas importable sur Android beta.32. Sans affectation, la PWA exporte encore en v3. Ne pas convertir le numéro de format ni supprimer les affectations pour contourner le refus. [Contrat et limites](DEVISES-PWA-BETA7.md).
+**Contrat actuel :** v3 sans affectation ; v4 pour devises de dépenses seules ; v5 dès qu’un plein/recharge ou entretien porte une affectation. PWA beta.9 et Android beta.38 lisent et écrivent ces formats ; Android beta.35 et PWA beta.7 refusent v5. Ne changez pas le numéro et ne supprimez pas les affectations pour contourner un refus. [Guide](DEVISES-ANDROID-BETA36.md).
+
+**Historique beta.7/beta.32 :** une sauvegarde PWA beta.7 avec affectation de devise est en **format 4** et n’est pas importable sur Android beta.32. Sans affectation, la PWA exporte encore en v3. Ne pas convertir le numéro de format ni supprimer les affectations pour contourner le refus. [Contrat et limites](DEVISES-PWA-BETA7.md).
 
 **PWA beta.6 / Android beta.31 :** le nouveau tri des dépenses est local à l’affichage, sans champ ni modification du JSON ; voir [TRI-DEPENSES-BETA31.md](TRI-DEPENSES-BETA31.md).
 
@@ -12,9 +14,9 @@
 
 **Beta.20 / PWA 1.5.2-beta.1 candidate :** les nombres très précis des extensions restent numériques et sont réexportés sans arrondi dans les scénarios testés. Un nombre fonctionnel trop précis ou trop grand est refusé avant remplacement ; les données déjà arrondies ne peuvent pas être reconstituées. Le thème et les propriétés supplémentaires des points CQ édités sont préservés. Base PWA IndexedDB 2→3 ; retour direct à 1.5.1 sur la même base bloqué. La PWA 1.5.1 demeure la référence familiale jusqu’aux essais réels ; aucun iPhone n’a été testé. Room 15 et JSON v3 inchangés côté Android. Voir [PRECISION-SAUVEGARDES.md](PRECISION-SAUVEGARDES.md).
 
-## Contrat réel
+## Contrat et historique du stockage
 
-Beta.19 garde le format d’échange JSON v3 et utilise Room 15 : les onze collections sont reconstruites depuis leurs sources typées, valeurs et extensions ; les anciennes copies JSON complètes des collections sont retirées après contrôle. Les propriétés répétées dans ces collections et certains nombres trop longs pour le lecteur strict sont refusés. Le format JSON v1/v2 est distinct du schéma Room v1/v2. Voir `MIGRATION-V11-V12.md`, `MIGRATION-V12-V13.md`, `MIGRATION-V13-V14.md` et `PLAN-MIGRATION-TYPEE.md`.
+Historiquement, beta.19 garde le format d’échange JSON v3 et utilise Room 15 : les onze collections sont reconstruites depuis leurs sources typées, valeurs et extensions ; les anciennes copies JSON complètes des collections sont retirées après contrôle. Les propriétés répétées dans ces collections et certains nombres trop longs pour le lecteur strict sont refusés. Le format JSON v1/v2 est distinct du schéma Room v1/v2. Voir `MIGRATION-V11-V12.md`, `MIGRATION-V12-V13.md`, `MIGRATION-V13-V14.md` et `PLAN-MIGRATION-TYPEE.md`.
 
 
 Les PWA 1.4.0, 1.5.0 et 1.5.1 exportent un JSON UTF-8 non chiffré sous cette forme :
@@ -32,13 +34,13 @@ Les PWA 1.4.0, 1.5.0 et 1.5.1 exportent un JSON UTF-8 non chiffré sous cette fo
 }
 ```
 
-Ce n’est **pas** un nouveau format de fichier : la structure et les noms restent ceux de `cq-auto/js/app.js` ; la version 1.5.0 ajoute des champs facultatifs dans des entrées et la 1.5.1 corrige les ressources du logo. Chaque entrée possède un `id` texte unique dans sa collection ; les huit collections liées à un véhicule possèdent un `vehicleId` présent dans `vehicles`. Photos et documents sont des `data:` URL base64, incluses dans la sauvegarde.
+Le schéma ci-dessus décrit l’historique v3 ; v4 ajoute `currencyAssignments` pour les dépenses et v5 étend les affectations aux pleins et entretiens. Chaque entrée a un `id` unique dans sa collection ; les huit collections liées à un véhicule possèdent un `vehicleId` présent dans `vehicles`. Photos et documents sont des `data:` URL base64, incluses dans la sauvegarde.
 
 Android accepte :
 
 - `CQ Auto` ou `VigieAuto` **format 1** sans `trips` ; un tableau `trips` non vide en format 1 est refusé pour éviter de le perdre (la PWA le viderait).
-- `VigieAuto` **format 2** avec trajets manuels, puis **format 3** avec trajets manuels ou GPS.
-- Android exporte systématiquement en **format 3**, avec les 11 collections, ce que la PWA 1.4.0 sait importer. Les très anciennes versions PWA ne savent pas nécessairement importer ce format.
+- `VigieAuto` **format 2** avec trajets manuels ; **format 3** avec trajets manuels ou GPS ; **format 4** avec devises de dépenses ; **format 5** avec devises de pleins et interventions, à partir d’Android beta.36.
+- Android beta.38 exporte en **v3** sans affectation, **v4** pour les seules dépenses, **v5** dès qu’un plein ou entretien est affecté. PWA beta.9 lit et écrit ces formats ; les anciennes versions ne lisent pas nécessairement v4/v5.
 
 Les champs supplémentaires d’un enregistrement sont conservés par Android, y compris les objets inconnus et les pièces jointes, sous réserve des limites de validation. Exception pour les trajets GPS : liste de champs autorisés conforme à la PWA 1.4.0 ; un champ de coordonnées ajouté est refusé. Les champs racine ou collections inconnus sont refusés plutôt que supprimés. Les espaces et l’ordre du JSON original ne sont pas garantis ; les métadonnées `app`, `formatVersion`, `exportedAt` sont réémises à l’export.
 

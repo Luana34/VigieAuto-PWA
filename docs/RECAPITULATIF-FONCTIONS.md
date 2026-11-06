@@ -1,6 +1,20 @@
 # VigieAuto — récapitulatif des fonctions
 
-**Actualisation du 5 novembre 2026 — PWA 1.5.2-beta.7 candidate / Android 0.4.0-beta.32 :** choix d’une devise par dépense dans la PWA, euro par défaut, anciens montants en euros et totaux séparés sans conversion. Android et les devises des pleins/entretiens restent à développer. **Une sauvegarde multidevise v4 ne peut pas être importée dans Android beta.32** ; une sauvegarde sans affectation reste en v3. Base PWA IndexedDB 5 ; sauvegarde externe avant essai. [Usage et limites](DEVISES-PWA-BETA7.md).
+**Actualisation du 6 novembre 2026 — Android 0.4.0-beta.39 / PWA candidate 1.5.2-beta.10 :** pour Sauge et Cyan sombres, seul le fond général est remplacé par `#121212` ; les cartes, surfaces et accents actuels de chaque plateforme sont conservés, comme les deux modes clairs. Le mode suit toujours le téléphone ; le choix mixte automatique est préservé. Room 17, IndexedDB 6 et sauvegardes JSON v1–v5 sont inchangés. Sauvegarder avant essai ; aucun téléphone ni Safari iOS n’a été validé. [Détails et contrôles](FONDS-SOMBRES-BETA39.md).
+
+**Historique du 6 novembre 2026 — Android 0.4.0-beta.38 / PWA candidate 1.5.2-beta.9 inchangée :** l’écran Pleins Android affiche la consommation du véhicule sélectionné entre pleins complets, partiels inclus : moyenne pondérée, dernier intervalle calculable et coût/km indicatif. Litres et kWh sont distincts ; le coût est masqué si les devises sont mélangées. Les lectures incomplètes, trop précises ou d’ordre ambigu ne produisent pas de résultat. Room 17 et JSON v1–v5 inchangés ; tableau de bord complet et liaison plein/dépense restent à développer. Sauvegarde externe avant essai ; aucun téléphone ni Safari iOS validé. [Usage et limites](CONSOMMATION-ANDROID-BETA38.md).
+
+**Historique du 6 novembre 2026 — Android 0.4.0-beta.37 / PWA candidate 1.5.2-beta.9 inchangée :** les écrans Android Pleins et Entretien affichent maintenant, pour le véhicule sélectionné, leurs totaux séparés par devise, sans conversion et sans somme avec les dépenses. EUR reste la devise historique. Les coûts saisis deux fois ne sont pas détectés ; tableau de bord complet et consommation Android restent à développer. Room 17 et JSON v1–v5 inchangés. Sauvegarde externe avant essai ; aucun téléphone ni Safari iOS validé. [Usage et résultats](TOTAUX-ANDROID-BETA37.md).
+
+**Historique du 6 novembre 2026 — Android 0.4.0-beta.36 / PWA candidate 1.5.2-beta.9 :** les deux versions conservent la devise de chaque dépense, plein/recharge et entretien, sans conversion ; anciennes opérations en EUR. Les formats v3, v4 et v5 sont échangeables entre ces deux préversions ; Android beta.35 refuse toujours v5. Android Room 17, PWA IndexedDB 6. Sur Android, les totaux séparés existent pour les dépenses seulement ; ceux des pleins et entretiens restent à développer. Aucun lien automatique plein/dépense. Sauvegarde externe avant essai ; appareil Android et Safari iOS non validés. [Guide et résultats](DEVISES-ANDROID-BETA36.md).
+
+**Historique du 6 novembre 2026 — PWA candidate 1.5.2-beta.8 / Android 0.4.0-beta.35 :** la PWA conserve une devise par dépense, plein/recharge ou intervention ; anciens montants en EUR, totaux séparés sans conversion. Le coût énergétique au kilomètre est masqué si les intervalles mêlent les devises. Le fichier est en v3 sans affectation, v4 pour les seules dépenses, v5 si un plein ou entretien a une affectation. **Android beta.35 refuse v5** et ne prend pas encore en charge ces deux types de devise. IndexedDB 6 et Room 16. Sauvegarde externe obligatoire avant essai ; pas de validation sur iPhone ou téléphone Android. [Mode d’emploi et limites](DEVISES-OPERATIONS-BETA8.md) · [Frontière Android](DEVISES-ANDROID-BETA35.md).
+
+**Historique du 6 novembre 2026 — Android 0.4.0-beta.34 / PWA candidate 1.5.2-beta.7 inchangée :** devise par dépense, euro par défaut, totaux séparés et aucune conversion. Android permet maintenant le choix, la modification, le justificatif, la suppression et l’Undo des dépenses à devise explicite ; le changement de devise existante demande confirmation. Conflits et extensions sont vérifiés ; Room 16 et JSON v3/v4 restent inchangés. Pleins et entretiens restent en euros, sans lien automatique plein/dépense. Sauvegarder avant essai. [Détails et limites](DEVISES-ANDROID-BETA34.md).
+
+**Historique du 5 novembre 2026 — Android 0.4.0-beta.33 / PWA candidate 1.5.2-beta.7 inchangée :** Android lit et réexporte les sauvegardes multidevises v4, affiche les devises et des totaux séparés, sans conversion. Les anciennes dépenses sans affectation restent en euros. **Les dépenses avec affectation explicite sont en lecture seule sur Android** ; choix, modification, suppression et justificatif correspondant restent à traiter depuis la PWA, puis à porter sur Android. Pleins et entretiens restent en euros ; aucun lien plein/dépense. Sauvegarde externe avant essai. [Détails, tests et limites](DEVISES-ANDROID-BETA33.md).
+
+**Historique du 5 novembre 2026 — PWA 1.5.2-beta.7 candidate / Android 0.4.0-beta.32 :** choix d’une devise par dépense dans la PWA, euro par défaut, anciens montants en euros et totaux séparés sans conversion. Android et les devises des pleins/entretiens restent à développer. **Une sauvegarde multidevise v4 ne peut pas être importée dans Android beta.32** ; une sauvegarde sans affectation reste en v3. Base PWA IndexedDB 5 ; sauvegarde externe avant essai. [Usage et limites](DEVISES-PWA-BETA7.md).
 
 **Historique du 5 novembre 2026 — PWA 1.5.2-beta.6 candidate / Android 0.4.0-beta.31 :** la PWA permet de trier les dépenses du véhicule actif par date, catégorie ou montant ; ce tri est visuel et ne modifie pas les données. Ces tris existaient déjà sur Android, dont le code métier est inchangé. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](TRI-DEPENSES-BETA31.md).
 
@@ -14,7 +28,7 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Document vivant : à actualiser à chaque mise à jour**, même lorsqu’elle est uniquement technique. Dernière mise à jour : 5 novembre 2026. Il distingue la PWA familiale **1.5.1**, la PWA candidate **1.5.2-beta.7** et le projet Android **0.4.0-beta.32**. La bêta est une préversion de développement, pas la version 0.4.0 stable ; les étapes futures ci-dessous ne sont pas des fonctions disponibles.
+**Document vivant : à actualiser à chaque mise à jour.** Dernière mise à jour : 6 novembre 2026. PWA familiale **1.5.1**, candidate **1.5.2-beta.9** et Android **0.4.0-beta.38**. Ce sont des préversions ; les étapes futures ne sont pas des fonctions disponibles.
 
 **Décision du 4 novembre — carnet :** détails multi-pièces, catégories par familles et sélecteur plein écran, liens cartes, sous-types carburant et compatibilité JSON à vérifier ; un premier lot existe dans la **PWA beta.2 candidate et Android beta.27** ; les essais réels restent à faire. L’utilisateur indique avoir installé la candidate sur Android et importé son JSON sans perte constatée ; iPhone non disponible. [Détails](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet).
 
@@ -46,7 +60,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Fonctions communes
 
-| Fonction | PWA 1.5.2-beta.7 candidate | Android 0.4.0-beta.32 |
+| Fonction | PWA 1.5.2-beta.9 candidate | Android 0.4.0-beta.38 |
 |---|---|---|
 | Utilisation en français, plusieurs véhicules, fonctionnement local | Oui | Oui |
 | Sans compte, abonnement, pub, serveur de synchronisation ou télémétrie dans l’application | Oui | Oui |
@@ -90,7 +104,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 - Enregistrer, modifier et supprimer les ravitaillements, la date, le compteur, le volume en litres ou kWh, le prix, la station et l’indication plein/recharge complet ou partiel. Le total proposé peut être corrigé. Un sous-type libre et des suggestions par véhicule sont proposés dans les deux préversions ; la carte s’ouvre uniquement sur demande.
 - **PWA :** consommation moyenne et coût énergétique indicatif calculés entre pleins complets cohérents. Les volumes partiels intermédiaires sont inclus ; litres et kWh ne sont pas mélangés ; un compteur incohérent ou une distance nulle ne produit pas une consommation valide. L’estimation électrique suppose des recharges complètes et comprend les pertes. Un suivi séparé d’hybride rechargeable n’est pas encore proposé.
-- **Android :** le carnet des pleins fonctionne, mais les statistiques de consommation et graphiques ne sont pas encore disponibles.
+- **Android beta.38 :** carte de consommation entre pleins complets, partiels inclus ; moyenne pondérée, dernier intervalle calculable et coût/km monodevise, L et kWh séparés. Les données insuffisantes ou incompatibles ne produisent pas de moyenne trompeuse ; les graphiques restent à développer. [Limites](CONSOMMATION-ANDROID-BETA38.md).
 - Les montants correspondent aux informations saisies, pas à une estimation garantie du coût total de possession.
 
 ## Trajets
@@ -102,26 +116,27 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Dépenses, contrôles qualité, symptômes et documents
 
-| Rubrique | PWA 1.5.2-beta.7 candidate | Android 0.4.0-beta.32 |
+| Rubrique | PWA 1.5.2-beta.9 candidate | Android 0.4.0-beta.38 |
 |---|---|---|
-| Dépenses et justificatif photo | Dépenses triables, devise par dépense et totaux séparés ; kilométrage et photo facultatifs ; EXIF éventuelles conservées ; v4 multidevise non importable sur Android | Liste, tri, total, saisie/édition/suppression avec Undo ; une photo facultative convertie en JPEG sans EXIF ; devise et lien sans double comptage à faire |
+| Dépenses et justificatif photo | Tri, devise par dépense, totaux séparés ; kilométrage et photo facultatifs ; EXIF éventuelles conservées | Tri, devise par dépense, totaux séparés, édition, suppression avec Undo ; photo JPEG sans EXIF ajoutée par Android ; lien sans double comptage à faire |
+| Devises des pleins et interventions | Devise par opération, totaux séparés ; coût/km masqué si intervalles multidevises | Devise par opération, édition et Undo ; totaux par devise sur chaque écran, pour le véhicule sélectionné ; pas encore de tableau de bord complet |
 | CQ, modèles de checklists et historique | Six modèles de départ ; modèles personnalisables, points individuels déplaçables ou supprimables, et contrôles | Consultation partielle des données importées ; création/édition complètes à développer |
 | Symptômes | Journal d’observations et conseils de prudence | Symptômes importés conservés dans Room et exportables en JSON ; écran complet à développer |
 | Documents et photos | Ajouter, télécharger et supprimer images/PDF jusqu’à 5 Mio via le formulaire ; pas d’édition d’un document existant | Conservation typée dans Room et import/export ; aucun nouvel écran Documents |
-| Statistiques | Coûts, consommation, graphique des six derniers mois et coût énergétique indicatif | Pas encore de tableau de bord statistique complet |
+| Statistiques | Coûts, consommation, graphique des six derniers mois et coût énergétique indicatif | Consommation et coût/km indicatif dans Pleins ; tableau de bord et graphiques complets à développer |
 
 L’application ne remplace ni un professionnel ni un diagnostic mécanique. Pour un risque de sécurité, s’arrêter en sécurité et demander l’avis d’un professionnel. Une future association des documents à une intervention précise n’est pas encore implémentée.
 
 ## Sauvegardes et échange Android ↔ PWA
 
-- Format d’export commun **JSON v3**, imports compatibles v1–v3. La candidate préserve les nombres précis des extensions dans les scénarios testés ; une valeur fonctionnelle non représentable est refusée avant remplacement. Racines/collections inconnues, clés répétées et limites documentées donnent aussi un refus prudent. La PWA familiale 1.5.1 peut toujours arrondir : garder les originaux et consulter `PRECISION-SAUVEGARDES.md`.
+- **JSON v3** sans affectation, **v4** pour les dépenses seules et **v5** pour les devises de plein/entretien sont compatibles entre PWA beta.9 et Android beta.38. Android beta.35 et PWA beta.7 refusent v5. Ne pas modifier le numéro ni effacer les affectations. Garder les originaux ; voir `PRECISION-SAUVEGARDES.md`.
 - **Android beta.6 :** Réglages → Vérifier un JSON donne le format et les quantités des 11 catégories sans remplacer la base ni modifier le fichier sélectionné. Cela ne garantit ni une sauvegarde complète/récente, ni l’ouverture des pièces jointes, ni une restauration réussie. Une copie temporaire privée non chiffrée est créée ; son nettoyage est tenté mais peut échouer.
 - Les fichiers JSON sont **non chiffrés**, potentiellement volumineux et contiennent des données personnelles. Les transmettre uniquement par un moyen choisi et sûr. Aucune liaison directe, serveur obligatoire ni synchronisation n’est fournie.
 - Côté Android, l’analyse précède la confirmation puis le remplacement s’effectue en transaction. Les documents sont conservés en blocs et contrôlés par empreinte SHA-256 ; les limites documentées sont 256 Mio par fichier, 100 000 entrées et environ 16 Mio de caractères JSON par objet, avec une limite de 32 Mio UTF-8 par objet.
 - Pour revenir d’Android vers la PWA : faire d’abord une sauvegarde de la PWA destinataire, exporter depuis Android, puis importer après confirmation. L’import remplace toute sa base locale. Garder les deux copies initiales jusqu’à vérification.
-- Room 15 conserve les cinq projections et reconstruit les onze collections reconnues depuis leurs sources typées et valeurs/extensions, sans copie complète auxiliaire. Les longues valeurs et pièces jointes peuvent rester en blocs vérifiés. Voir `MIGRATION-V11-V12.md`, `MIGRATION-V12-V13.md` et `MIGRATION-V13-V14.md`.
+- Room 17 conserve les données typées, projections et extensions, ainsi que les affectations de devises des dépenses, pleins et entretiens. Les longues valeurs et pièces jointes peuvent rester en blocs vérifiés. Les totaux Android des pleins/entretiens sont disponibles séparément par devise ; le tableau de bord complet reste à développer.
 
-- **Prudence PWA :** la version familiale 1.5.1 conserve ses limites d’arrondi et de propriétés CQ/thème. La candidate 1.5.2-beta.2 protège ces cas testés, mais impose des refus explicites et n’a pas été essayée sur iPhone réel. Sauvegarder avant toute mise à jour ; une base IndexedDB migrée en v4 ne s’ouvre pas directement en 1.5.1 ou beta.1.
+- **Prudence PWA :** la version familiale 1.5.1 peut arrondir certains nombres. La candidate beta.9 n’a pas été essayée sur iPhone réel ; sauvegarder avant mise à jour. Une base IndexedDB migrée en v6 ne se rouvre pas directement dans les anciennes PWA.
 
 ## Installation et fonctionnement hors ligne
 
@@ -213,14 +228,14 @@ La beta.9 ne modifie aucune fonction du carnet : elle corrige la configuration e
 - Les cartes des listes Entretien, Pleins et Trajets sont composées au besoin, avec clés stables ; le changement de véhicule ou d’onglet revient en haut. Les données restent en mémoire : pas de pagination SQL ni de mesure de FPS sur téléphone.
 - Hilt injecte une base Room unique, des interfaces et adaptateurs par rubrique, des modèles distincts des entités et un ViewModel testable. L’interface reprend les fonctions de l’alpha et les ajouts successifs des bêtas ; les adaptateurs s’appuient encore sur un moteur JSON transactionnel commun.
 - Catalogue local chargé à l’ouverture du formulaire ; nettoyage des copies d’import sur IO et protection des imports actifs en cas d’annulation. Les flux de conversion sont répartis hors du thread principal. Aucune accélération n’est affirmée sans mesures.
-- Un calcul de consommation préparatoire respecte les pleins complets et partiels, la distance et les unités ; il est comparé à la PWA mais **aucune statistique Android n’est encore affichée**.
+- **Étape beta.1 historique :** le calcul préparatoire n’était pas encore relié à l’écran. Il est affiché dans Pleins depuis beta.38, avec les limites indiquées plus haut.
 - StrictMode et les rapports du compilateur Compose sont des outils de développement. LeakCanary est **désactivé par défaut**, optionnel en debug uniquement ; sa variante ajoute des permissions de stockage/notifications et des dumps mémoire potentiellement sensibles. Utiliser uniquement des données fictives sur appareil de test.
 - Beta.5 : 60 tests JVM ciblés réussis sans échec ni ignoré, dont annulation, recréation d’écran, délai mis en pause et rollback d’une suppression en erreur ; compilation debug réussie et lint 0 erreur/16 avertissements. La suite complète de 123 tests avec retours PWA fictifs concerne beta.1 et n’a pas été entièrement relancée pour ce lot sans changement du stockage. Quatre tests instrumentés de migration compilés en beta.1 restent non exécutés sur appareil ; aucune mesure physique de fluidité, de RAM ou de démarrage.
 - Le retour à beta.18 ou aux versions antérieures n’est pas une simple rétrogradation : une base migrée en Room 15 n’est pas directement lisible par Room 14 ou par les schémas précédents. Garder les sauvegardes externes et tester une éventuelle restauration à part.
 
 ## Ce qui est prévu mais pas encore réalisé
 
-Phases futures : terminer le véhicule Android (suppression, prise de vue et autres champs) ; devise et liaison des dépenses, CQ/symptômes/documents complets ; statistiques ; GPS Android facultatif puis Bluetooth assisté de l’autoradio ; notifications, widgets, recherche et accessibilité ; partage familial, flotte et tablette. Stations après 0.4.0 stable. Voir [le plan](PLAN-PRIORITES-APRES-BETA16.md).
+Phases futures : terminer le véhicule Android (suppression, prise de vue et autres champs) ; liaison des dépenses, CQ/symptômes/documents complets ; tableau de bord statistique ; GPS Android facultatif puis Bluetooth assisté de l’autoradio ; notifications, widgets, recherche et accessibilité ; partage familial, flotte et tablette. Stations après 0.4.0 stable. Voir [le plan](PLAN-PRIORITES-APRES-BETA16.md).
 
 **Stations & Prix carburants :** module Android futur spécifié, non implémenté et prévu après le socle 0.4.0 stable. Il envisage des prix officiels, une localisation ponctuelle facultative et un cache local partiel. La carte, la source, les services réseau et leurs implications pour la confidentialité restent à vérifier. Voir [`module-stations-carburants.md`](module-stations-carburants.md).
 

@@ -1,16 +1,20 @@
 # VigieAuto — carnet de bord automobile
 
-VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.7, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
+**Beta.10 :** les fonds Sauge et Cyan sombres passent à `#121212` ; les cartes, accents et modes clairs restent inchangés. [Détails](docs/FONDS-SOMBRES-BETA39.md).
 
-**Candidate de test, non validée sur iPhone réel.** La version familiale 1.5.1 reste disponible. Cette candidate protège les nombres précis des extensions JSON, refuse avant remplacement les valeurs fonctionnelles impossibles à utiliser sans arrondi, et conserve les extensions du thème et des points CQ édités. Elle ne reconstitue pas les chiffres déjà perdus. La candidate ajoute le carnet enrichi ; l’IndexedDB passe de 2, 3 ou 4 à 5 : les anciennes PWA ne peuvent pas rouvrir directement la base mise à niveau. Sauvegardez chaque appareil avant tout essai ; voir [Précision des sauvegardes](docs/PRECISION-SAUVEGARDES.md).
+VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.10, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
+
+**Candidate de test, non validée sur iPhone réel.** La version familiale 1.5.1 reste disponible. Cette candidate protège les nombres précis des extensions JSON, refuse avant remplacement les valeurs fonctionnelles impossibles à utiliser sans arrondi, et conserve les extensions du thème et des points CQ édités. Elle ne reconstitue pas les chiffres déjà perdus. La candidate ajoute le carnet enrichi ; l’IndexedDB passe de 2, 3, 4 ou 5 à 6 : les anciennes PWA ne peuvent pas rouvrir directement la base mise à niveau. Sauvegardez chaque appareil avant tout essai ; voir [Précision des sauvegardes](docs/PRECISION-SAUVEGARDES.md).
 
 Pour savoir quoi faire du ZIP et installer la PWA sur Android, consultez [INSTALLER.md](INSTALLER.md).
 
-**Devises :** chaque dépense peut conserver sa devise, euro par défaut et sans conversion. Une sauvegarde contenant une affectation est en format 4 et **ne peut pas encore être importée dans Android beta.32** ; sans affectation, l’export reste en format 3. [Détails](docs/DEVISES-PWA-BETA7.md).
+**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.39 et PWA beta.10 sont compatibles. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
 
 ### Documents de suivi du projet
 
-- [Devises par dépense et limites d’échange](docs/DEVISES-PWA-BETA7.md)
+- [Totaux Android beta.37 et limites d’échange](docs/TOTAUX-ANDROID-BETA37.md)
+- [Portage historique des devises beta.36](docs/DEVISES-ANDROID-BETA36.md)
+- [Guide historique PWA beta.8](docs/DEVISES-OPERATIONS-BETA8.md)
 
 - [Trier les dépenses par date, catégorie ou montant](docs/TRI-DEPENSES-BETA31.md)
 
@@ -68,7 +72,7 @@ La préférence est enregistrée localement dans IndexedDB. Elle est incluse dan
 - Trajets **manuels** : chronomètre démarré et terminé par l’utilisateur, ou trajet ajouté après coup ; distance et profil saisis, historique et coût énergétique indicatif fondé sur les pleins valides.
 - Trajets **GPS facultatifs** : depuis Trajets, choisissez « Avec GPS » et confirmez avant la demande d’autorisation. L’app estime la distance pendant que la page est visible ; elle enregistre le total et les interruptions, **sans stocker automatiquement les coordonnées ni une trace de l’itinéraire**. À l’arrêt, terminez le trajet et vérifiez/corrigez la distance proposée. La mesure peut être incomplète ou imprécise ; le mode manuel reste disponible.
 - Entretiens avec lignes de pièces/opérations chiffrées et main-d’œuvre séparée, plusieurs catégories et recherche plein écran ; pleins avec sous-types de carburant libres ; autres dépenses et rappels par date et/ou kilométrage. Le détail est facultatif et les anciens montants sont conservés.
-- **Dépenses :** tri par date, catégorie ou montant, devise par dépense et totaux séparés sans conversion. Les pleins et entretiens restent en euros ; Android ne lit pas encore les sauvegardes multidevises v4. Les catégories de la candidate correspondent à celles du premier écran Android beta.28. Une dépense et un plein restent indépendants ; les doublons manuels ne sont pas détectés et les statistiques peuvent les additionner deux fois. La candidate PWA permet d’ajouter ou de modifier un kilométrage facultatif sans changer le compteur du véhicule. Après enregistrement, une photo facultative est ajoutée depuis la liste ; JPG, PNG, WebP ou GIF jusqu’à 5 Mio. Elle reste incluse dans les sauvegardes non chiffrées et peut conserver des métadonnées GPS. [Détails](docs/JUSTIFICATIFS-BETA29.md).
+- **Dépenses :** tri par date, catégorie ou montant, devise par dépense et totaux séparés sans conversion. La PWA permet aussi une devise par plein/recharge ou intervention ; Android beta.37 accepte v4/v5 et affiche les totaux par devise des pleins et entretiens. Les catégories de la candidate correspondent à celles du premier écran Android beta.28. Une dépense et un plein restent indépendants ; les doublons manuels ne sont pas détectés et les statistiques peuvent les additionner deux fois. La candidate PWA permet d’ajouter ou de modifier un kilométrage facultatif sans changer le compteur du véhicule. Après enregistrement, une photo facultative est ajoutée depuis la liste ; JPG, PNG, WebP ou GIF jusqu’à 5 Mio. Elle reste incluse dans les sauvegardes non chiffrées et peut conserver des métadonnées GPS. [Détails](docs/JUSTIFICATIFS-BETA29.md).
 - Bouton facultatif de recherche Google Maps depuis le lieu d’intervention ou la station : il envoie le texte au service externe, qui nécessite généralement Internet ; aucun choix d’application de cartes ni résultat exact n’est garanti.
 - Six listes de contrôle préchargées, listes personnalisables, exécution et historique.
 - Journal de symptômes, documents locaux (images ou PDF de 5 Mo maximum par fichier), statistiques et graphique des six derniers mois.
@@ -112,7 +116,7 @@ Les fichiers sont statiques ; aucun serveur applicatif n’est nécessaire. Un h
 
 Pour tester sans toucher à la base familiale, choisissez un appareil de test ou une **origine différente** (protocole, domaine ou port). Un autre chemin sur le même domaine — par exemple deux dépôts du même compte GitHub Pages — peut partager IndexedDB. Un changement de domaine, de port, de navigateur ou d’appareil peut entraîner un stockage différent. **Exportez avant le changement, puis importez la sauvegarde dans la nouvelle installation.** L’aperçu fourni pendant le développement n’est pas un hébergement pérenne.
 
-**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Ensuite seulement, si vous décidez la mise à jour, remplacez les fichiers de l’application par ceux de cette version. La base locale garde son ancien nom interne ; la candidate passe IndexedDB de la version 2, 3 ou 4 à 5 et ajoute une collection séparée pour les devises. Une installation plus ancienne ajoute au besoin la collection des trajets. Fermez les autres onglets de l’ancienne version avant la mise à jour. L’export est au format 3 sans affectation de devise, au format 4 sinon ; Android actuel ne lit pas le format 4. Les formats VigieAuto 2–3 et CQ Auto 1 restent importables. Les anciennes versions ne savent pas nécessairement lire les nouvelles données ou sauvegardes : ne revenez pas en arrière sans précaution. Laissez l’application ouverte en ligne le temps que la nouvelle version soit mise en cache, puis rechargez-la. Si l’ancienne interface reste affichée, fermez et rouvrez l’application en ligne. Vérifiez **Réglages → en bas de page → version 1.5.2-beta.7**. **Ne supprimez pas les données du navigateur pour forcer une mise à jour** : cela pourrait effacer votre carnet.
+**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Une base plus ancienne migre vers IndexedDB 6 (la beta.8 est déjà en 6) ; fermez les autres onglets, puis laissez la PWA se mettre en cache en ligne. L’ancienne version ne peut plus rouvrir directement cette base. Les formats compatibles v1 à v5 restent importables. L’export est en v3 sans affectation, v4 pour les dépenses seules, et v5 si un plein ou entretien est affecté. Android beta.37 accepte v5, beta.35 le refuse. Vérifiez Réglages → version 1.5.2-beta.10 et ne supprimez pas les données du navigateur pour forcer une mise à jour. [Détails](docs/DEVISES-OPERATIONS-BETA8.md).
 
 ### Installer sur téléphone
 
@@ -129,7 +133,7 @@ Les calculs critiques disposent de tests sans dépendance. Avec Node.js 18 ou pl
 npm test
 ```
 
-Pour retester le refus de l’ancienne PWA dans le test des devises, fournir son ZIP via la variable `VIGIE_PREVIOUS_PWA`. Sans ce ZIP, ce seul contrôle est annoncé ignoré.
+Pour le test `test:devises-operations`, fournir le ZIP PWA beta.7 via `VIGIE_PREVIOUS_PWA` si nécessaire ; ce contrôle refuse de le simuler. Pour l’ancien test `test:devises`, le ZIP beta.6 facultatif utilise la même variable.
 
 Des tests d’interface Playwright sont également fournis pour les thèmes, la navigation, les formulaires, l’import/export et le hors-ligne. Ils nécessitent les dépendances de développement et Chromium ; ils démarrent un serveur local de test :
 
@@ -140,6 +144,7 @@ npm run test:interface
 npm run test:carnet
 npm run test:justificatifs
 npm run test:devises
+npm run test:devises-operations
 npm run test:catalogue
 npm run test:logo
 npm run test:archive

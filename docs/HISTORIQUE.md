@@ -1,10 +1,58 @@
 # Historique du projet VigieAuto
 
-**Dernière mise à jour : 5 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.7 · Android 0.4.0-beta.32**
+**Dernière mise à jour : 6 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.10 · Android 0.4.0-beta.39**
 
 Ce journal rassemble les demandes, les décisions, les réalisations, les corrections et les limites du projet. Il est tenu au fil des échanges : chaque évolution doit être ajoutée ici, sans effacer les décisions précédentes, et les changements de périmètre doivent être indiqués explicitement.
 
 > **Reconstitution :** les premières étapes ci-dessous sont établies à partir du contexte conservé et des versions du projet. Les dates et la formulation exacte de toutes les anciennes demandes ne sont pas disponibles. Les éléments dont le statut est incertain sont marqués comme tels ; ce document n’invente pas de validation manquante.
+
+## Choix du fond sombre — Sauge et Cyan
+
+Après deux maquettes comparatives, la personne utilisatrice a choisi les couleurs actuelles avec **le fond général sombre `#121212`**, partout. Android beta.39/code 43 et la PWA beta.10 appliquent ce fond à Sauge et Cyan ; chaque plateforme conserve ses cartes, accents et surfaces actuels, ainsi que les modes clairs. Mode système et choix automatique restent identiques. Room 17, IndexedDB 6 et JSON v1–v5 sont inchangés. Les deux maquettes n’avaient pas modifié l’application.
+
+Sous Linux : 18 tests Android ciblés réussis, dont le thème Compose et la navigation ; 64 tests PWA, 20 tests d’archivage PWA et 83 tests Python Android réussis. APK debug et APK de tests instrumentés assemblés ; lint : 0 erreur, 20 avertissements et 5 indications ; instrumentés non exécutés. Les 13 rubriques, cartes et fonds Sauge/Cyan, les modes clair et automatique et le mobile ont été contrôlés sous Chromium et WebKit Linux. La vraie mise à jour PWA beta.9 → beta.10 a conservé des données fictives et permis leur export hors ligne sous les deux moteurs. La suite Android complète n’a pas été relancée.
+
+Les validations Android Studio Windows, émulateur, téléphone et Safari iOS restent à faire ; aucune mesure de performance sur appareil. [Détails](FONDS-SOMBRES-BETA39.md).
+
+## Historique — consommation Android entre pleins complets
+
+Après « Poursuis », Android beta.38/code 42 relie à l’écran Pleins la lecture Room et le calcul de consommation du véhicule actif, partiels compris. Moyenne pondérée, dernier intervalle calculable et coût/km indicatif sont séparés en L et kWh ; devises mélangées : coût masqué sans conversion. Les données illisibles, trop précises ou d’ordre ambigu bloquent prudemment la carte. Room 17, JSON v1–v5 et PWA beta.9 restent inchangés. Liaison plein/dépense et tableau de bord complet restent à réaliser.
+
+Sous Linux : 169 tests Android ciblés réussis, sept scénarios communs au moteur Kotlin et à la PWA, pont fictif v5 Chromium/WebKit et 59 tests PWA. Suite complète, appareil, émulateur, Windows et Safari iOS non validés ; aucune mesure de performance. [Détails](CONSOMMATION-ANDROID-BETA38.md).
+
+## Historique — totaux Android des pleins et entretiens
+
+Après « Poursuis », Android beta.37/code 41 affiche les totaux du véhicule actif, séparés par devise, sur les écrans Pleins et Entretien. Les entretiens additionnent pièces et main-d’œuvre ; les pleins incluent recharges, sans addition avec les dépenses et sans conversion. Les totaux deviennent indisponibles si les données nécessaires ne sont pas fiables et sont masqués pendant la mise en cohérence de la liste. Pas de liaison automatique ni de détection des doublons ; consommation et tableau de bord complet Android restent à faire. Room 17, JSON v1–v5 et PWA beta.9 inchangés.
+
+Sous Linux : 140 tests Android ciblés distincts réussis en deux groupes ; pont fictif PWA beta.9 sous Chromium et WebKit, y compris contrôle des totaux après retour Room ; 59 tests unitaires PWA et 19 tests d’archive PWA. APK debug et instrumenté assemblés ; lint 0 erreur, 20 avertissements et 4 indications. 65 scénarios instrumentés déclarés mais non exécutés. Pas de suite complète finale ni essai sur Windows, GitHub, émulateur, téléphone ou Safari iOS ; aucune mesure de performance. [Détails](TOTAUX-ANDROID-BETA37.md).
+
+## Historique — devises des pleins et entretiens sur Android
+
+Après « Poursuis », Android beta.36/code 40 ajoute affichage, choix et modification de la devise des pleins et entretiens, ainsi que leur préservation dans la suppression/Undo. Les anciennes opérations restent en EUR, sans conversion ; le changement d’une devise existante demande confirmation. Room 16→17 et JSON v1–v5 ; les indices métier portent la devise avec le montant. La PWA beta.9 met à jour les messages et le cache sans modifier IndexedDB 6. Les données sont échangées manuellement ; v5 reste refusé par Android beta.35 et PWA beta.7. Pas de liaison automatique plein/dépense.
+
+Sur le code final : 143 tests Android ciblés distincts réussis sous Linux ; pont fictif Android → PWA → Room → PWA sous Chromium et WebKit ; 59 tests PWA et mise à jour réelle beta.8→beta.9 hors ligne sur les deux moteurs. APK debug et instrumenté assemblés ; lint 0 erreur, 20 avertissements, 3 indications. 65 scénarios instrumentés déclarés, aucun exécuté. Pas de suite Android complète finale, ni d’essais Windows, GitHub, émulateur, téléphone ou Safari iOS, ni de mesures. Sur Android seuls les totaux de dépenses sont disponibles ; totaux pleins/entretiens et tableau de bord restent à faire. [Détails](DEVISES-ANDROID-BETA36.md).
+
+## Historique — devises des pleins et interventions, PWA d’abord
+
+Après « Poursuis », la PWA candidate beta.8 ajoute une devise par plein/recharge et intervention, en plus des dépenses : les anciennes opérations restent en euros, les montants et graphiques restent séparés, aucun taux n'est appliqué. Le coût par kilomètre et l'estimation des trajets sont masqués pour des intervalles multidevises. Édition confirmée sans conversion, 32 codes au maximum, affectations qualifiées par collection, contrôle d'onglet et cascade transactionnels.
+
+La PWA migre IndexedDB de 5 à 6 et exporte en v5 dès qu'un plein ou entretien porte une affectation ; v3 et v4 restent possibles selon le contenu. L'ancienne PWA beta.7 et Android beta.35 refusent v5 au lieu de réétiqueter les montants. Un contrat empêche aussi une ancienne interface d’ouvrir le nouveau module de stockage si un cache mélange les versions. **Android ne sait pas encore porter les devises de pleins/entretiens** : beta.35 code 39 ajoute des tests de refus/rollback et des documents, sans changement métier ni migration Room.
+
+Sous Linux, 59 tests PWA, les parcours Chromium et WebKit, et 25 tests Android ciblés réussissent ; le vrai export PWA v5 est refusé sans remplacement, y compris si le fichier est modifié après préparation, avec rollback Room. La suite Android complète, Windows, émulateurs, téléphones, Safari iOS et performances restent à vérifier. Voir [DEVISES-OPERATIONS-BETA8.md](DEVISES-OPERATIONS-BETA8.md) et [DEVISES-ANDROID-BETA35.md](DEVISES-ANDROID-BETA35.md).
+
+## Poursuite — édition Android des dépenses multidevises
+
+Après « Poursuis », la beta.34 ouvre le choix de devise, l’édition et le justificatif pour les dépenses importées, et conserve l’affectation et toutes ses extensions dans la suppression/Undo. Une confirmation explicite précise qu’aucune conversion n’est faite. Les totaux restent séparés ; les anciennes opérations implicites restent en EUR. La limite de 32 codes inclut l’euro et s’applique également à l’Undo.
+
+Les vérifications couvrent les conflits sur dépense/affectation/génération du véhicule, y compris import identique, les extensions longues et les nombres exacts, un justificatif, une panne d’écriture, un Undo altéré, sa reprise après fermeture et une limite atteinte. Room 16, JSON v3/v4 et PWA beta.7 restent inchangés. Aucun lien automatique plein/dépense ni conversion des pleins/entretiens n’est inventé. [Détails](DEVISES-ANDROID-BETA34.md).
+
+Sous Linux : 67 tests Android ciblés réussis en groupes, plus deux retours PWA réimportés ; 55 tests PWA ; APK debug 12 482 849 octets, code 38, min 26/cible 36 ; APK instrumenté assemblé, 63 scénarios déclarés non exécutés ; lint 0 erreur, 20 avertissements et 3 indications. Les tests ciblés et les échanges fictifs Android → PWA → Android réussissent sous Linux ; Chromium et WebKit Linux ne remplacent pas Safari iPhone, et Robolectric ne remplace pas un appareil. Les tests JVM ont tous été compilés ; la suite complète n’a pas été exécutée. Une première compilation non bornée a été interrompue après une forte pression mémoire ; la compilation complète des tests a ensuite réussi avec des limites mémoire et un processus neuf. Les essais Windows, émulateur, téléphone, GitHub et les mesures de performance ne sont pas revendiqués.
+
+## Poursuite — premier pont Android multidevise
+
+Après la demande « Poursuis » et l’alerte d’espace, les archives et sources ont été vérifiées ; un cache temporaire volumineux a été déplacé hors des fichiers sauvegardés. La beta.33 Android importe/réexporte le format v4 de la candidate, affiche les devises et sépare les totaux ; les anciennes opérations restent en euros. Room 15→16 ajoute des affectations typées sans transformer les données. Par précaution, les dépenses avec affectation sont en lecture seule sur Android jusqu’à l’adaptation du formulaire, des conflits et de l’Undo ; pleins, entretiens et lien anti-doublon restent à traiter. La PWA beta.7 ne change pas. [Détails et contrôles](DEVISES-ANDROID-BETA33.md).
+
+Tests ciblés et migrations sur Linux, pont fictif Chromium/WebKit, APK debug et instrumenté assemblés, lint 0 erreur/20 avertissements/3 indications ; instrumentés non exécutés, suite complète non relancée. Aucun essai réel ni performance mesurée. Un lancement groupé de tests a été interrompu après dix minutes ; les classes concernées ont réussi séparément. La personne utilisatrice a demandé des livraisons plus rapides : aucune durée future ne peut être garantie.
 
 ## Poursuite — devise par opération, premier lot PWA
 

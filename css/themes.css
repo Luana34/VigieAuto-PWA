@@ -65,7 +65,7 @@
 /* Une palette sombre spécifique à Sauge, appliquée à toutes les vues. */
 :root[data-theme="sauge-dark"] {
   color-scheme: dark;
-  --bg: #0e1d17;
+  --bg: #121212;
   --surface: #193128;
   --surface-alt: #234137;
   --ink: #eef6ef;
@@ -96,7 +96,7 @@
 }
 :root[data-theme="cyan-dark"] {
   color-scheme: dark;
-  --bg: #0b1d23;
+  --bg: #121212;
   --surface: #142f36;
   --surface-alt: #1a3a42;
   --ink: #e7f4f3;
@@ -125,6 +125,9 @@
   --shadow: 0 8px 25px rgba(0,0,0,.13);
   --nav-shadow: 0 -6px 24px rgba(0,0,0,.2);
 }
+/* Le fond du document doit aussi être sombre : :root du style de base est plus spécifique que html. */
+:root[data-theme="sauge-dark"],
+:root[data-theme="cyan-dark"] { background: var(--bg); }
 html, body { background: var(--bg); color: var(--ink); }
 button:focus-visible, input:focus-visible, select:focus-visible,
 textarea:focus-visible, a:focus-visible { outline-color: var(--focus); }

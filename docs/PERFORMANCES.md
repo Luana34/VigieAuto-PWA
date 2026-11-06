@@ -1,5 +1,52 @@
 # Performance et fluidité — objectifs et méthode
 
+**Checklist Android beta.39 / PWA beta.10 — 6 novembre 2026 :**
+
+- [x] Changement limité aux constantes de fond, au fond racine HTML sombre et au cache ; pas de nouvelle requête, migration, dépendance ou calcul. Les autres couleurs restent inchangées.
+- [ ] Les cibles (<1 s à froid, <300 ms à chaud, écran <100 ms, 60 fps/1 000 éléments, import 10 Mo <3 s, export <2 s, APK release <15 Mo, RAM <100 Mo) doivent encore être mesurées sur appareil. Aucun résultat de performance n’est revendiqué.
+- [ ] Vérifier visuellement les contrastes sur Android et iPhone réels, ainsi que la mise à jour PWA et le fonctionnement hors ligne sur Safari iOS.
+
+
+**Checklist Android beta.38 / PWA beta.9 — 6 novembre 2026 :**
+
+- [x] Lecture complète bornée par véhicule et par version, intervalles valides, partiels et séparation L/kWh ; coûts mixtes masqués. Contrôles fonctionnels, pas un benchmark.
+- [ ] Tableau de bord complet, graphiques et liaison plein/dépense non réalisés ; doublons non détectés.
+- [ ] Mesurer sur appareils réels : froid <1 s, chaud <300 ms, écran <100 ms, 60 fps/1 000 éléments, import 10 Mo <3 s, export <2 s, APK release <15 Mo, RAM <100 Mo. Aucune cible n’est déclarée atteinte.
+- [ ] Mesurer mémoire et durée de la nouvelle observation et des tris pour 1 000 et 100 000 opérations ; les listes et calculs restent en mémoire, sans pagination. Instrumentés non exécutés.
+
+APK **debug** : 12 564 769 octets ; non comparable à une release. [Détails](CONSOMMATION-ANDROID-BETA38.md).
+
+**Checklist historique Android beta.37 / PWA beta.9 — 6 novembre 2026 :**
+
+- [x] Totaux Android des pleins et entretiens par devise, calculs décimaux bornés et données liées à leurs versions ; pas de conversion ni de total croisé avec les dépenses. Vérification fonctionnelle, pas un benchmark.
+- [ ] Tableau de bord complet et suivi de consommation Android à développer ; doublons et liaison plein/dépense non traités.
+- [ ] Mesurer sur appareils réels : froid <1 s, chaud <300 ms, écran <100 ms, 60 fps/1 000 éléments, import 10 Mo <3 s, export <2 s, APK release <15 Mo, RAM <100 Mo. Aucune cible n’est déclarée atteinte.
+- [ ] Évaluer temps et mémoire des nouvelles lectures et sommes avec 1 000 et 100 000 opérations, appareils Android réels et Safari iOS ; instrumentés non exécutés. Les listes restent chargées en mémoire, sans pagination.
+
+APK **debug** : 12 548 385 octets, non comparable à une release. [Détails](TOTAUX-ANDROID-BETA37.md).
+
+**Checklist historique Android beta.36 / PWA beta.9 — 6 novembre 2026 :**
+
+- [x] Montant et devise liés dans les indices Android ; index qualifié par collection et 32 devises maximum, sans réseau ni conversion.
+- [x] Android : dépenses totalisées par devise ; PWA : totaux et graphiques séparés ; coût énergétique mélangé masqué. Tests fonctionnels, pas des benchmarks.
+- [ ] Totaux et tableau de bord des pleins/entretiens Android à développer.
+- [ ] Mesurer sur appareils réels : froid <1 s, chaud <300 ms, écran <100 ms, 60 fps/1 000 éléments, import 10 Mo <3 s, export <2 s, APK release <15 Mo, RAM <100 Mo. Aucune cible déclarée atteinte.
+- [ ] Évaluer temps et mémoire de Room 16→17, IndexedDB et échanges, sur Android réel et Safari iOS ; instrumentés non exécutés.
+
+APK **debug** de contrôle : 12 515 617 octets, non comparable à une release. [Détails](DEVISES-ANDROID-BETA36.md).
+
+**Checklist historique PWA beta.8 / Android beta.35 — 6 novembre 2026 :**
+
+- [x] Index local qualifié par collection et limite globale de 32 devises, vérifiée dans la transaction ; pas de conversion ni appel réseau.
+- [x] Calculs et graphiques séparés ; coût/km masqué si des intervalles mélangent les devises. Tests logiciels ciblés, non benchmarks.
+- [ ] Mesurer sur appareils réels : froid <1 s, chaud <300 ms, ouverture <100 ms, 60 fps sur 1 000 entrées, import 10 Mo <3 s, export <2 s, APK release <15 Mo et RAM <100 Mo. **Aucune cible n'est déclarée atteinte.**
+- [ ] Revalider coût mémoire/durée de migration IndexedDB et mise à jour hors ligne sur Safari iOS réel ; revalider Android et les tests instrumentés sur appareil.
+
+
+**Checklist beta.34 :** APK debug de contrôle : 12 482 849 octets (non comparable à une release) ; compilation et tests ciblés uniquement ; le coût des contrôles de devise, de l’Undo et des extensions est à mesurer sur appareil. Aucune cible de démarrage, défilement, import/export, RAM ou batterie n’est validée ; aucune accélération n’est revendiquée. [Détails](DEVISES-ANDROID-BETA34.md).
+
+**Checklist beta.33 :** migration et pont ciblés vérifiés sous Linux ; aucune cible de démarrage, défilement, import/export, RAM ou batterie n’a été mesurée sur appareil. APK debug de contrôle : 12 466 465 octets, non comparable à une release minifiée. Room 16 et les extensions longues peuvent avoir un coût à mesurer ; aucune accélération n’est revendiquée. [Limites](DEVISES-ANDROID-BETA33.md).
+
 **Document vivant · 5 novembre 2026.** Intégré à la phase 1, à réviser à chaque version. Ces chiffres sont des **objectifs souhaités**, pas des mesures actuelles ni des garanties sur tous les appareils. Aucun profilage sur téléphone réel ni benchmark macro n’est revendiqué pour l’alpha ou la bêta. Une migration de plusieurs années de données peut exceptionnellement durer plus longtemps ; l’information et la préservation priment sur le délai.
 
 **Précisions après beta.16 :** profils de référence, R8, CI et mesures restent à réaliser dans la phase 1. Le gain hypothétique de 20 à 40 % avec des profils n’est pas garanti ; une photo de 12 Mo ramenée vers 100 Ko est une cible indicative dépendant de la qualité et de l’image. Tester séparément sur émulateur et téléphone ; les 34 scénarios instrumentés beta.16 sont compilés, non exécutés ici. Voir [PLAN-PRIORITES-APRES-BETA16.md](PLAN-PRIORITES-APRES-BETA16.md).

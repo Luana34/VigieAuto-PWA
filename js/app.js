@@ -1,4 +1,4 @@
-import { LocalDatabase, STORES } from "./db.js";
+import { LocalDatabase, STORES, DB_CONTRACT } from "./db.js";
 import { CURRENCY_STORE, CURRENCY_CHOICES, MAX_CURRENCIES, validCurrencyCode, currencyAssignmentId, indexCurrencyAssignments,
   validateCurrencyAssignments, currencyOf, spendingByCurrency, expenseTotalsByCurrency } from "./currency.js";
 import { parseBackupJson, stringifyBackupJson, survivesUserNumber, addNumbersForUse } from "./precise-json.js";
@@ -25,7 +25,7 @@ import {
   shortDate,
   prettyDate,
   fillIntervals,
-  averageEnergyCostPerKm,
+  energyCostSummary,
   reminderInfo,
   spending,
   monthlySpending,
@@ -40,7 +40,7 @@ import {
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.7";
+const APP_VERSION = "1.5.2-beta.10";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -133,7 +133,7 @@ const app = $("#app");
 const modal = $("#modal");
 // Instantanés pris à l'ouverture : même une lecture de fichier asynchrone ne
 // peut écraser une modification effectuée depuis un autre onglet.
-let expenseDraft = null, receiptDraft = null;
+let expenseDraft = null, receiptDraft = null, fillDraft = null;
 const VALID_THEMES = new Set(["sauge", "cyan", "auto"]);
 const darkScheme = window.matchMedia?.("(prefers-color-scheme: dark)") || null;
 function storedTheme(records) {
@@ -245,7 +245,50 @@ function currencyIndex() {
   }
   return cachedCurrencyIndex;
 }
-function expenseCurrency(id) { return currencyOf(currencyIndex(), id); }
+function operationCurrency(collection, id) { return currencyOf(currencyIndex(), id, collection); }
+function expenseCurrency(id) { return operationCurrency("expenses", id); }
+function fillCurrency(x) { return operationCurrency("fills", x.id); }
+function assignedCurrency(collection, id) { return id ? currencyIndex().get(currencyAssignmentId(id, collection)) || null : null; }
+function moneyFormCode(form) {
+  const selected = form.elements.currency?.value || "EUR";
+  return (selected === "__other" ? form.elements.currencyOther?.value || "" : selected).toUpperCase();
+}
+function currencyFormFields(currency) {
+  const choices = { ...CURRENCY_CHOICES };
+  if (!Object.hasOwn(choices, currency)) choices[currency] = `${currency} (devise enregistrée)`;
+  choices.__other = "Autre devise…";
+  return `${selectField("currency", "Devise", currency, choices, {required:true, help:"Le montant reste dans cette devise ; aucune conversion automatique."})}
+    <div class="field" data-other-currency hidden><label for="f-currencyOther">Code de devise (3 lettres) *</label><input id="f-currencyOther" name="currencyOther" type="text" maxlength="3" pattern="[A-Za-z]{3}" autocomplete="off" autocapitalize="characters" disabled required><small>Code à trois lettres, par exemple SEK. Vérifiez ce code : il n’est pas contrôlé en ligne.</small></div>`;
+}
+function bindCurrencyForm(form, onChange = () => {}) {
+  const select = form.querySelector('[name="currency"]'), box = form.querySelector('[data-other-currency]');
+  const refresh = () => { const other = select.value === "__other"; box.hidden = !other; box.querySelector("input").disabled = !other; onChange(); };
+  select.addEventListener("change", refresh);
+  box.querySelector("input").addEventListener("input", onChange);
+  refresh();
+}
+// L'opération et son affectation sont toujours écrites dans la même transaction.
+function currencyOperations(collection, record, draft, d) {
+  const selected = text(d, "currency", true);
+  const currency = (selected === "__other" ? text(d, "currencyOther", true) : selected).toUpperCase();
+  if (!validCurrencyCode(currency)) throw new Error("Indiquez un code de devise à trois lettres.");
+  const currencyId = currencyAssignmentId(record.id, collection), original = draft.expectedCurrency;
+  const codes = new Set(["EUR", currency]);
+  for (const assignment of currencyIndex().values()) if (assignment.id !== currencyId) codes.add(assignment.currency);
+  if (codes.size > MAX_CURRENCIES) throw new Error(`Au maximum ${MAX_CURRENCIES} devises peuvent coexister.`);
+  const previous = original?.currency || "EUR";
+  if (draft.expected && previous !== currency && !confirm(`Confirmer la devise ${currency} pour cette opération ? Le montant n’est pas converti.`)) return null;
+  const operations = [put(collection, record)];
+  if (currency !== previous || (!draft.expected && currency !== "EUR")) {
+    const standardKeys = ["id", "collection", "recordId", "currency"];
+    // Même une affectation EUR peut porter des extensions inconnues à conserver.
+    if (currency === "EUR" && original && Object.keys(original).every((key) => standardKeys.includes(key)))
+      operations.push(del(CURRENCY_STORE, currencyId));
+    else if (currency !== "EUR" || original)
+      operations.push(put(CURRENCY_STORE, { ...(original || {}), id:currencyId, collection, recordId:record.id, currency }));
+  }
+  return { operations, guard:{store:CURRENCY_STORE, id:currencyId, expected:original} };
+}
 function moneyIn(value, currency = "EUR") {
   return currency === "EUR" ? money(value) : `${number(value, 2)} ${esc(currency)}`;
 }
@@ -254,8 +297,8 @@ function currencyTotals(groups) {
 }
 function financeForCurrency(data, currency) {
   return {
-    fills: currency === "EUR" ? data.fills : [],
-    services: currency === "EUR" ? data.services : [],
+    fills: data.fills.filter((x) => operationCurrency("fills", x.id) === currency),
+    services: data.services.filter((x) => operationCurrency("services", x.id) === currency),
     expenses: data.expenses.filter((x) => expenseCurrency(x.id) === currency),
   };
 }
@@ -492,7 +535,7 @@ function recentActivity() {
 }
 function activityCard() {
   const activities = recentActivity();
-  return `<div class="card activity-card"><div class="card-head"><div><h2>Activité récente</h2><p class="card-kicker">Votre carnet au fil des jours</p></div><button class="section-link" data-route="entretien">Voir le carnet →</button></div><div class="activity-list">${activities.map((x) => `<div class="activity-row">${square(x.icon, x.color)}<div class="activity-body"><div class="activity-title">${esc(x.label)}</div><div class="activity-meta">${shortDate(x.date)}${typeof x.odometer === "number" && Number.isFinite(x.odometer) ? ` · ${number(x.odometer)} km` : ""}</div></div>${x.amount !== null ? `<div class="activity-amount">${moneyIn(x.amount, x.kind === "expense" ? expenseCurrency(x.id) : "EUR")}</div>` : ""}</div>`).join("") || '<p class="card-intro">Votre activité apparaîtra ici après votre premier enregistrement.</p>'}</div></div>`;
+  return `<div class="card activity-card"><div class="card-head"><div><h2>Activité récente</h2><p class="card-kicker">Votre carnet au fil des jours</p></div><button class="section-link" data-route="entretien">Voir le carnet →</button></div><div class="activity-list">${activities.map((x) => `<div class="activity-row">${square(x.icon, x.color)}<div class="activity-body"><div class="activity-title">${esc(x.label)}</div><div class="activity-meta">${shortDate(x.date)}${typeof x.odometer === "number" && Number.isFinite(x.odometer) ? ` · ${number(x.odometer)} km` : ""}</div></div>${x.amount !== null ? `<div class="activity-amount">${moneyIn(x.amount, operationCurrency({expense:"expenses", fill:"fills", service:"services"}[x.kind], x.id))}</div>` : ""}</div>`).join("") || '<p class="card-intro">Votre activité apparaîtra ici après votre premier enregistrement.</p>'}</div></div>`;
 }
 function spendingCard() {
   const data = scopedFinance(), groups = spendingByCurrency(data, currencyIndex());
@@ -542,7 +585,7 @@ function dashboard() {
   const currentMonth = today().slice(0, 7);
   const thisMonth = Object.fromEntries(Object.entries(finance).map(([key, rows]) => [key, rows.filter((x) => (x.date || "").startsWith(currentMonth))]));
   const month = spendingByCurrency(thisMonth, currencyIndex());
-  const consumption = fillIntervals(finance.fills, carUnit());
+  const consumption = fillIntervals(finance.fills, carUnit(), fillCurrency);
   const reminders = activeReminders();
   return `<div class="page-heading garage-page-heading"><div><p class="eyebrow">VOTRE CARNET DE BORD</p><h1>Votre garage<span class="garage-title-dot">.</span></h1><p class="subheading">Un coup d’œil, et vous savez où vous en êtes.</p></div><div class="date-chip">${I("calendar")} ${esc(dateNowLabel())}</div></div>
   <div class="garage-dashboard"><div class="garage-primary">${garageVehicle(v)}${garageAlert(reminders)}${tripQuickCard()}${garageControl()}${garageSnapshot(reminders, consumption)}<button class="garage-month" data-route="statistiques"><span>DÉPENSES CE MOIS</span><strong>${currencyTotals(month)}</strong><span>DÉTAILS ${I("arrow")}</span></button></div>
@@ -843,7 +886,7 @@ function tripsView() {
   const all = sortRecent(scoped("trips").filter((x) => x.status === "complete"));
   const rows = all.filter((x) => state.tripFilter === "all" || x.profile === state.tripFilter);
   const km = all.reduce((sum, x) => sum + x.distanceKm, 0);
-  const costPerKm = averageEnergyCostPerKm(scoped("fills"), carUnit());
+  const cost = energyCostSummary(scoped("fills"), carUnit(), fillCurrency);
   const running = active.map((x) => {
     const vehicle = recordById("vehicles", x.vehicleId);
     const gpsTrip = x.method === "gps";
@@ -854,12 +897,12 @@ function tripsView() {
   return `${pageHeading("Trajets", `Vos déplacements de ${esc(nameOf(v))}, en toute simplicité.`, addButton("Ajouter un trajet passé", "add-trip"))}
     ${running || `<section class="card trip-start"><div>${square("route")}<div><h2>Prêt à prendre la route ?</h2><p>À l’arrêt, choisissez une saisie manuelle ou une estimation GPS facultative.</p></div></div><div class="trip-start-actions"><button class="btn" data-action="start-trip">${I("clock")} Chrono manuel</button><button class="btn secondary" data-action="prepare-gps">${I("route")} Avec GPS</button></div></section>`}
     <div class="alert-box info">${I("info")}<span><b>GPS facultatif.</b> Les coordonnées ne sont pas enregistrées. La mesure n’est pas garantie écran éteint ou application masquée ; vérifiez la distance à l’arrivée. Bluetooth et NFC ne sont pas encore activés. N’utilisez pas votre téléphone en conduisant.</span></div>
-    <div class="summary-grid">${metric("Trajets enregistrés", number(all.length), "", "Pour ce véhicule", "route")}${metric("Distance enregistrée", number(km, 2), "km", "Total des trajets enregistrés", "speed")}${metric("Coût énergie moyen", costPerKm === null ? "—" : `${number(costPerKm, 3)} €`, "/ km", "Estimé d’après les pleins complets", "fuel")}</div>
+    <div class="summary-grid">${metric("Trajets enregistrés", number(all.length), "", "Pour ce véhicule", "route")}${metric("Distance enregistrée", number(km, 2), "km", "Total des trajets enregistrés", "speed")}${metric("Coût énergie moyen", cost === null ? "—" : `${number(cost.value, 3)} ${cost.currency === "EUR" ? "€" : esc(cost.currency)}`, "/ km", "Intervalles valides ; indisponible si les devises diffèrent", "fuel")}</div>
     <div class="section-heading"><div><h2>Historique</h2><p>Distances confirmées et types de trajets déclarés par vous.</p></div></div>
     <div class="filterbar"><select data-filter="trips" aria-label="Filtrer par type de trajet"><option value="all">Tous les types</option>${Object.entries(TRIP_PROFILES).map(([key,label]) => `<option value="${esc(key)}" ${state.tripFilter === key ? "selected" : ""}>${esc(label)}</option>`).join("")}</select><span class="filter-count">${rows.length} trajet${rows.length === 1 ? "" : "s"}</span></div>
     <div class="card list-card">${rows.length ? rows.map((x) => {
       const route = [x.from, x.to].filter(Boolean).join(" → ");
-      const estimated = costPerKm === null ? "" : `<br>Énergie estimée : environ ${money(x.distanceKm * costPerKm)}`;
+      const estimated = cost === null ? "" : `<br>Énergie estimée : environ ${moneyIn(x.distanceKm * cost.value, cost.currency)}`;
       const method = x.method === "gps" ? (x.gpsHasFix ? "GPS · distance confirmée" : "GPS indisponible · distance saisie") : "Manuel";
       const interrupted = x.method === "gps" && x.gpsInterrupted ? " · Mesure interrompue" : "";
       return `<div class="list-row">${square("route")}<div class="list-main"><div class="list-title">${esc(x.title || route || "Trajet")}</div><div class="list-meta">${shortDate(x.date)} · ${number(x.distanceKm, 2)} km${x.durationMin != null ? ` · ${number(x.durationMin)} min` : ""} · ${esc(TRIP_PROFILES[x.profile])}<br>${method}${interrupted}${route && x.title ? `<br>${esc(route)}` : ""}${estimated}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div>${rowButtons("trip", x.id)}</div>`;
@@ -894,9 +937,9 @@ function serviceView() {
     (x) => state.serviceFilter === "all" || x.category === state.serviceFilter,
   );
   return `${pageHeading("Carnet d’entretien", `L’historique de ${esc(nameOf(getVehicle()))}.`, addButton("Ajouter une intervention", "add-service"))}
-    <div class="summary-grid">${metric("Interventions", number(all.length), "", "Dans votre carnet", "wrench")}${metric("Dépenses entretien", money(all.reduce((s, x) => s + (Number(x.parts) || 0) + (Number(x.labor) || 0), 0)), "", "Pièces et main-d’œuvre", "receipt")}${metric("Dernière intervention", all[0] ? shortDate(all[0].date) : "—", "", "Selon la date enregistrée", "calendar")}</div>
+    <div class="summary-grid">${metric("Interventions", number(all.length), "", "Dans votre carnet", "wrench")}${metric("Dépenses entretien", currencyTotals(spendingByCurrency({fills:[], services:all, expenses:[]}, currencyIndex())), "", "Pièces et main-d’œuvre", "receipt")}${metric("Dernière intervention", all[0] ? shortDate(all[0].date) : "—", "", "Selon la date enregistrée", "calendar")}</div>
     <div class="filterbar">${categoryFilter("services", SERVICE_CATEGORIES, state.serviceFilter)}<span class="filter-count">${rows.length} intervention${rows.length === 1 ? "" : "s"}</span></div>
-    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("wrench")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${number(x.odometer)} km · ${esc(serviceCategoryText(x))}${x.place ? ` · ${esc(x.place)}` : ""}${serviceDetailText(x)}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${money((Number(x.parts) || 0) + (Number(x.labor) || 0))}</div>${rowButtons("service", x.id)}</div>`).join("") : empty("wrench", all.length ? "Aucun résultat" : "Votre carnet est prêt", all.length ? "Essayez une autre catégorie." : "Enregistrez votre première intervention.", "add-service", "Ajouter une intervention")}</div>
+    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("wrench")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${number(x.odometer)} km · ${esc(serviceCategoryText(x))}${x.place ? ` · ${esc(x.place)}` : ""}${serviceDetailText(x)}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${moneyIn((Number(x.parts) || 0) + (Number(x.labor) || 0), operationCurrency("services", x.id))}</div>${rowButtons("service", x.id)}</div>`).join("") : empty("wrench", all.length ? "Aucun résultat" : "Votre carnet est prêt", all.length ? "Essayez une autre catégorie." : "Enregistrez votre première intervention.", "add-service", "Ajouter une intervention")}</div>
     <div class="note-line">${I("info")} Les échéances d’entretien dépendent du véhicule et de son usage : référez-vous au carnet constructeur.</div>`;
 }
 function fillsView() {
@@ -908,15 +951,15 @@ function fillsView() {
     );
   const all = sortRecent(scoped("fills")),
     unit = carUnit(),
-    calc = fillIntervals(all, unit);
-  const sum = all.reduce((s, x) => s + (Number(x.total) || 0), 0);
-  const costPerKm = averageEnergyCostPerKm(all, unit);
+    calc = fillIntervals(all, unit, fillCurrency);
+  const totals = spendingByCurrency({fills:all, services:[], expenses:[]}, currencyIndex());
+  const cost = energyCostSummary(all, unit, fillCurrency);
   const title =
     v.fuel === "electrique"
       ? "Recharges & consommation"
       : "Pleins & consommation";
   return `${pageHeading(title, `Le suivi de ${esc(nameOf(v))}, plein après plein.`, addButton(v.fuel === "electrique" ? "Ajouter une recharge" : "Ajouter un plein", "add-fill"))}
-    <div class="summary-grid fuel-summary-grid">${metric("Consommation moyenne", calc.average === null ? "—" : number(calc.average, 2), `${unit}/100 km`, "Moyenne pondérée sur intervalles valides", "fuel")}${metric("Coût énergie moyen", costPerKm === null ? "—" : `${number(costPerKm, 3)} €`, "/ km", "Intervalles valides, hors autres frais", "route")}${metric("Dépenses énergie", money(sum), "", "Tous les montants enregistrés", "receipt")}${metric("Enregistrements", number(all.length), "", "Pleins complets et partiels", "chart")}</div>
+    <div class="summary-grid fuel-summary-grid">${metric("Consommation moyenne", calc.average === null ? "—" : number(calc.average, 2), `${unit}/100 km`, "Moyenne pondérée sur intervalles valides", "fuel")}${metric("Coût énergie moyen", cost === null ? "—" : `${number(cost.value, 3)} ${cost.currency === "EUR" ? "€" : esc(cost.currency)}`, "/ km", "Indisponible si les intervalles mêlent des devises", "route")}${metric("Dépenses énergie", currencyTotals(totals), "", "Totaux par devise, sans conversion", "receipt")}${metric("Enregistrements", number(all.length), "", "Pleins complets et partiels", "chart")}</div>
     <div class="alert-box info">${I("info")}<span><b>Comment est calculée la consommation ?</b> Entre deux ${unit === "kWh" ? "charges complètes" : "pleins complets"}, les ${unit === "kWh" ? "charges" : "pleins"} partiels intermédiaires sont inclus. Il faut saisir tous les ravitaillements et un kilométrage cohérent.${unit === "kWh" ? " La valeur correspond à l’énergie rechargée, pertes comprises." : ""}</span></div>
     <div class="section-heading"><div><h2>Historique</h2><p>Vos derniers passages à la ${unit === "kWh" ? "borne" : "pompe"}.</p></div></div>
     <div class="card list-card">${
@@ -924,7 +967,7 @@ function fillsView() {
         ? all
             .map((x) => {
               const result = calc.byId[x.id];
-              return `<div class="list-row">${square("fuel", "orange")}<div class="list-main"><div class="list-title">${number(x.volume, 2)} ${esc(x.unit || "L")} · ${x.full ? "Complet" : "Partiel"}</div><div class="list-meta">${shortDate(x.date)} · ${number(x.odometer)} km${x.station ? ` · ${esc(x.station)}` : ""}${typeof x[SUBTYPE_KEY] === "string" && x[SUBTYPE_KEY] ? ` · ${esc(x[SUBTYPE_KEY])}` : ""}${result ? `<br><b>${number(result.consumption, 2)} ${esc(result.unit)}/100 km</b> · ${number(result.distance)} km parcourus` : ""}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${money(x.total)}</div>${rowButtons("fill", x.id)}</div>`;
+              return `<div class="list-row">${square("fuel", "orange")}<div class="list-main"><div class="list-title">${number(x.volume, 2)} ${esc(x.unit || "L")} · ${x.full ? "Complet" : "Partiel"}</div><div class="list-meta">${shortDate(x.date)} · ${number(x.odometer)} km${x.station ? ` · ${esc(x.station)}` : ""}${typeof x[SUBTYPE_KEY] === "string" && x[SUBTYPE_KEY] ? ` · ${esc(x[SUBTYPE_KEY])}` : ""}${result ? `<br><b>${number(result.consumption, 2)} ${esc(result.unit)}/100 km</b> · ${number(result.distance)} km parcourus` : ""}${x.notes ? `<br>${esc(x.notes)}` : ""}</div></div><div class="list-amount">${moneyIn(x.total, fillCurrency(x))}</div>${rowButtons("fill", x.id)}</div>`;
             })
             .join("")
         : empty(
@@ -1029,25 +1072,24 @@ function statisticsView() {
   if (!getVehicle())
     return requireVehicleView("Statistiques", "Vos chiffres en un coup d’œil.");
   const data = scopedFinance(), groups = spendingByCurrency(data, currencyIndex()),
-    calc = fillIntervals(data.fills, carUnit());
-  const fuelCost = calc.intervals.reduce((s, x) => s + x.cost, 0);
-  const perKm = calc.distance ? fuelCost / calc.distance : null;
+    calc = fillIntervals(data.fills, carUnit(), fillCurrency);
+  const perKm = energyCostSummary(data.fills, carUnit(), fillCurrency);
   const charts = groups.map((g) => {
     const months = monthlySpending(financeForCurrency(data, g.currency), 6);
     const max = Math.max(...months.map((x) => x.total), 1);
     return `<div class="card page-card"><div class="card-head"><div><h2>Évolution ${esc(g.currency)}</h2><p class="card-kicker">Montants saisis sur les 6 derniers mois · ${esc(g.currency)}</p></div>${I("chart")}</div><div class="bar-chart">${months.map((m, i) => `<div class="bar-col"><div class="bar ${i === months.length - 1 ? "current" : ""}" style="height:${Math.max(3, (m.total / max) * 105)}px" title="${esc(m.label)} : ${moneyIn(m.total, g.currency)}"></div><span class="bar-label">${esc(m.label)}</span></div>`).join("")}</div><div class="bar-caption"><span>Carburant, entretien et autres dépenses</span><span>Max. ${moneyIn(max === 1 && months.every((x) => x.total === 0) ? 0 : max, g.currency)}</span></div></div>`;
   }).join("");
   return `${pageHeading("Statistiques", "Comprendre vos dépenses pour mieux anticiper.")}
-    <div class="summary-grid">${metric("Dépenses enregistrées", currencyTotals(groups), "", "Totaux par devise, sans conversion", "receipt")}${metric("Consommation moyenne", calc.average === null ? "—" : number(calc.average, 2), `${carUnit()}/100 km`, "Sur intervalles complets", "fuel")}${metric("Énergie par kilomètre", perKm === null ? "—" : number(perKm, 3), "€/km", "Sur intervalles complets uniquement", "speed")}</div>
+    <div class="summary-grid">${metric("Dépenses enregistrées", currencyTotals(groups), "", "Totaux par devise, sans conversion", "receipt")}${metric("Consommation moyenne", calc.average === null ? "—" : number(calc.average, 2), `${carUnit()}/100 km`, "Sur intervalles complets", "fuel")}${metric("Énergie par kilomètre", perKm === null ? "—" : number(perKm.value, 3), perKm === null ? "/km" : `${perKm.currency === "EUR" ? "€" : esc(perKm.currency)}/km`, "Indisponible si les intervalles mêlent des devises", "speed")}</div>
     <div class="split-layout"><div class="currency-charts">${charts}</div>${spendingCard()}</div>
-    <div class="note-line">${I("info")} Ces chiffres additionnent les saisies sans détecter les doublons entre dépenses, pleins et entretiens ; ils ne constituent pas un coût total de possession exhaustif. Les devises restent distinctes, sans conversion.</div>`;
+    <div class="note-line">${I("info")} Ces chiffres additionnent les saisies sans détecter les doublons entre dépenses, pleins et entretiens ; ils ne constituent pas un coût total de possession exhaustif. Les devises restent distinctes, sans conversion. Le coût énergie au kilomètre est masqué si les intervalles valides utilisent plusieurs devises.</div>`;
 }
 function settingsView() {
   return `${pageHeading("Paramètres", "Vos données et vos préférences, en toute simplicité.")}
     <section class="card settings-section theme-settings"><h2>Thème de l’application</h2><p>Choisissez l’ambiance qui vous plaît. Le choix est enregistré sur cet appareil.</p><fieldset class="theme-options"><legend>Choisir un thème</legend>
       ${[["sauge", "Sauge", "Clair ou sombre selon le téléphone", "sauge"], ["cyan", "Cyan", "Clair ou sombre selon le téléphone", "cyan"], ["auto", "Automatique (mixte)", "Sauge clair · Cyan sombre", "auto"]].map(([value, name, desc, swatch]) => `<label class="theme-option"><input type="radio" name="theme" value="${value}" data-setting="theme" ${state.themePreference === value ? "checked" : ""}><span class="theme-swatch ${swatch}" aria-hidden="true"><i></i><i></i></span><span class="theme-option-copy"><strong>${name}</strong><small>${desc}</small></span></label>`).join("")}
     </fieldset><p class="theme-explanation">Sauge et Cyan suivent le mode clair ou sombre de votre téléphone. Le choix mixte conserve Sauge en clair et Cyan en sombre. Thème actuellement affiché : <strong id="current-theme">${THEME_LABELS[document.documentElement.dataset.theme] || "Sauge clair"}</strong>.</p></section>
-    <div class="card settings-section"><h2>Sauvegarder et restaurer</h2><p>Exportez régulièrement une sauvegarde complète, y compris vos documents et listes. Conservez ce fichier dans un endroit sûr : il contient vos informations personnelles et n’est pas chiffré.</p><div class="settings-actions"><button class="btn" data-action="export">${I("download")} Exporter mes données</button><button class="btn secondary" data-action="import">${I("upload")} Importer une sauvegarde</button></div><p style="margin-top:12px">L’import d’un fichier VigieAuto remplace toutes les données présentes sur cet appareil. Une sauvegarde ne se fait pas automatiquement.</p>${state.records?.[CURRENCY_STORE]?.length ? '<p class="form-help">Vos devises nécessitent une sauvegarde format 4 : Android actuel et les anciennes PWA ne peuvent pas l’importer.</p>' : ''}</div>
+    <div class="card settings-section"><h2>Sauvegarder et restaurer</h2><p>Exportez régulièrement une sauvegarde complète, y compris vos documents et listes. Conservez ce fichier dans un endroit sûr : il contient vos informations personnelles et n’est pas chiffré.</p><div class="settings-actions"><button class="btn" data-action="export">${I("download")} Exporter mes données</button><button class="btn secondary" data-action="import">${I("upload")} Importer une sauvegarde</button></div><p style="margin-top:12px">L’import d’un fichier VigieAuto remplace toutes les données présentes sur cet appareil. Une sauvegarde ne se fait pas automatiquement.</p>${state.records?.[CURRENCY_STORE]?.some((x) => x.collection !== "expenses") ? '<p class="form-help">Les devises de pleins ou entretiens nécessitent le format 5 : utilisez Android beta.36 ou une version ultérieure compatible. Android beta.35 et les anciennes PWA le refusent. Gardez une sauvegarde avant mise à jour.</p>' : state.records?.[CURRENCY_STORE]?.length ? '<p class="form-help">Les devises de dépenses utilisent le format 4, accepté par Android beta.34 et les versions compatibles.</p>' : ''}</div>
     <div class="card settings-section"><h2>Installer VigieAuto</h2><p>Ouvrez cette application en HTTPS, puis ajoutez-la à votre écran d’accueil. La première ouverture et la mise en cache nécessitent une connexion.</p><ul class="settings-list"><li><b>Android :</b> menu du navigateur → « Installer l’application » ou « Ajouter à l’écran d’accueil ».</li><li><b>iPhone :</b> dans Safari, bouton Partager → « Sur l’écran d’accueil ».</li><li>Après installation sur iPhone, vérifiez vos données : le stockage de la version installée peut être séparé de celui de l’onglet.</li></ul>${state.installPrompt ? `<div class="settings-actions"><button class="btn" data-action="install">${I("download")} Installer l’application</button></div>` : ""}</div>
     <div class="card settings-section"><h2>Vie privée et hors-ligne</h2><p>Pas de compte, pas de synchronisation et aucune publicité dans cette application. Les informations saisies sont enregistrées dans le navigateur de cet appareil. Leur perte, l’effacement du navigateur ou une suppression du stockage peuvent les effacer : exportez vos données régulièrement.</p><p style="margin-top:10px">Les rappels sont visibles dans l’application : aucune notification en arrière-plan n’est prévue dans cette version.</p></div>
     <div class="card settings-section"><h2>Zone sensible</h2><p>Cette opération supprime les véhicules et leurs données locales. Elle est irréversible sans sauvegarde.</p><div class="settings-actions"><button class="btn danger" data-action="reset-all">${I("trash")} Effacer toutes les données</button></div></div>
@@ -1296,7 +1338,7 @@ function serviceLineRow(line = null, originalIndex = "new", disabled = false) {
   const attrs = disabled ? "disabled" : "";
   return `<div class="service-line" data-service-line data-original-index="${esc(originalIndex)}">
     <label>Pièce / opération<input type="text" data-service-label value="${esc(line?.label ?? "")}" placeholder="Filtre à huile" maxlength="200" required ${attrs}></label>
-    <label>Coût (€)<input type="number" data-service-price value="${line ? esc(formatCents(line.cents)) : "0.00"}" min="0" step="0.01" inputmode="decimal" required ${attrs}></label>
+    <label>Coût (devise de l’intervention)<input type="number" data-service-price value="${line ? esc(formatCents(line.cents)) : "0.00"}" min="0" step="0.01" inputmode="decimal" required ${attrs}></label>
     <button type="button" class="icon-button service-remove" data-action="remove-service-line" aria-label="Supprimer cette pièce ou opération" ${attrs}>×</button>
   </div>`;
 }
@@ -1424,7 +1466,9 @@ function updateServiceAmounts(form) {
   try {
     const p = String(parts.value).trim(), l = String(form.elements.labor.value).trim();
     if (!p || !l || !survivesUserNumber(p) || !survivesUserNumber(l)) throw new Error("invalid");
-    output.textContent = money(addNumbersForUse(Number(p), Number(l)));
+    const code = moneyFormCode(form);
+    if (!validCurrencyCode(code)) throw new Error("invalid");
+    output.textContent = moneyIn(addNumbersForUse(Number(p), Number(l)), code);
   } catch { output.textContent = "—"; }
 }
 function serviceFieldsForSave(form, previous, data) {
@@ -1475,14 +1519,16 @@ window.addEventListener("popstate", () => {
 
 function serviceForm(id = "") {
   const x = recordById("services", id) || {};
+  if (id && !x.id) throw new Error("Cette intervention n’existe plus. Rechargez la page.");
   const edit = !!x.id;
-  const v = getVehicle();
-  serviceDraft = makeServiceDraft(x);
+  const v = getVehicle(), assigned = assignedCurrency("services", x.id);
+  serviceDraft = { ...makeServiceDraft(x), expected:x.id ? structuredClone(x) : null,
+    expectedCurrency:assigned ? structuredClone(assigned) : null, vehicle:structuredClone(v) };
   const detail = serviceDraft.details;
   const locked = ["conflict", "unsupported"].includes(detail.state);
   const lines = detail.value?.lines || [];
   const detailMessage = detail.state === "conflict"
-    ? `<p class="detail-warning">La somme des lignes (${esc(money(centsAsNumber(detail.totalCents)))}) diffère du montant global (${esc(money(x.parts))}). Les deux restent inchangés si vous ne choisissez pas de recalculer.</p><button type="button" class="btn secondary small" data-action="reconcile-service-details">Utiliser la somme des lignes</button>`
+    ? `<p class="detail-warning">La somme des lignes (${esc(moneyIn(centsAsNumber(detail.totalCents), assigned?.currency || "EUR"))}) diffère du montant global (${esc(moneyIn(x.parts, assigned?.currency || "EUR"))}). Les deux restent inchangés si vous ne choisissez pas de recalculer.</p><button type="button" class="btn secondary small" data-action="reconcile-service-details">Utiliser la somme des lignes</button>`
     : detail.state === "unsupported"
       ? '<p class="detail-warning">Détail d’une autre version ou illisible : il reste intact. Le coût global ne peut pas être modifié ici.</p>'
       : '<p class="form-help">Facultatif. Si vous ajoutez des lignes, leur somme remplace le coût global des pièces.</p>';
@@ -1494,8 +1540,9 @@ function serviceForm(id = "") {
     <div class="field full-width"><span class="field-label">Catégories</span><div class="category-chips" data-service-category-chips></div>${serviceDraft.categories.state === "unsupported" ? "" : '<button type="button" class="btn secondary small" data-action="open-service-categories">+ Choisir une catégorie</button>'}</div>
     ${field("date", "Date", x.date || today(), { type:"date", required:true })}${field("odometer", "Kilométrage (km)", x.odometer ?? v.odometer, { type:"number", min:0, step:1, required:true })}
     ${mapField("place", "Lieu / intervenant", x.place, "Garage, moi-même…")}
-    ${field("parts", "Coût des pièces (€)", x.parts ?? 0, { type:"number", min:0, step:"any", required:true, extra:(locked || lines.length ? 'readonly aria-readonly="true"' : "") })}
-    ${field("labor", "Main-d’œuvre (€)", x.labor ?? 0, { type:"number", min:0, step:"any", required:true })}
+    ${currencyFormFields(assigned?.currency || "EUR")}
+    ${field("parts", "Coût des pièces", x.parts ?? 0, { type:"number", min:0, step:"any", required:true, extra:(locked || lines.length ? 'readonly aria-readonly="true"' : "") })}
+    ${field("labor", "Main-d’œuvre", x.labor ?? 0, { type:"number", min:0, step:"any", required:true })}
     <div class="service-total field"><span class="field-label">Total de l’intervention</span><strong data-service-total>—</strong></div>
     <div class="service-details full-width"><div class="form-section-title">Pièces et opérations</div>${detailMessage}<div class="service-lines" data-service-lines>${lines.map((line,index) => serviceLineRow(line,index,locked)).join("")}</div>${locked ? "" : '<button type="button" class="btn secondary small" data-action="add-service-line">+ Ajouter une pièce / opération</button>'}</div>
     ${area("notes", "Notes", x.notes, { placeholder:"Détails de l’intervention…" })}
@@ -1504,11 +1551,14 @@ function serviceForm(id = "") {
   });
   const form = modal.querySelector('form[data-form="service"]');
   drawServiceCategories(form);
-  updateServiceAmounts(form);
+  bindCurrencyForm(form, () => updateServiceAmounts(form));
 }
 function fillForm(id = "") {
   const x = recordById("fills", id) || {};
-  const v = getVehicle();
+  if (id && !x.id) throw new Error("Ce plein n’existe plus. Rechargez la page.");
+  const v = getVehicle(), assigned = assignedCurrency("fills", x.id);
+  fillDraft = {id, expected:x.id ? structuredClone(x) : null,
+    expectedCurrency:assigned ? structuredClone(assigned) : null, vehicle:structuredClone(v)};
   const unit = x.unit || carUnit();
   const electric = unit === "kWh";
   const subtypeSupported = !Object.hasOwn(x, SUBTYPE_KEY) || typeof x[SUBTYPE_KEY] === "string";
@@ -1520,22 +1570,21 @@ function fillForm(id = "") {
     ${field("date", "Date", x.date || today(), { type:"date", required:true })}${field("odometer", "Kilométrage (km)", x.odometer ?? v.odometer, { type:"number", min:0, step:1, required:true })}
     <div class="field"><span class="field-label">Énergie du véhicule</span><div class="energy-label">${esc(fuelLabel(v))} · ${esc(unit)}</div></div>
     <div class="field"><label for="f-fuelSubtype">Sous-type de carburant / recharge</label><input id="f-fuelSubtype" name="fuelSubtype" value="${esc(subtypeSupported ? x[SUBTYPE_KEY] || "" : "")}" list="fuel-subtype-suggestions" autocomplete="off" placeholder="Facultatif, ou saisie libre" ${subtypeSupported ? "" : "disabled"}><datalist id="fuel-subtype-suggestions">${suggestions.map((item) => `<option value="${esc(item)}"></option>`).join("")}</datalist><small>${subtypeSupported ? "Suggestions et derniers choix de ce véhicule ; aucun effet automatique sur la consommation." : "Valeur d’une autre version conservée sans modification."}</small></div>
-    ${field("volume", `Quantité (${unit})`, x.volume ?? "", { type:"number", min:0.01, step:"0.01", required:true, placeholder:electric ? "30,00" : "45,00" })}${field("unitPrice", `Prix par ${unit} (€)`, x.unitPrice ?? "", { type:"number", min:0, step:"0.001", placeholder:"Facultatif" })}
-    ${field("total", "Prix total (€)", x.total ?? "", { type:"number", min:0, step:"0.01", required:true, help:"Calculé si quantité et prix unitaire sont indiqués ; vous pouvez le modifier." })}${mapField("station", electric ? "Borne" : "Station-service", x.station, "Facultatif")}
+    ${field("volume", `Quantité (${unit})`, x.volume ?? "", { type:"number", min:0.01, step:"0.01", required:true, placeholder:electric ? "30,00" : "45,00" })}${field("unitPrice", `Prix par ${unit}`, x.unitPrice ?? "", { type:"number", min:0, step:"0.001", placeholder:"Facultatif" })}
+    ${currencyFormFields(assigned?.currency || "EUR")}
+    ${field("total", "Prix total", x.total ?? "", { type:"number", min:0, step:"0.01", required:true, help:"Calculé si quantité et prix unitaire sont indiqués ; vous pouvez le modifier." })}${mapField("station", electric ? "Borne" : "Station-service", x.station, "Facultatif")}
     ${checkbox("full", electric ? "Batterie rechargée à 100 %" : "Plein complet", x.id ? !!x.full : true)}
     <p class="form-help">${electric ? "La consommation est estimée entre deux charges à 100 %, en incluant les charges intermédiaires." : "Les pleins partiels sont pris en compte entre deux pleins complets."}</p>
     ${area("notes", "Notes", x.notes, { placeholder:"Une précision à conserver…" })}
   </div>`,
   });
+  bindCurrencyForm(modal.querySelector('form[data-form="fill"]'));
 }
 function expenseForm(id = "") {
   const x = recordById("expenses", id) || {};
   if (id && !x.id) throw new Error("Cette dépense n’existe plus. Rechargez la page.");
-  const mileage = expenseMileage(x), assigned = x.id ? currencyIndex().get(x.id) : null;
+  const mileage = expenseMileage(x), assigned = assignedCurrency("expenses", x.id);
   const currency = assigned?.currency || "EUR";
-  const currencyChoices = { ...CURRENCY_CHOICES };
-  if (!Object.hasOwn(currencyChoices, currency)) currencyChoices[currency] = `${currency} (devise enregistrée)`;
-  currencyChoices.__other = "Autre devise…";
   expenseDraft = { id, expected: x.id ? structuredClone(x) : null, expectedCurrency: assigned ? structuredClone(assigned) : null,
     vehicle: structuredClone(getVehicle()), mileageEditable: mileage.editable, mileageTouched: false };
   const category = typeof x.category === "string" ? x.category : "";
@@ -1554,18 +1603,12 @@ function expenseForm(id = "") {
     body: `<div class="form-grid">
     <p class="form-help full-width">Les pleins et entretiens sont séparés. Les doublons saisis manuellement ne sont pas détectés. Après enregistrement, vous pourrez ajouter une photo de justificatif depuis la liste.</p>
     ${field("title", "Intitulé", x.title, { required: true, full: true, placeholder: "Assurance auto" })}${categoryField}${field("date", "Date", x.date || today(), { type: "date", required: true })}${field("amount", "Montant", x.amount ?? "", { type: "number", min: 0, step: "0.01", required: true })}
-    ${selectField("currency", "Devise", currency, currencyChoices, { required:true, help:"Le montant reste dans cette devise ; aucune conversion automatique." })}
-    <div class="field" data-other-currency hidden><label for="f-currencyOther">Code de devise (3 lettres) *</label><input id="f-currencyOther" name="currencyOther" type="text" maxlength="3" pattern="[A-Za-z]{3}" autocomplete="off" autocapitalize="characters" disabled required><small>Code à trois lettres, par exemple SEK. Vérifiez ce code : il n'est pas contrôlé en ligne.</small></div>
-    <p class="form-help full-width">Les pleins et entretiens restent pour l’instant en euros. Une sauvegarde contenant une autre devise ne peut pas être importée dans l’Android actuel.</p>
+    ${currencyFormFields(currency)}
+    <p class="form-help full-width">Les devises de pleins et entretiens exigent une sauvegarde format 5, acceptée par Android beta.36 ou version ultérieure compatible ; beta.35 et les anciennes versions la refusent.</p>
     ${mileage.editable ? field("odometer", "Kilométrage (facultatif)", mileage.input, { type: "number", min: 0, step: "any", help: "Ce kilométrage décrit la dépense ; il ne modifie pas le compteur du véhicule." }) : '<p class="form-help full-width">Kilométrage d’une autre version ou valeur non prise en charge : il est conservé sans modification.</p>'}
     ${area("notes", "Notes", x.notes, { placeholder: "Facultatif…" })}</div>`,
   });
-  const currencySelect = modal.querySelector('[name="currency"]'), otherBox = modal.querySelector('[data-other-currency]');
-  currencySelect.addEventListener("change", () => {
-    const other = currencySelect.value === "__other";
-    otherBox.hidden = !other;
-    otherBox.querySelector("input").disabled = !other;
-  });
+  bindCurrencyForm(modal.querySelector('form[data-form="expense"]'));
   modal.querySelector('[name="odometer"]')?.addEventListener("input", () => {
     if (expenseDraft?.id === id) expenseDraft.mileageTouched = true;
   });
@@ -1826,8 +1869,8 @@ async function saveForm(form) {
     };
     await apply([put("trips", record)]);
   } else if (type === "service") {
-    x = recordById("services", id) || {};
-    if (id && !x.id) throw new Error("Cette intervention n’existe plus. Fermez le formulaire et rechargez.");
+    if (!serviceDraft || serviceDraft.recordId !== id || v.id !== serviceDraft.vehicle?.id) throw new Error("Formulaire périmé : fermez et rechargez la page.");
+    x = serviceDraft.expected || {};
     const fields = serviceFieldsForSave(form, x, d);
     record = {
       ...x, ...fields.additions,
@@ -1844,7 +1887,9 @@ async function saveForm(form) {
       createdAt: x.createdAt || now,
       updatedAt: now,
     };
-    ops.push(put("services", record));
+    const currencyWrite = currencyOperations("services", record, serviceDraft, d);
+    if (!currencyWrite) return;
+    ops.push(...currencyWrite.operations);
     for (const suggestion of fields.suggestions) ops.push(put("settings", suggestion));
     const dueDate = dateValue(d, "reminderDate"),
       dueKm = asNumber(d, "reminderKm", { optional: true });
@@ -1869,13 +1914,14 @@ async function saveForm(form) {
     const op = odometerOperation(v.id, record.odometer);
     if (op) ops.push(op);
     await applyJournalChecked(ops, [
-      {store:"vehicles", id:v.id, expected:v},
-      {store:"services", id:record.id, expected:x.id ? x : null},
+      {store:"vehicles", id:v.id, expected:serviceDraft.vehicle},
+      {store:"services", id:record.id, expected:serviceDraft.expected},
+      currencyWrite.guard,
       ...fields.suggestions.map((suggestion) => ({store:"settings", id:suggestion.id, expected:null})),
     ]);
   } else if (type === "fill") {
-    x = recordById("fills", id) || {};
-    if (id && !x.id) throw new Error("Ce plein n’existe plus. Fermez le formulaire et rechargez.");
+    if (!fillDraft || fillDraft.id !== id || v.id !== fillDraft.vehicle?.id) throw new Error("Formulaire périmé : fermez et rechargez la page.");
+    x = fillDraft.expected || {};
     record = {
       ...x,
       id: x.id || uid(),
@@ -1896,12 +1942,15 @@ async function saveForm(form) {
     if (subtypeControl && !subtypeControl.disabled &&
         (subtypeControl.dataset.edited === "true" || (!x.id && subtypeControl.value.trim())))
       record[SUBTYPE_KEY] = subtypeControl.value.trim();
-    ops.push(put("fills", record));
+    const currencyWrite = currencyOperations("fills", record, fillDraft, d);
+    if (!currencyWrite) return;
+    ops.push(...currencyWrite.operations);
     const op = odometerOperation(v.id, record.odometer);
     if (op) ops.push(op);
     await applyJournalChecked(ops, [
-      {store:"vehicles", id:v.id, expected:v},
-      {store:"fills", id:record.id, expected:x.id ? x : null},
+      {store:"vehicles", id:v.id, expected:fillDraft.vehicle},
+      {store:"fills", id:record.id, expected:fillDraft.expected},
+      currencyWrite.guard,
     ]);
   } else if (type === "expense") {
     if (!expenseDraft || expenseDraft.id !== id) throw new Error("Formulaire périmé : fermez et rechargez la page.");
@@ -1929,28 +1978,13 @@ async function saveForm(form) {
       if (Object.prototype.hasOwnProperty.call(x, "category")) record.category = null;
       else delete record.category;
     }
-    const selected = text(d, "currency", true);
-    const currency = (selected === "__other" ? text(d, "currencyOther", true) : selected).toUpperCase();
-    if (!validCurrencyCode(currency)) throw new Error("Indiquez un code de devise à trois lettres.");
-    const usedCurrencies = new Set(["EUR", currency]);
-    for (const [otherId, assignment] of currencyIndex()) if (otherId !== record.id) usedCurrencies.add(assignment.currency);
-    if (usedCurrencies.size > MAX_CURRENCIES) throw new Error(`Au maximum ${MAX_CURRENCIES} devises peuvent coexister.`);
-    const oldCurrency = expenseDraft.expectedCurrency?.currency || "EUR";
-    if (x.id && oldCurrency !== currency && !confirm(`Confirmer la devise ${currency} pour cette dépense ? Le montant n’est pas converti.`)) return;
-    const currencyId = currencyAssignmentId(record.id), original = expenseDraft.expectedCurrency;
-    const operations = [put("expenses", record)];
-    if (currency !== oldCurrency || (!x.id && currency !== "EUR")) {
-      // Un retour en EUR ne supprime aucune extension inconnue de l'affectation.
-      const standardKeys = ["id", "collection", "recordId", "currency"];
-      if (currency === "EUR" && original && Object.keys(original).every((key) => standardKeys.includes(key)))
-        operations.push(del(CURRENCY_STORE, currencyId));
-      else if (currency !== "EUR" || original)
-        operations.push(put(CURRENCY_STORE, { ...(original || {}), id:currencyId, collection:"expenses", recordId:record.id, currency }));
-    }
-    await applyJournalChecked(operations, [
-      { store: "expenses", id: record.id, expected: expenseDraft.expected },
-      { store: CURRENCY_STORE, id: currencyId, expected: original },
-      { store: "vehicles", id: expenseDraft.vehicle.id, expected: expenseDraft.vehicle },
+    if (v.id !== expenseDraft.vehicle?.id) throw new Error("Formulaire périmé : fermez et rechargez la page.");
+    const currencyWrite = currencyOperations("expenses", record, expenseDraft, d);
+    if (!currencyWrite) return;
+    await applyJournalChecked(currencyWrite.operations, [
+      { store:"expenses", id:record.id, expected:expenseDraft.expected },
+      currencyWrite.guard,
+      { store:"vehicles", id:expenseDraft.vehicle.id, expected:expenseDraft.vehicle },
     ]);
   } else if (type === "expense-receipt") {
     const draft = receiptDraft;
@@ -2105,7 +2139,7 @@ async function deleteVehicle(id) {
   const wasActive = state.activeId === id;
   let next = state.records.vehicles.find((x) => x.id !== id)?.id || null;
   if (state.demo) {
-    const ops = [del("vehicles", id), ...stores.flatMap((s) => state.records[s].filter((x) => x.vehicleId === id).flatMap((x) => s === "expenses" ? [del(s, x.id), del(CURRENCY_STORE, currencyAssignmentId(x.id))] : [del(s, x.id)]))];
+    const ops = [del("vehicles", id), ...stores.flatMap((s) => state.records[s].filter((x) => x.vehicleId === id).flatMap((x) => ["expenses", "fills", "services"].includes(s) ? [del(s, x.id), del(CURRENCY_STORE, currencyAssignmentId(x.id, s))] : [del(s, x.id)]))];
     if (wasActive) ops.push(put("settings", { ...(state.records.settings.find((x) => x.id === "activeVehicle") || {}), id: "activeVehicle", value: next }));
     await apply(ops);
   } else {
@@ -2132,8 +2166,8 @@ async function deleteItem(store, id, label) {
   const deletingGps = store === "trips" && x.status === "running" && x.method === "gps" && !state.demo;
   if (deletingGps) await quiesceGps();
   try {
-    if (store === "expenses") {
-      const assignment = currencyIndex().get(id), currencyId = currencyAssignmentId(id);
+    if (["expenses", "fills", "services"].includes(store)) {
+      const assignment = assignedCurrency(store, id), currencyId = currencyAssignmentId(id, store);
       await applyJournalChecked([del(store, id), del(CURRENCY_STORE, currencyId)], [
         { store, id, expected: structuredClone(x) },
         { store: CURRENCY_STORE, id: currencyId, expected: assignment ? structuredClone(assignment) : null },
@@ -2196,13 +2230,14 @@ async function exportBackup() {
   // Inclure les points déjà traités, puis lire un instantané cohérent de la base.
   await gps.queue;
   const data = await state.db.readAll();
-  validateCurrencyAssignments(data[CURRENCY_STORE], data.expenses);
+  validateCurrencyAssignments(data[CURRENCY_STORE], data);
   const hasCurrencies = data[CURRENCY_STORE].length > 0;
+  const version = data[CURRENCY_STORE].some((x) => x.collection !== "expenses") ? 5 : hasCurrencies ? 4 : 3;
   const legacyData = { ...data };
   delete legacyData[CURRENCY_STORE];
   const backup = {
     app: "VigieAuto",
-    formatVersion: hasCurrencies ? 4 : 3,
+    formatVersion: version,
     exportedAt: new Date().toISOString(),
     data: hasCurrencies ? data : legacyData,
   };
@@ -2210,14 +2245,15 @@ async function exportBackup() {
     new Blob([stringifyBackupJson(backup)], { type: "application/json" }),
     `vigieauto-sauvegarde-${today()}.json`,
   );
-  toast(hasCurrencies ? "Sauvegarde téléchargée (format 4) : Android actuel ne peut pas l’importer." : "Sauvegarde téléchargée. Conservez-la dans un endroit sûr.");
+  toast(version === 5 ? "Sauvegarde format 5 téléchargée : Android beta.36 ou une version ultérieure compatible est nécessaire." : "Sauvegarde téléchargée. Conservez-la dans un endroit sûr.");
 }
 function validateBackup(obj) {
   const legacy = ["CQ Auto", "VigieAuto"].includes(obj?.app) && obj?.formatVersion === 1;
   const v2 = obj?.app === "VigieAuto" && obj?.formatVersion === 2;
   const v3 = obj?.app === "VigieAuto" && obj?.formatVersion === 3;
   const v4 = obj?.app === "VigieAuto" && obj?.formatVersion === 4;
-  if ((!legacy && !v2 && !v3 && !v4) || !obj.data || typeof obj.data !== "object" || Array.isArray(obj.data))
+  const v5 = obj?.app === "VigieAuto" && obj?.formatVersion === 5;
+  if ((!legacy && !v2 && !v3 && !v4 && !v5) || !obj.data || typeof obj.data !== "object" || Array.isArray(obj.data))
     throw new Error("Ce fichier n’est pas une sauvegarde VigieAuto compatible.");
   if (Object.keys(obj).some((key) => !["app", "formatVersion", "exportedAt", "data"].includes(key)))
     throw new Error("Un champ racine de cette sauvegarde est inconnu ; import annulé pour éviter une perte.");
@@ -2225,11 +2261,13 @@ function validateBackup(obj) {
     throw new Error("La date d’export de cette sauvegarde est invalide.");
   const unknownCollection = Object.keys(obj.data).find((name) => !STORES.includes(name));
   if (unknownCollection) throw new Error(`Collection inconnue : ${unknownCollection}. Import annulé pour éviter une perte.`);
-  if (!v4 && Object.hasOwn(obj.data, CURRENCY_STORE)) throw new Error("Les devises exigent le format de sauvegarde 4.");
+  if (!v4 && !v5 && Object.hasOwn(obj.data, CURRENCY_STORE)) throw new Error("Les devises exigent le format de sauvegarde 4 ou 5.");
+  if (v4 && Array.isArray(obj.data[CURRENCY_STORE]) && obj.data[CURRENCY_STORE].some((x) => x?.collection !== "expenses"))
+    throw new Error("Le format 4 ne permet les devises que pour les dépenses ; import annulé.");
   // Une v1 peut omettre les trajets ou contenir une liste vide, jamais les perdre.
   if (legacy && Object.hasOwn(obj.data, "trips") && (!Array.isArray(obj.data.trips) || obj.data.trips.length))
     throw new Error("Trajets inattendus dans une sauvegarde de format 1 ; import annulé pour éviter une perte.");
-  const data = { ...obj.data, ...(legacy ? { trips: [] } : {}), ...(!v4 ? { [CURRENCY_STORE]: [] } : {}) }, ids = {};
+  const data = { ...obj.data, ...(legacy ? { trips: [] } : {}), ...(!v4 && !v5 ? { [CURRENCY_STORE]: [] } : {}) }, ids = {};
   for (const name of STORES) {
     if (!Array.isArray(data[name]))
       throw new Error(`Collection manquante : ${name}.`);
@@ -2340,7 +2378,7 @@ function validateBackup(obj) {
     const startedValid = x.startedAt === null || x.startedAt === undefined ||
       (isText(x.startedAt) && Number.isFinite(Date.parse(x.startedAt)));
     const gpsTrip = x.method === "gps";
-    const gpsValid = !gpsTrip || ((v3 || v4) && !!x.startedAt && isNum(x.gpsDistanceM) &&
+    const gpsValid = !gpsTrip || ((v3 || v4 || v5) && !!x.startedAt && isNum(x.gpsDistanceM) &&
       typeof x.gpsHasFix === "boolean" && typeof x.gpsInterrupted === "boolean" &&
       Object.keys(x).every((key) => gpsTripFields.has(key)));
     const minDistance = v2 ? 0.1 : 0.01;
@@ -2403,7 +2441,7 @@ function validateBackup(obj) {
       !validDocument(x.dataUrl)
     )
       throw new Error("Document invalide dans la sauvegarde.");
-  validateCurrencyAssignments(data[CURRENCY_STORE], data.expenses);
+  validateCurrencyAssignments(data[CURRENCY_STORE], data);
   const theme = data.settings.find((x) => x.id === "theme");
   if (theme && !VALID_THEMES.has(theme.value)) throw new Error("Thème invalide dans la sauvegarde.");
   const suggestions = data.settings.find((x) => x.id === SUGGESTION_SETTING_ID);
@@ -2511,7 +2549,7 @@ function describeError(error) {
 }
 modal.addEventListener("cancel", (event) => { if (modal.dataset.saving === "true") event.preventDefault(); });
 modal.addEventListener("close", () => {
-  if (!modal.open) { expenseDraft = null; receiptDraft = null; }
+  if (!modal.open) { expenseDraft = null; receiptDraft = null; fillDraft = null; serviceDraft = null; }
   if (!gps.finishTripId) return;
   const id = gps.finishTripId;
   gps.finishTripId = null;
@@ -3016,7 +3054,7 @@ async function start() {
       if (catalogue.version !== 1 || !Array.isArray(catalogue.brands) || !Array.isArray(catalogue.fuels)) throw new Error("Référentiel invalide");
       state.catalogue = catalogue;
     } catch (error) { console.warn("Suggestions prédéfinies indisponibles ; la saisie libre reste possible.", error); }
-    state.db = await new LocalDatabase().open();
+    state.db = await new LocalDatabase().open(DB_CONTRACT);
     let records = await state.db.readAll();
     if (!records.settings.some((x) => x.id === "defaultsSeeded")) {
       const operations = [

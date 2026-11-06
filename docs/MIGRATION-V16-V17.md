@@ -1,0 +1,5 @@
+# Migration Room 16 → 17 — devises des opérations
+
+Android beta.36/code 40 étend la table des affectations de devise pour qualifier les clés par collection : dépenses, pleins et entretiens. Les affectations de dépenses existantes et leurs extensions sont conservées ; une opération sans affectation explicite reste en EUR. Les opérations sont lues avec leur devise ; migration, import et Undo privilégient le refus transactionnel à une perte silencieuse. Le format d’échange JSON v5 est distinct du numéro de schéma Room.
+
+Les migrations et le rollback ont été testés en JVM/Robolectric sous Linux ; deux scénarios instrumentés 16→17 ont été ajoutés et leur APK assemblé, **sans exécution sur appareil ou émulateur**. Sauvegarder et vérifier les données à l’extérieur avant mise à jour, avec la même clé de signature ; ne pas désinstaller si celle-ci diffère. Une ancienne application ne sait pas ouvrir directement la base Room 17. Voir [guide beta.36](DEVISES-ANDROID-BETA36.md) et [installateur de la PWA](../INSTALLER.md).

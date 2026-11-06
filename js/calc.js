@@ -42,7 +42,7 @@ export function prettyDate(
   const [y, m, d] = value.slice(0, 10).split("-").map(Number);
   return new Intl.DateTimeFormat("fr-FR", opts).format(new Date(y, m - 1, d));
 }
-export function fillIntervals(fills, targetUnit = null) {
+export function fillIntervals(fills, targetUnit = null, currencyForFill = () => "EUR") {
   // Deux pleins complets délimitent un intervalle ; les pleins partiels intercalés y contribuent.
   // En cas de changement d'énergie, ne jamais additionner des litres et des kWh.
   const ordered = [...fills].sort(
@@ -54,7 +54,7 @@ export function fillIntervals(fills, targetUnit = null) {
   const byId = Object.create(null);
   let anchor = null,
     litres = 0,
-    cost = 0,
+    costs = new Map(),
     lastKm = null,
     invalid = false;
   for (const f of ordered) {
@@ -79,24 +79,28 @@ export function fillIntervals(fills, targetUnit = null) {
       invalid = true;
     if (valid) {
       litres += volume;
-      cost += amount;
+      const code = currencyForFill(f);
+      if (typeof code !== "string" || !/^[A-Z]{3}$/.test(code)) invalid = true;
+      else costs.set(code, (costs.get(code) || 0) + amount);
       lastKm = km;
     }
     if (f.full) {
       const distance = km - Number(anchor.odometer);
-      if (!invalid && distance > 0)
+      if (!invalid && distance > 0) {
+        // Jamais additionner les montants de devises différentes, même temporairement.
+        const currency = costs.size === 1 ? costs.keys().next().value : null;
+        const cost = currency === null ? null : costs.get(currency);
         byId[f.id] = {
-          distance,
-          volume: litres,
-          cost,
+          distance, volume: litres, cost, currency,
           consumption: (litres * 100) / distance,
-          costPerKm: cost / distance,
+          costPerKm: cost === null ? null : cost / distance,
           unit: f.unit || "L",
         };
+      }
       anchor = valid ? f : null;
       lastKm = valid ? km : null;
       litres = 0;
-      cost = 0;
+      costs = new Map();
       invalid = false;
     }
   }
@@ -115,11 +119,18 @@ export function fillIntervals(fills, targetUnit = null) {
 }
 // Coût énergétique moyen au km sur les seuls intervalles de pleins complets valides.
 // Les litres et kWh ne sont jamais mélangés ; ce n’est pas une mesure par trajet.
-export function averageEnergyCostPerKm(fills, unit) {
-  const summary = fillIntervals(fills, unit);
-  if (!summary.distance) return null;
-  return summary.intervals.reduce((total, interval) => total + interval.cost, 0) / summary.distance;
+export function energyCostSummary(fills, unit, currencyForFill = () => "EUR") {
+  const summary = fillIntervals(fills, unit, currencyForFill);
+  if (!summary.distance || summary.intervals.some((x) => x.cost === null || !x.currency)) return null;
+  const codes = new Set(summary.intervals.map((x) => x.currency));
+  if (codes.size !== 1) return null; // pas de moyenne entre plusieurs devises
+  return { value: summary.intervals.reduce((total, interval) => total + interval.cost, 0) / summary.distance,
+    currency: codes.values().next().value };
 }
+export function averageEnergyCostPerKm(fills, unit, currencyForFill = () => "EUR") {
+  return energyCostSummary(fills, unit, currencyForFill)?.value ?? null;
+}
+
 export function reminderInfo(r, vehicle) {
   const days = r.dueDate ? dayDiff(r.dueDate) : null;
   const km =
