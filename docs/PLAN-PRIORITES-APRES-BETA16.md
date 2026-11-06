@@ -1,6 +1,10 @@
 # VigieAuto Android — demandes et priorités après 0.4.0-beta.16
 
-**Actualisation du 5 novembre 2026 — PWA 1.5.2-beta.5 candidate / Android 0.4.0-beta.30 :** ajout, modification et retrait du kilométrage facultatif des dépenses dans la PWA, déjà disponibles sur Android ; ce champ ne change pas le compteur du véhicule. La beta.30 Android ne modifie pas le code métier. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](KILOMETRAGE-DEPENSES-BETA30.md).
+**Actualisation du 5 novembre 2026 — PWA 1.5.2-beta.7 candidate / Android 0.4.0-beta.32 :** choix d’une devise par dépense dans la PWA, euro par défaut, anciens montants en euros et totaux séparés sans conversion. Android et les devises des pleins/entretiens restent à développer. **Une sauvegarde multidevise v4 ne peut pas être importée dans Android beta.32** ; une sauvegarde sans affectation reste en v3. Base PWA IndexedDB 5 ; sauvegarde externe avant essai. [Usage et limites](DEVISES-PWA-BETA7.md).
+
+**Historique du 5 novembre 2026 — PWA 1.5.2-beta.6 candidate / Android 0.4.0-beta.31 :** la PWA permet de trier les dépenses du véhicule actif par date, catégorie ou montant ; ce tri est visuel et ne modifie pas les données. Ces tris existaient déjà sur Android, dont le code métier est inchangé. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](TRI-DEPENSES-BETA31.md).
+
+**Historique du 5 novembre 2026 — PWA 1.5.2-beta.5 candidate / Android 0.4.0-beta.30 :** ajout, modification et retrait du kilométrage facultatif des dépenses dans la PWA, déjà disponibles sur Android ; ce champ ne change pas le compteur du véhicule. La beta.30 Android ne modifie pas le code métier. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](KILOMETRAGE-DEPENSES-BETA30.md).
 
 **Historique du 5 novembre 2026 — Android 0.4.0-beta.29 et PWA 1.5.2-beta.4 candidate :** une photo facultative par dépense, à ajouter depuis la liste après enregistrement ; aperçu, remplacement et retrait explicites. Android convertit les nouvelles photos en JPEG sans EXIF ; la PWA garde le fichier et ses métadonnées éventuelles. Sauvegardes JSON non chiffrées. Room 15, IndexedDB 4 et JSON v3 inchangés. Devise réglable et liaison plein/dépense sans double comptage restent à faire. [Détails, limites et confidentialité](JUSTIFICATIFS-BETA29.md).
 
@@ -109,7 +113,7 @@ Sélecteur visible en haut pour changer rapidement, avatar ou couleur par véhic
 
 ### 3.1 Dépenses
 
-Liste triable par date, catégorie et montant ; ajout avec date, catégorie, montant, description, kilométrage et photo de justificatif. Catégories : entretien, carburant, assurance, péage, stationnement, amende, contrôle technique, accessoire, autre. Demande d’un lien automatique entre un plein et une dépense carburant, avec mécanisme empêchant tout double comptage, y compris après modification, suppression et import/réimport. Devise paramétrable, euro par défaut. Un premier écran Android existe depuis beta.28 ; un justificatif photo par dépense est ajouté depuis beta.29 et PWA beta.4. Depuis beta.5, la PWA édite aussi le kilométrage facultatif. Devise et liaison sans double comptage restent à faire.
+Liste triable par date, catégorie et montant ; ajout avec date, catégorie, montant, description, kilométrage et photo de justificatif. Catégories : entretien, carburant, assurance, péage, stationnement, amende, contrôle technique, accessoire, autre. Demande d’un lien automatique entre un plein et une dépense carburant, avec mécanisme empêchant tout double comptage, y compris après modification, suppression et import/réimport. Devise paramétrable, euro par défaut. Un premier écran Android existe depuis beta.28 ; un justificatif photo par dépense est ajouté depuis beta.29 et PWA beta.4. Depuis beta.5, la PWA édite aussi le kilométrage facultatif ; beta.6 trie la liste ; beta.7 permet une devise par dépense et des totaux séparés. Portage Android, devises des pleins et entretiens et liaison sans double comptage restent à faire. [Limites de compatibilité v4](DEVISES-PWA-BETA7.md).
 
 ### 3.2 CQ et checklists
 

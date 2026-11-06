@@ -55,6 +55,18 @@ Un calcul SQL ne doit pas mélanger des agrégats imbriqués incorrectement : la
 - [x] Décision de phase 3 consignée dans [le plan des priorités](PLAN-PRIORITES-APRES-BETA16.md#35-enrichissement-des-écrans-existants) ; aucun code, aucune version ni aucune donnée de l’application modifiés.
 - [ ] Les mesures sur appareil, la validation de la CI et les éléments non cochés ci-dessous restent à faire. Aucun nouveau benchmark ou test d’application n’est revendiqué pour cette mise à jour documentaire.
 
+## Checklist devise par dépense PWA beta.7 / Android beta.32 — 5 novembre 2026
+
+- [x] Index des affectations en mémoire, sans écriture des anciennes dépenses ; au maximum 32 devises par carnet, contrôle transactionnel entre onglets. Un graphique par devise, sans taux de conversion ; les affectations sont relues lors de leur modification.
+- [x] 55/55 tests unitaires PWA et scénarios d’interface, sauvegarde et migration sous Chromium/WebKit Linux. Un test Room ciblé vérifie le refus sécurisé d’un export v4 ; code Android principal identique à beta.31 et APK debug assemblé (12 450 081 octets).
+- [ ] Mesurer le temps d’ouverture, les graphiques et le défilement avec 1 000 dépenses, la mémoire, le FPS, les performances d’import/export et l’autonomie sur les appareils réels. Aucune cible chiffrée revendiquée.
+
+## Checklist tri PWA beta.6 / Android beta.31 — 5 novembre 2026
+
+- [x] Tri en mémoire d’une copie de la liste du véhicule actif, sans réécriture des données. Total et date de la dernière dépense indépendants de l’ordre de présentation ; pas de pagination introduite.
+- [x] 50 tests unitaires PWA réussis ; tris, conservation des données, justificatifs, migration beta.5 → beta.6 et cache hors ligne contrôlés sous Chromium et WebKit Linux. APK Android debug assemblé (12 450 081 octets) ; code métier et tests identiques à beta.30. Tests Android et lint non relancés dans ce lot.
+- [ ] Temps de tri sur 1 000 dépenses, démarrage, FPS, mémoire et import/export à mesurer sur les appareils ciblés ; aucun essai Windows, téléphone ou Safari iOS réel revendiqué.
+
 ## Checklist kilométrage PWA beta.5 / Android beta.30 — 5 novembre 2026
 
 - [x] Kilométrage de dépense facultatif sans changement du compteur du véhicule ; données absentes/nulles et structures futures préservées dans les scénarios testés.

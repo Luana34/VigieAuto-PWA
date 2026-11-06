@@ -2018,3 +2018,13 @@ input[type="radio"] {
 .receipt-link:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .receipt-preview { display: block; max-width: 100%; max-height: 360px; width: auto; height: auto; object-fit: contain; border-radius: 10px; }
 .receipt-preview[hidden] { display: none; }
+
+/* Des unités monétaires différentes ne sont jamais additionnées entre elles. */
+.currency-total { display: block; white-space: normal; overflow-wrap: anywhere; }
+.currency-charts { display: grid; gap: 14px; min-width: 0; }
+.currency-breakdown { display: grid; gap: 12px; margin: 15px 0; }
+.currency-breakdown > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); gap: 4px 8px; min-width: 0; }
+.currency-breakdown small { grid-column: 1 / -1; overflow-wrap: anywhere; color: var(--text-muted, #78877e); }
+.currency-breakdown b { min-width: 0; overflow-wrap: anywhere; }
+
+[data-other-currency][hidden] { display: none; }

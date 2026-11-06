@@ -31,8 +31,8 @@ class ArchiveTests(unittest.TestCase):
         self.project = self.workspace / "cq-auto"
         paths = [
             "README.md", "INSTALLER.md", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
-            "js/gps.js", "js/precise-json.js", "js/maintenance.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
-            "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md", "docs/KILOMETRAGE-DEPENSES-BETA30.md",
+            "js/gps.js", "js/precise-json.js", "js/currency.js", "tests/devises.test.js", "tests/devises-interface.cjs", "docs/DEVISES-PWA-BETA7.md", "js/maintenance.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
+            "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md", "docs/KILOMETRAGE-DEPENSES-BETA30.md", "docs/TRI-DEPENSES-BETA31.md",
             "js/expense-receipt.js", "tests/justificatifs.test.js", "tests/justificatifs-interface.cjs", "docs/JUSTIFICATIFS-BETA29.md",
             "tests/fixtures/justificatif.png", "tests/fixtures/justificatif-gps-fictif.jpg",
             "tests/precise-json.test.js", "tests/precision-interface.cjs", "docs/PRECISION-SAUVEGARDES.md",
@@ -163,7 +163,7 @@ class ArchiveTests(unittest.TestCase):
 
     def test_missing_enriched_carnet_files_never_prunes(self):
         for rel in ("js/maintenance.js", "js/db.js", "tests/maintenance.test.js", "tests/carnet-enrichi.cjs",
-                    "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md", "docs/KILOMETRAGE-DEPENSES-BETA30.md",
+                    "tests/depenses.test.js", "tests/depenses-interface.cjs", "docs/DEPENSES-BETA28.md", "docs/KILOMETRAGE-DEPENSES-BETA30.md", "docs/TRI-DEPENSES-BETA31.md",
                     "js/expense-receipt.js", "tests/justificatifs.test.js", "tests/justificatifs-interface.cjs", "docs/JUSTIFICATIFS-BETA29.md",
                     "tests/fixtures/justificatif.png", "tests/fixtures/justificatif-gps-fictif.jpg",
                     "docs/CARNET-PWA-BETA2.md", "docs/CARNET-ANDROID-BETA27.md", "docs/ENTRETIEN-FORMULAIRE-SPECIFICATION.md",

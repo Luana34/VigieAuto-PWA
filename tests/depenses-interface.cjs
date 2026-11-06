@@ -23,15 +23,15 @@ async function download(p){await go(p,'parametres');const event=p.waitForEvent('
   await p.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
   await p.locator('[data-action=start-real]').click();await field(p,'brand','Renault');await field(p,'model','Clio');await field(p,'odometer','1000');await submit(p);
   const initial=JSON.parse(await download(p)), v=initial.data.vehicles[0].id;
-  const common={vehicleId:v,date:'2026-11-05',notes:''};
+  const common={vehicleId:v,date:'2026-10-01',notes:''};
   initial.data.expenses=[
-   {...common,id:'e1',title:'Énergie séparée',category:'carburant',amount:12.34,odometer:1111,future:{nombre:'EXACT_MARKER'}},
+   {...common,id:'e1',date:'2026-11-05',title:'Énergie séparée',category:'carburant',amount:12.34,odometer:1111,future:{nombre:'EXACT_MARKER'}},
    {...common,id:'e2',title:'Catégorie future',category:'__proto__',amount:3.25,odometer:{format:'futur',valueOf:null,toString:null}},
-   {...common,id:'e3',title:'Catégorie absente',amount:5,createdAt:null},
-   {...common,id:'e4',title:'Catégorie longue',category:'X'.repeat(9000),amount:6,odometer:null},
-   {...common,id:'e5',title:'Catégorie nulle',category:null,amount:7,vigieExpenseReceipt:{version:1,dataUrl:'data:image/png;base64,AAAA'}},
-   {...common,id:'e6',title:'Compteur très précis',category:'autre',amount:2,odometer:'MILEAGE_MARKER'},
-   {...common,id:'e7',title:'Compteur négatif historique',category:'autre',amount:1,odometer:-1},
+   {...common,id:'e3',date:'2026-11-02',title:'Catégorie absente',amount:5,createdAt:null},
+   {...common,id:'e4',date:'2026-09-01',title:'Catégorie longue',category:'X'.repeat(9000),amount:30,odometer:null},
+   {...common,id:'e5',date:'2026-10-10',title:'Catégorie nulle',category:null,amount:7,vigieExpenseReceipt:{version:1,dataUrl:'data:image/png;base64,AAAA'}},
+   {...common,id:'e6',date:'2026-10-15',title:'Compteur très précis',category:'autre',amount:2,odometer:'MILEAGE_MARKER'},
+   {...common,id:'e7',date:'2026-11-01',title:'Compteur négatif historique',category:'autre',amount:1,odometer:-1},
   ];
   const raw=JSON.stringify(initial).replace('"EXACT_MARKER"','12345678901234567890.125').replace('"MILEAGE_MARKER"','12345678901234567890.125');
   await p.locator('#import-file').setInputFiles({name:'depenses-fictives.json',mimeType:'application/json',buffer:Buffer.from(raw)});
@@ -39,6 +39,26 @@ async function download(p){await go(p,'parametres');const event=p.waitForEvent('
   await go(p,'accueil'); assert.equal(errors.length,0,'un kilométrage futur ne doit pas casser le tableau de bord');
   await go(p,'depenses');assert.match(await p.locator('body').innerText(),/doublons saisis manuellement ne sont pas détectés/);
   assert.match(await p.locator('body').innerText(),/Personnalisée : __proto__/);
+  const beforeSort=JSON.parse(await download(p));await go(p,'depenses');
+  const ids=()=>p.locator('.list-card .list-row [data-action=edit-expense]').evaluateAll(els=>els.map(e=>e.dataset.id));
+  const metric=label=>p.locator('.metric-card').filter({hasText:label}).locator('.metric-value').innerText();
+  const beforeTotal=await metric('Total enregistré');assert.match(await metric('Dernière dépense'),/05\/11\/2026/);
+  assert.equal(await p.getByLabel('Trier les dépenses').inputValue(),'date');
+  assert.deepEqual(await ids(),['e1','e3','e7','e6','e5','e2','e4']);
+  await p.getByLabel('Trier les dépenses').selectOption('category');
+  assert.equal(await p.evaluate(()=>document.activeElement?.id),'expense-order');
+  assert.deepEqual(await ids(),['e7','e6','e1','e4','e3','e5','e2']);
+  assert.equal(await metric('Total enregistré'),beforeTotal);assert.match(await metric('Dernière dépense'),/05\/11\/2026/);
+  await p.getByLabel('Trier les dépenses').selectOption('amount');
+  assert.deepEqual(await ids(),['e4','e1','e5','e3','e2','e6','e7']);
+  assert.equal(await metric('Total enregistré'),beforeTotal);assert.match(await metric('Dernière dépense'),/05\/11\/2026/);
+  // Simulation du pointeur tactile : ne pas refocaliser et risquer de rouvrir le sélecteur natif.
+  await p.evaluate(()=>{window.__oldMedia=window.matchMedia;window.matchMedia=q=>q==='(pointer: coarse)'?{matches:true}:window.__oldMedia.call(window,q);});
+  await p.getByLabel('Trier les dépenses').selectOption('category');assert.notEqual(await p.evaluate(()=>document.activeElement?.id),'expense-order');
+  await p.evaluate(()=>{window.matchMedia=window.__oldMedia;delete window.__oldMedia;});await p.getByLabel('Trier les dépenses').selectOption('amount');
+  const afterSort=JSON.parse(await download(p));assert.deepEqual(afterSort.data,beforeSort.data);
+  await go(p,'depenses');assert.equal(await p.getByLabel('Trier les dépenses').inputValue(),'amount');
+  await p.setViewportSize({width:320,height:720});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await p.setViewportSize({width:390,height:844});
   await p.locator('[data-action=edit-expense][data-id=e1]').click();
   assert.equal(await p.locator('#modal [name=category]').inputValue(),'carburant');
   assert.equal(await p.locator('#modal [name=odometer]').inputValue(),'1111');
@@ -68,7 +88,20 @@ async function download(p){await go(p,'parametres');const event=p.waitForEvent('
   assert.equal(rows.e5.vigieExpenseReceipt.dataUrl,'data:image/png;base64,AAAA');assert.equal(rows.e7.odometer,-1);
   assert.equal(out.data.expenses.find(x=>x.title==='Nouvelle dépense').odometer,2222);assert.equal(out.data.vehicles[0].odometer,1000);assert.equal(out.data.fills.length,0);
   assert.match(outRaw,/"odometer"\s*:\s*12345678901234567890\.125/);assert.match(outRaw,/"nombre"\s*:\s*12345678901234567890\.125/);assert.deepEqual(errors,[]);
-  console.log(`✓ PWA dépenses : kilométrage facultatif, compteur véhicule intact, extensions et non-dédoublonnage (${useWebkit?'WebKit':'Chromium'} Linux).`);
+  // Cas non associatif en flottants : le total garde l'ordre historique par date,
+  // même si l'ordre d'import et le tri choisi sont différents.
+  const probe=structuredClone(initial);probe.data.expenses=[
+    {...common,id:'s1',date:'2026-10-01',title:'Petit 1',category:'autre',amount:0.01},
+    {...common,id:'s2',date:'2026-10-02',title:'Petit 2',category:'carburant',amount:0.01},
+    {...common,id:'s3',date:'2026-11-05',title:'Grand',category:'assurance',amount:100000000000000},
+  ];
+  await p.locator('#import-file').setInputFiles({name:'tri-flottant.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(probe))});
+  await p.waitForFunction(()=>document.querySelector('#toast')?.textContent.includes('importée'));await go(p,'depenses');
+  const expected='100000000000000,03';const tot=async()=>(await metric('Total enregistré')).replace(/\s/g,'');
+  assert.match(await tot(),new RegExp(expected));
+  for(const order of ['date','category','amount']){await p.getByLabel('Trier les dépenses').selectOption(order);assert.match(await tot(),new RegExp(expected));}
+  assert.deepEqual(errors,[]);
+  console.log(`✓ PWA dépenses : tris, kilométrage facultatif, compteur véhicule intact, extensions et non-dédoublonnage (${useWebkit?'WebKit':'Chromium'} Linux).`);
   await ctx.close();
  }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

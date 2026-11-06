@@ -1,6 +1,10 @@
 # Cahier des charges — VigieAuto
 
-**Actualisation du 5 novembre 2026 — PWA 1.5.2-beta.5 candidate / Android 0.4.0-beta.30 :** ajout, modification et retrait du kilométrage facultatif des dépenses dans la PWA, déjà disponibles sur Android ; ce champ ne change pas le compteur du véhicule. La beta.30 Android ne modifie pas le code métier. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](KILOMETRAGE-DEPENSES-BETA30.md).
+**Actualisation du 5 novembre 2026 — PWA 1.5.2-beta.7 candidate / Android 0.4.0-beta.32 :** choix d’une devise par dépense dans la PWA, euro par défaut, anciens montants en euros et totaux séparés sans conversion. Android et les devises des pleins/entretiens restent à développer. **Une sauvegarde multidevise v4 ne peut pas être importée dans Android beta.32** ; une sauvegarde sans affectation reste en v3. Base PWA IndexedDB 5 ; sauvegarde externe avant essai. [Usage et limites](DEVISES-PWA-BETA7.md).
+
+**Historique du 5 novembre 2026 — PWA 1.5.2-beta.6 candidate / Android 0.4.0-beta.31 :** la PWA permet de trier les dépenses du véhicule actif par date, catégorie ou montant ; ce tri est visuel et ne modifie pas les données. Ces tris existaient déjà sur Android, dont le code métier est inchangé. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](TRI-DEPENSES-BETA31.md).
+
+**Historique du 5 novembre 2026 — PWA 1.5.2-beta.5 candidate / Android 0.4.0-beta.30 :** ajout, modification et retrait du kilométrage facultatif des dépenses dans la PWA, déjà disponibles sur Android ; ce champ ne change pas le compteur du véhicule. La beta.30 Android ne modifie pas le code métier. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](KILOMETRAGE-DEPENSES-BETA30.md).
 
 **Historique du 5 novembre 2026 — Android 0.4.0-beta.29 et PWA 1.5.2-beta.4 candidate :** une photo facultative par dépense, à ajouter depuis la liste après enregistrement ; aperçu, remplacement et retrait explicites. Android convertit les nouvelles photos en JPEG sans EXIF ; la PWA garde le fichier et ses métadonnées éventuelles. Sauvegardes JSON non chiffrées. Room 15, IndexedDB 4 et JSON v3 inchangés. Devise réglable et liaison plein/dépense sans double comptage restent à faire. [Détails, limites et confidentialité](JUSTIFICATIFS-BETA29.md). [Contrôles et limites des essais](VALIDATION-BETA29.md).
 
@@ -10,13 +14,13 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**État du produit : PWA familiale 1.5.1, candidate 1.5.2-beta.5 et Android 0.4.0-beta.30 · Mise à jour : 5 novembre 2026**
+**État du produit : PWA familiale 1.5.1, candidate 1.5.2-beta.7 et Android 0.4.0-beta.32 · Mise à jour : 5 novembre 2026**
 
 Ce document distingue les besoins exprimés de ce qui fonctionne réellement. Il évolue avec les décisions de l’utilisateur ; une idée, une étude ou une demande ne doit pas être marquée « réalisée » avant son développement et ses vérifications.
 
 **Récapitulatif des demandes après beta.16 :** l’utilisateur détaille huit priorités, incluant un sous-lot distinct pour chacune des quatre catégories restantes, Undo immédiat, essais réels, finitions et CI/performance, correction de la précision numérique PWA, véhicule complet, carnet, statistiques, GPS facultatif, stations après le socle stable, confort et bonus. La création automatique d’une dépense liée à un plein doit éviter tout double comptage. Choix initial : terminer d’abord la phase 1 ; ordre actualisé en beta.26 ci-dessous. Les nouvelles demandes et leurs limites sont consignées dans [PLAN-PRIORITES-APRES-BETA16.md](PLAN-PRIORITES-APRES-BETA16.md) ; cette décision documentaire n’implémentait rien à elle seule ; le sous-lot Documents est ensuite traité en beta.17.
 
-**Légende :** ✅ réalisé dans la version indiquée · 🟠 demandé ou envisagé, à étudier/développer · ❓ décision ou priorité à préciser. Les sections 2 à 6 décrivent les fonctions de la **PWA** ; les nouveaux détails du carnet sont spécifiques à la candidate beta.2, pas à 1.5.1 ; l’état distinct du projet **Android 0.4.0-beta.30** est précisé en sections 7 et 9.
+**Légende :** ✅ réalisé dans la version indiquée · 🟠 demandé ou envisagé, à étudier/développer · ❓ décision ou priorité à préciser. Les sections 2 à 6 décrivent les fonctions de la **PWA** ; les nouveaux détails du carnet sont spécifiques à la candidate beta.2, pas à 1.5.1 ; l’état distinct du projet **Android 0.4.0-beta.32** est précisé en sections 7 et 9.
 
 **Décision carnet phase 3 :** multi-pièces, sélecteur plein écran, catégories, lien cartes et sous-types implémentés dans la candidate PWA beta.2 ; portés sur Android beta.27 ; compatibilité JSON vérifiée sur jeux fictifs et essais réels à poursuivre. Les dix familles et la proposition technique sont conservées dans [la spécification](ENTRETIEN-FORMULAIRE-SPECIFICATION.md).
 

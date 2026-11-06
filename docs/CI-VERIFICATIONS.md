@@ -1,6 +1,10 @@
 # Vérifications automatiques Android
 
-**Android 0.4.0-beta.30 · 5 novembre 2026**
+**Android 0.4.0-beta.32 · 5 novembre 2026**
+
+**Beta.32 :** un test Room ciblé contrôle le refus sans écriture d’une vraie sauvegarde PWA multidevise v4. La suite Android complète, le lint et les instrumentés ne sont pas relancés. [Détails](DEVISES-PWA-BETA7.md).
+
+**Beta.31 :** code métier, schémas et tests Android inchangés ; tri visuel de la candidate PWA couvert par des tests de navigateur Linux. La porte CI globale n’est pas relancée. [Détails](TRI-DEPENSES-BETA31.md).
 
 **Beta.30 :** code métier Android inchangé ; fixture de pont dépenses mise à jour après édition du kilométrage en PWA. Treize tests ciblés réussis sous Linux, pas de suite complète ni de porte CI globale relancée. [Détails](KILOMETRAGE-DEPENSES-BETA30.md).
 

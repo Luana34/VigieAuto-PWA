@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { EXPENSE_CATEGORIES, expenseMileage } from "../js/data.js";
+import { EXPENSE_CATEGORIES, expenseMileage, expenseCategoryLabel, orderedExpenses } from "../js/data.js";
 import { parseBackupJson, stringifyBackupJson } from "../js/precise-json.js";
 import { spending } from "../js/calc.js";
 
@@ -31,4 +31,21 @@ test("un kilométrage importé trop précis reste exact sans devenir éditable",
   const backup=parseBackupJson(raw), row=backup.data.expenses[0];
   assert.equal(expenseMileage(row).editable,false);
   assert.match(stringifyBackupJson(backup), /"odometer"\s*:\s*12345678901234567890\.125/);
+});
+
+test("tri des dépenses : date récente, libellé de catégorie ou montant décroissant sans modifier la source", () => {
+  const rows=[
+    {id:"a",date:"2026-01-01",category:"assurance",amount:7,extra:{future:true}},
+    {id:"b",date:"2026-03-01",category:"carburant",amount:2},
+    {id:"c",date:"2026-02-01",category:"assurance",amount:30},
+    {id:"d",date:"2026-04-01",category:"inconnu",amount:0},
+    {id:"e",date:"2026-05-01",category:null,amount:null},
+    {id:"f",date:"2026-05-02",category:"__proto__",amount:{valueOf:null,toString:null}},
+  ];
+  const original=structuredClone(rows), ids=(order)=>orderedExpenses(rows,order).map(x=>x.id);
+  assert.deepEqual(ids("date"),["f","e","d","b","c","a"]);
+  assert.deepEqual(ids("category"),["c","a","b","e","f","d"]);
+  assert.deepEqual(ids("amount"),["c","a","b","d","f","e"]);
+  assert.deepEqual(rows,original);assert.equal(expenseCategoryLabel("__proto__"),"Personnalisée : __proto__");
+  assert.deepEqual(ids("valeur-future"),ids("date"));
 });

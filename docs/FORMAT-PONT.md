@@ -1,4 +1,8 @@
-# Pont de sauvegarde PWA familiale 1.5.1 / candidate 1.5.2-beta.5 ↔ Android 0.4.0-beta.30
+# Pont de sauvegarde PWA familiale 1.5.1 / candidate 1.5.2-beta.7 / Android 0.4.0-beta.32 : compatibilité selon le format
+
+**Attention :** une sauvegarde PWA beta.7 avec affectation de devise est en **format 4** et n’est pas importable sur Android beta.32. Sans affectation, la PWA exporte encore en v3. Ne pas convertir le numéro de format ni supprimer les affectations pour contourner le refus. [Contrat et limites](DEVISES-PWA-BETA7.md).
+
+**PWA beta.6 / Android beta.31 :** le nouveau tri des dépenses est local à l’affichage, sans champ ni modification du JSON ; voir [TRI-DEPENSES-BETA31.md](TRI-DEPENSES-BETA31.md).
 
 **PWA beta.5 / Android beta.30 :** `expenses[].odometer` est un champ facultatif déjà utilisé sur Android ; la PWA l’édite désormais sans changer le compteur du véhicule. Structures inconnues ou valeurs trop précises : conserver sans modifier. [Détails](KILOMETRAGE-DEPENSES-BETA30.md).
 

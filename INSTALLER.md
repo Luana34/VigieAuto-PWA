@@ -28,7 +28,7 @@ Les libellés exacts et le délai de publication peuvent évoluer. Android et iO
 ## Si CQ Auto était déjà installé
 
 - Dans l’ancienne application, ouvrez **Paramètres → Exporter mes données** et gardez le JSON en lieu sûr avant la mise à jour.
-- Pour une mise à jour ultérieure seulement, si vous remplacez les fichiers à **exactement la même adresse**, VigieAuto reprend la base locale et ajoute si nécessaire la collection des trajets. Ne faites pas ce remplacement pour le premier essai de la candidate : la base passerait de la version 2 ou 3 à 4 et le retour direct serait bloqué. Fermez les anciens onglets, ouvrez l’application en ligne, laissez-la se mettre à jour puis rechargez-la. Il peut être nécessaire de la fermer et de la rouvrir en ligne.
+- Pour une mise à jour ultérieure seulement, si vous remplacez les fichiers à **exactement la même adresse**, VigieAuto reprend la base locale et ajoute si nécessaire la collection des trajets. Ne faites pas ce remplacement pour le premier essai de la candidate : la base passerait de la version 2, 3 ou 4 à 5 et le retour direct serait bloqué. Fermez les anciens onglets, ouvrez l’application en ligne, laissez-la se mettre à jour puis rechargez-la. Il peut être nécessaire de la fermer et de la rouvrir en ligne.
 - Si vous utilisez **une origine différente**, un autre navigateur ou un autre téléphone, le stockage peut être différent. Un simple changement de chemin sur le même domaine ne garantit pas une séparation. Ouvrez VigieAuto, puis importez la sauvegarde depuis **Réglages → Importer une sauvegarde**. L’import remplace les données déjà présentes après confirmation.
 - Ne videz pas les données du navigateur et ne désinstallez pas l’ancienne application pour forcer une mise à jour : cela peut effacer le carnet. Les versions anciennes ne reconnaissent pas toutes les nouveautés ; certaines ne lisent pas les formats plus récents. Ne revenez pas en arrière sans copie vérifiée.
 
@@ -36,7 +36,7 @@ Les libellés exacts et le délai de publication peuvent évoluer. Android et iO
 
 Dans **Réglages → Exporter mes données**, téléchargez régulièrement le fichier JSON, puis conservez-en une copie sur un autre support sûr. La sauvegarde inclut des informations personnelles et n’est pas chiffrée par VigieAuto. Aucune sauvegarde automatique sur Google Drive n’est incluse actuellement.
 
-## Essayer la candidate 1.5.2-beta.5 — sauvegarde préalable indispensable
+## Essayer la candidate 1.5.2-beta.7 — sauvegarde préalable indispensable
 
 **Nouveau :** après création d’une dépense, ajoutez si besoin un justificatif photo depuis sa ligne. La PWA conserve le fichier et ses métadonnées éventuelles ; l’export JSON n’est pas chiffré. Les justificatifs peuvent rendre la sauvegarde volumineuse. Voir `docs/JUSTIFICATIFS-BETA29.md`.
 
@@ -44,12 +44,16 @@ La version familiale 1.5.1 reste la référence. La candidate n’a pas été te
 
 1. Dans l’application déjà installée sur **chaque appareil concerné**, ouvrez **Réglages → Exporter mes données**. Conservez le JSON original hors du téléphone, dans un lieu sûr. Il est personnel et non chiffré ; ne le publiez pas.
 2. Extrayez le ZIP candidat dans un dossier parent distinct du projet Android. Il contient un dossier `VigieAuto` : publiez **son contenu** sur une origine HTTPS de test différente de l’origine familiale, ou utilisez un appareil distinct de test. Un autre sous-dossier sur le même domaine ne suffit pas à isoler IndexedDB.
-3. Ouvrez l’adresse de test en ligne, puis vérifiez **Réglages → version 1.5.2-beta.5**. Sur iPhone, Safari propose **Partager → Sur l’écran d’accueil** ; le stockage de l’application installée peut être distinct de celui de l’onglet Safari.
+3. Ouvrez l’adresse de test en ligne, puis vérifiez **Réglages → version 1.5.2-beta.7**. Sur iPhone, Safari propose **Partager → Sur l’écran d’accueil** ; le stockage de l’application installée peut être distinct de celui de l’onglet Safari.
 4. Commencez de préférence avec des données fictives. Pour essayer une copie réelle, utilisez une **copie** de la sauvegarde originale et **Réglages → Importer une sauvegarde** : l’import confirmé remplace les données de cette installation de test. Vérifiez véhicules, carnet, documents et export ; conservez l’original séparément.
 5. Après la première mise en cache, testez l’accès en mode avion, puis désactivez-le. Un essai en sécurité du GPS, à l’arrêt et facultatif, demande une autorisation explicite ; aucune position n’est enregistrée. La mesure peut être interrompue et l’écran éteint n’est pas garanti.
 
-**Attention au retour arrière :** si la candidate ouvre la base familiale sur la même origine et dans le même stockage, elle la met à niveau d’IndexedDB 2 ou 3 vers 4. Les PWA 1.5.1 et beta.1 ne peuvent ensuite plus ouvrir directement cette base. Un retour nécessite une sauvegarde externe compatible antérieure et une installation séparée ; ne videz pas les données du navigateur et ne désinstallez pas l’application pour forcer le retour.
+**Attention au retour arrière :** si la candidate ouvre la base familiale sur la même origine et dans le même stockage, elle la met à niveau d’IndexedDB 2, 3 ou 4 vers 5. Les anciennes PWA, y compris beta.6 et 1.5.1, ne peuvent ensuite plus ouvrir directement cette base. Un retour nécessite une sauvegarde externe compatible antérieure et une installation séparée ; ne videz pas les données du navigateur et ne désinstallez pas l’application pour forcer le retour.
 
 Les lignes de pièces, les catégories multiples, le sous-type de carburant et le bouton de recherche Google Maps sont décrits dans [le guide du carnet](docs/CARNET-PWA-BETA2.md). Le bouton de carte est facultatif, transmet le texte à un service externe et nécessite généralement Internet ; il ne garantit pas Apple Maps ni l’application par défaut.
 
 Le suivi GPS fonctionne seulement de façon opportuniste lorsque l’application est visible. Les interruptions détectées sont indiquées ; les portions non mesurées ne sont pas reconstruites. Le GPS peut consommer de la batterie et l’obtention d’une position sans Internet dépend du téléphone. N’utilisez pas le téléphone en conduisant.
+
+## Devises et échange Android
+
+La candidate permet de choisir la devise de chaque dépense ; anciens montants en euros, totaux séparés et aucune conversion. Les pleins et entretiens restent en euros. Une sauvegarde contenant une affectation de devise utilise le format 4, que l’Android beta.32 actuel ne sait pas importer. Conservez le fichier et attendez le portage Android ; ne changez pas son numéro de format. Sans affectation, l’export reste au format 3. [Détails et précautions](docs/DEVISES-PWA-BETA7.md).

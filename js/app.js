@@ -1,4 +1,6 @@
 import { LocalDatabase, STORES } from "./db.js";
+import { CURRENCY_STORE, CURRENCY_CHOICES, MAX_CURRENCIES, validCurrencyCode, currencyAssignmentId, indexCurrencyAssignments,
+  validateCurrencyAssignments, currencyOf, spendingByCurrency, expenseTotalsByCurrency } from "./currency.js";
 import { parseBackupJson, stringifyBackupJson, survivesUserNumber, addNumbersForUse } from "./precise-json.js";
 import { VIGIE_LOGO_PATHS } from "./logo.js";
 import {
@@ -33,12 +35,12 @@ import {
   demoRecords,
   SERVICE_CATEGORIES,
   EXPENSE_CATEGORIES,
-  expenseMileage,
+  expenseCategoryLabel, orderedExpenses, expenseMileage,
   SYMPTOM_CATEGORIES,
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.5";
+const APP_VERSION = "1.5.2-beta.7";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -112,6 +114,7 @@ const state = {
   route: "accueil",
   installPrompt: null,
   serviceFilter: "all",
+  expenseOrder: "date",
   tripFilter: "all",
   startingTrip: false,
   fuelFilter: "all",
@@ -233,6 +236,29 @@ function scopedFinance() {
     expenses: scoped("expenses"),
   };
 }
+let currencyIndexSource = null, cachedCurrencyIndex = new Map();
+function currencyIndex() {
+  const current = state.records?.[CURRENCY_STORE] || [];
+  if (current !== currencyIndexSource) {
+    cachedCurrencyIndex = indexCurrencyAssignments(current);
+    currencyIndexSource = current;
+  }
+  return cachedCurrencyIndex;
+}
+function expenseCurrency(id) { return currencyOf(currencyIndex(), id); }
+function moneyIn(value, currency = "EUR") {
+  return currency === "EUR" ? money(value) : `${number(value, 2)} ${esc(currency)}`;
+}
+function currencyTotals(groups) {
+  return groups.map((g) => `<span class="currency-total">${moneyIn(g.total, g.currency)}</span>`).join("");
+}
+function financeForCurrency(data, currency) {
+  return {
+    fills: currency === "EUR" ? data.fills : [],
+    services: currency === "EUR" ? data.services : [],
+    expenses: data.expenses.filter((x) => expenseCurrency(x.id) === currency),
+  };
+}
 function carUnit() {
   return getVehicle()?.fuel === "electrique" ? "kWh" : "L";
 }
@@ -260,6 +286,7 @@ async function applyJournalChecked(operations, guards) {
 }
 function applyToMemory(operations) {
   for (const op of operations) {
+    if (op.store === CURRENCY_STORE) currencyIndexSource = null;
     const rows = state.records[op.store];
     if (op.type === "clear") {
       state.records[op.store] = [];
@@ -465,10 +492,14 @@ function recentActivity() {
 }
 function activityCard() {
   const activities = recentActivity();
-  return `<div class="card activity-card"><div class="card-head"><div><h2>Activité récente</h2><p class="card-kicker">Votre carnet au fil des jours</p></div><button class="section-link" data-route="entretien">Voir le carnet →</button></div><div class="activity-list">${activities.map((x) => `<div class="activity-row">${square(x.icon, x.color)}<div class="activity-body"><div class="activity-title">${esc(x.label)}</div><div class="activity-meta">${shortDate(x.date)}${typeof x.odometer === "number" && Number.isFinite(x.odometer) ? ` · ${number(x.odometer)} km` : ""}</div></div>${x.amount !== null ? `<div class="activity-amount">${money(x.amount)}</div>` : ""}</div>`).join("") || '<p class="card-intro">Votre activité apparaîtra ici après votre premier enregistrement.</p>'}</div></div>`;
+  return `<div class="card activity-card"><div class="card-head"><div><h2>Activité récente</h2><p class="card-kicker">Votre carnet au fil des jours</p></div><button class="section-link" data-route="entretien">Voir le carnet →</button></div><div class="activity-list">${activities.map((x) => `<div class="activity-row">${square(x.icon, x.color)}<div class="activity-body"><div class="activity-title">${esc(x.label)}</div><div class="activity-meta">${shortDate(x.date)}${typeof x.odometer === "number" && Number.isFinite(x.odometer) ? ` · ${number(x.odometer)} km` : ""}</div></div>${x.amount !== null ? `<div class="activity-amount">${moneyIn(x.amount, x.kind === "expense" ? expenseCurrency(x.id) : "EUR")}</div>` : ""}</div>`).join("") || '<p class="card-intro">Votre activité apparaîtra ici après votre premier enregistrement.</p>'}</div></div>`;
 }
 function spendingCard() {
-  const x = spending(scopedFinance());
+  const data = scopedFinance(), groups = spendingByCurrency(data, currencyIndex());
+  if (groups.some((g) => g.currency !== "EUR")) {
+    return `<div class="card spending-card"><div class="card-head"><div><h2>Vos dépenses</h2><p class="card-kicker">Totaux séparés par devise · aucune conversion</p></div><button class="section-link" data-route="statistiques">Détails →</button></div><div class="currency-breakdown">${groups.map((g) => `<div><span>${esc(g.currency)}</span><b>${moneyIn(g.total, g.currency)}</b><small>Carburant ${moneyIn(g.fuel, g.currency)} · Entretien ${moneyIn(g.service, g.currency)} · Autres ${moneyIn(g.other, g.currency)}</small></div>`).join("")}</div><p class="card-kicker">Doublons manuels non détectés.</p></div>`;
+  }
+  const x = spending(data);
   const p1 = x.total ? (x.fuel / x.total) * 100 : 0,
     p2 = x.total ? ((x.fuel + x.service) / x.total) * 100 : 0;
   const bg = x.total ? "" : "background:var(--donut-empty);";
@@ -508,11 +539,13 @@ function dashboard() {
   const v = getVehicle();
   if (!v) return `${pageHeading("Votre garage", "Le suivi de votre véhicule, en toute simplicité.")}<div class="card garage-empty">${square("car")}<div><h2>Votre carnet commence ici.</h2><p>Ajoutez un véhicule pour suivre ses entretiens, ses pleins et vos contrôles.</p>${addButton("Ajouter mon véhicule", "add-vehicle")}</div></div>`;
   const finance = scopedFinance();
-  const month = monthlySpending(finance, 1)[0];
+  const currentMonth = today().slice(0, 7);
+  const thisMonth = Object.fromEntries(Object.entries(finance).map(([key, rows]) => [key, rows.filter((x) => (x.date || "").startsWith(currentMonth))]));
+  const month = spendingByCurrency(thisMonth, currencyIndex());
   const consumption = fillIntervals(finance.fills, carUnit());
   const reminders = activeReminders();
   return `<div class="page-heading garage-page-heading"><div><p class="eyebrow">VOTRE CARNET DE BORD</p><h1>Votre garage<span class="garage-title-dot">.</span></h1><p class="subheading">Un coup d’œil, et vous savez où vous en êtes.</p></div><div class="date-chip">${I("calendar")} ${esc(dateNowLabel())}</div></div>
-  <div class="garage-dashboard"><div class="garage-primary">${garageVehicle(v)}${garageAlert(reminders)}${tripQuickCard()}${garageControl()}${garageSnapshot(reminders, consumption)}<button class="garage-month" data-route="statistiques"><span>DÉPENSES CE MOIS</span><strong>${money(month.total)}</strong><span>DÉTAILS ${I("arrow")}</span></button></div>
+  <div class="garage-dashboard"><div class="garage-primary">${garageVehicle(v)}${garageAlert(reminders)}${tripQuickCard()}${garageControl()}${garageSnapshot(reminders, consumption)}<button class="garage-month" data-route="statistiques"><span>DÉPENSES CE MOIS</span><strong>${currencyTotals(month)}</strong><span>DÉTAILS ${I("arrow")}</span></button></div>
   <div class="garage-secondary">${remindersCard()}${activityCard()}</div></div>
   <div class="garage-insights">${spendingCard()}<div class="card garage-tips"><div class="card-head"><div><h2>Votre carnet, à portée de main</h2><p class="card-kicker">Enregistrez ce qui compte, simplement.</p></div>${I("shield")}</div><div class="garage-shortcuts">${quickAction("fuel", "orange", v.fuel === "electrique" ? "Ajouter une recharge" : "Ajouter un plein", "Énergie & consommation", "add-fill")}${quickAction("wrench", "", "Ajouter un entretien", "Carnet d’entretien", "add-service")}${quickAction("symptom", "blue", "Signaler un symptôme", "Journal du véhicule", "add-symptom")}</div></div></div>
   <div class="note-line">${I("shield")} Vos informations restent sur cet appareil. Pensez à les sauvegarder régulièrement.</div>`;
@@ -903,23 +936,22 @@ function fillsView() {
           )
     }</div>`;
 }
-function expenseCategoryLabel(value) {
-  if (typeof value !== "string" || !value) return "Non renseignée";
-  if (Object.prototype.hasOwnProperty.call(EXPENSE_CATEGORIES, value)) return EXPENSE_CATEGORIES[value];
-  return value.length > 200 ? "Catégorie trop longue à afficher" : `Personnalisée : ${value}`;
-}
 function expensesView() {
   if (!getVehicle())
     return requireVehicleView(
       "Autres dépenses",
       "Assurance, péages, stationnement…",
     );
-  const rows = sortRecent(scoped("expenses"));
-  const sum = rows.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+  const source = scoped("expenses");
+  const rows = orderedExpenses(source, state.expenseOrder, expenseCurrency);
+  const recent = sortRecent(source), latest = recent[0];
+  // Conserver l’ordre d’addition historique, séparément pour chaque devise.
+  const totals = expenseTotalsByCurrency(recent, currencyIndex());
   return `${pageHeading("Autres dépenses", "Assurance, péages, stationnement… tout compte.", addButton("Ajouter une dépense", "add-expense"))}
-    <div class="summary-grid">${metric("Total enregistré", money(sum), "", "Hors montants des pleins et interventions", "receipt")}${metric("Dépenses", number(rows.length), "", "Pour ce véhicule", "chart")}${metric("Dernière dépense", rows[0] ? shortDate(rows[0].date) : "—", "", "Selon la date enregistrée", "calendar")}</div>
+    <div class="summary-grid">${metric("Total enregistré", currencyTotals(totals), "", "Par devise, hors pleins et interventions", "receipt")}${metric("Dépenses", number(rows.length), "", "Pour ce véhicule", "chart")}${metric("Dernière dépense", latest ? shortDate(latest.date) : "—", "", "Selon la date enregistrée", "calendar")}</div>
     <div class="note-line">${I("info")} Les pleins et interventions sont enregistrés séparément. Les doublons saisis manuellement ne sont pas détectés et peuvent être comptés deux fois.</div>
-    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("receipt", "blue")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${esc(expenseCategoryLabel(x.category))}${expenseMileage(x).display ? ` · ${esc(expenseMileage(x).display)} km` : ""}${x.notes ? `<br>${esc(x.notes)}` : ""}<br><button type="button" class="receipt-link" data-action="expense-receipt" data-id="${esc(x.id)}">${inspectExpenseReceipt(x).state === "empty" ? "Ajouter un justificatif" : "Voir le justificatif"}</button></div></div><div class="list-amount">${money(x.amount)}</div>${rowButtons("expense", x.id)}</div>`).join("") : empty("receipt", "Aucune autre dépense", "Enregistrez une assurance, un péage ou un achat.", "add-expense", "Ajouter une dépense")}</div>`;
+    <div class="filterbar"><label for="expense-order">Trier par</label><select id="expense-order" data-filter="expense-order" aria-label="Trier les dépenses">${[["date","Date ↓"],["category","Catégorie"],["amount","Montant ↓ par devise"]].map(([value,label]) => `<option value="${value}" ${state.expenseOrder === value ? "selected" : ""}>${label}</option>`).join("")}</select><span class="filter-count">${rows.length} dépense${rows.length === 1 ? "" : "s"}</span></div>
+    <div class="card list-card">${rows.length ? rows.map((x) => `<div class="list-row">${square("receipt", "blue")}<div class="list-main"><div class="list-title">${esc(x.title)}</div><div class="list-meta">${shortDate(x.date)} · ${esc(expenseCategoryLabel(x.category))}${expenseMileage(x).display ? ` · ${esc(expenseMileage(x).display)} km` : ""}${x.notes ? `<br>${esc(x.notes)}` : ""}<br><button type="button" class="receipt-link" data-action="expense-receipt" data-id="${esc(x.id)}">${inspectExpenseReceipt(x).state === "empty" ? "Ajouter un justificatif" : "Voir le justificatif"}</button></div></div><div class="list-amount">${moneyIn(x.amount, expenseCurrency(x.id))}</div>${rowButtons("expense", x.id)}</div>`).join("") : empty("receipt", "Aucune autre dépense", "Enregistrez une assurance, un péage ou un achat.", "add-expense", "Ajouter une dépense")}</div>`;
 }
 function remindersView() {
   const v = getVehicle();
@@ -996,24 +1028,26 @@ function documentsView() {
 function statisticsView() {
   if (!getVehicle())
     return requireVehicleView("Statistiques", "Vos chiffres en un coup d’œil.");
-  const data = scopedFinance(),
-    all = spending(data),
-    months = monthlySpending(data, 6),
-    max = Math.max(...months.map((x) => x.total), 1),
+  const data = scopedFinance(), groups = spendingByCurrency(data, currencyIndex()),
     calc = fillIntervals(data.fills, carUnit());
   const fuelCost = calc.intervals.reduce((s, x) => s + x.cost, 0);
   const perKm = calc.distance ? fuelCost / calc.distance : null;
+  const charts = groups.map((g) => {
+    const months = monthlySpending(financeForCurrency(data, g.currency), 6);
+    const max = Math.max(...months.map((x) => x.total), 1);
+    return `<div class="card page-card"><div class="card-head"><div><h2>Évolution ${esc(g.currency)}</h2><p class="card-kicker">Montants saisis sur les 6 derniers mois · ${esc(g.currency)}</p></div>${I("chart")}</div><div class="bar-chart">${months.map((m, i) => `<div class="bar-col"><div class="bar ${i === months.length - 1 ? "current" : ""}" style="height:${Math.max(3, (m.total / max) * 105)}px" title="${esc(m.label)} : ${moneyIn(m.total, g.currency)}"></div><span class="bar-label">${esc(m.label)}</span></div>`).join("")}</div><div class="bar-caption"><span>Carburant, entretien et autres dépenses</span><span>Max. ${moneyIn(max === 1 && months.every((x) => x.total === 0) ? 0 : max, g.currency)}</span></div></div>`;
+  }).join("");
   return `${pageHeading("Statistiques", "Comprendre vos dépenses pour mieux anticiper.")}
-    <div class="summary-grid">${metric("Dépenses enregistrées", money(all.total), "", "Toutes périodes confondues", "receipt")}${metric("Consommation moyenne", calc.average === null ? "—" : number(calc.average, 2), `${carUnit()}/100 km`, "Sur intervalles complets", "fuel")}${metric("Énergie par kilomètre", perKm === null ? "—" : number(perKm, 3), "€/km", "Sur intervalles complets uniquement", "speed")}</div>
-    <div class="split-layout"><div class="card page-card"><div class="card-head"><div><h2>Évolution des dépenses</h2><p class="card-kicker">Montants saisis sur les 6 derniers mois</p></div>${I("chart")}</div><div class="bar-chart">${months.map((m, i) => `<div class="bar-col"><div class="bar ${i === months.length - 1 ? "current" : ""}" style="height:${Math.max(3, (m.total / max) * 105)}px" title="${esc(m.label)} : ${money(m.total)}"></div><span class="bar-label">${esc(m.label)}</span></div>`).join("")}</div><div class="bar-caption"><span>Carburant, entretien et autres dépenses</span><span>Max. ${money(max === 1 && months.every((x) => x.total === 0) ? 0 : max)}</span></div></div>${spendingCard()}</div>
-    <div class="note-line">${I("info")} Ces chiffres additionnent les saisies sans détecter les doublons entre dépenses, pleins et entretiens ; ils ne constituent pas un coût total de possession exhaustif.</div>`;
+    <div class="summary-grid">${metric("Dépenses enregistrées", currencyTotals(groups), "", "Totaux par devise, sans conversion", "receipt")}${metric("Consommation moyenne", calc.average === null ? "—" : number(calc.average, 2), `${carUnit()}/100 km`, "Sur intervalles complets", "fuel")}${metric("Énergie par kilomètre", perKm === null ? "—" : number(perKm, 3), "€/km", "Sur intervalles complets uniquement", "speed")}</div>
+    <div class="split-layout"><div class="currency-charts">${charts}</div>${spendingCard()}</div>
+    <div class="note-line">${I("info")} Ces chiffres additionnent les saisies sans détecter les doublons entre dépenses, pleins et entretiens ; ils ne constituent pas un coût total de possession exhaustif. Les devises restent distinctes, sans conversion.</div>`;
 }
 function settingsView() {
   return `${pageHeading("Paramètres", "Vos données et vos préférences, en toute simplicité.")}
     <section class="card settings-section theme-settings"><h2>Thème de l’application</h2><p>Choisissez l’ambiance qui vous plaît. Le choix est enregistré sur cet appareil.</p><fieldset class="theme-options"><legend>Choisir un thème</legend>
       ${[["sauge", "Sauge", "Clair ou sombre selon le téléphone", "sauge"], ["cyan", "Cyan", "Clair ou sombre selon le téléphone", "cyan"], ["auto", "Automatique (mixte)", "Sauge clair · Cyan sombre", "auto"]].map(([value, name, desc, swatch]) => `<label class="theme-option"><input type="radio" name="theme" value="${value}" data-setting="theme" ${state.themePreference === value ? "checked" : ""}><span class="theme-swatch ${swatch}" aria-hidden="true"><i></i><i></i></span><span class="theme-option-copy"><strong>${name}</strong><small>${desc}</small></span></label>`).join("")}
     </fieldset><p class="theme-explanation">Sauge et Cyan suivent le mode clair ou sombre de votre téléphone. Le choix mixte conserve Sauge en clair et Cyan en sombre. Thème actuellement affiché : <strong id="current-theme">${THEME_LABELS[document.documentElement.dataset.theme] || "Sauge clair"}</strong>.</p></section>
-    <div class="card settings-section"><h2>Sauvegarder et restaurer</h2><p>Exportez régulièrement une sauvegarde complète, y compris vos documents et listes. Conservez ce fichier dans un endroit sûr : il contient vos informations personnelles et n’est pas chiffré.</p><div class="settings-actions"><button class="btn" data-action="export">${I("download")} Exporter mes données</button><button class="btn secondary" data-action="import">${I("upload")} Importer une sauvegarde</button></div><p style="margin-top:12px">L’import d’un fichier VigieAuto remplace toutes les données présentes sur cet appareil. Une sauvegarde ne se fait pas automatiquement.</p></div>
+    <div class="card settings-section"><h2>Sauvegarder et restaurer</h2><p>Exportez régulièrement une sauvegarde complète, y compris vos documents et listes. Conservez ce fichier dans un endroit sûr : il contient vos informations personnelles et n’est pas chiffré.</p><div class="settings-actions"><button class="btn" data-action="export">${I("download")} Exporter mes données</button><button class="btn secondary" data-action="import">${I("upload")} Importer une sauvegarde</button></div><p style="margin-top:12px">L’import d’un fichier VigieAuto remplace toutes les données présentes sur cet appareil. Une sauvegarde ne se fait pas automatiquement.</p>${state.records?.[CURRENCY_STORE]?.length ? '<p class="form-help">Vos devises nécessitent une sauvegarde format 4 : Android actuel et les anciennes PWA ne peuvent pas l’importer.</p>' : ''}</div>
     <div class="card settings-section"><h2>Installer VigieAuto</h2><p>Ouvrez cette application en HTTPS, puis ajoutez-la à votre écran d’accueil. La première ouverture et la mise en cache nécessitent une connexion.</p><ul class="settings-list"><li><b>Android :</b> menu du navigateur → « Installer l’application » ou « Ajouter à l’écran d’accueil ».</li><li><b>iPhone :</b> dans Safari, bouton Partager → « Sur l’écran d’accueil ».</li><li>Après installation sur iPhone, vérifiez vos données : le stockage de la version installée peut être séparé de celui de l’onglet.</li></ul>${state.installPrompt ? `<div class="settings-actions"><button class="btn" data-action="install">${I("download")} Installer l’application</button></div>` : ""}</div>
     <div class="card settings-section"><h2>Vie privée et hors-ligne</h2><p>Pas de compte, pas de synchronisation et aucune publicité dans cette application. Les informations saisies sont enregistrées dans le navigateur de cet appareil. Leur perte, l’effacement du navigateur ou une suppression du stockage peuvent les effacer : exportez vos données régulièrement.</p><p style="margin-top:10px">Les rappels sont visibles dans l’application : aucune notification en arrière-plan n’est prévue dans cette version.</p></div>
     <div class="card settings-section"><h2>Zone sensible</h2><p>Cette opération supprime les véhicules et leurs données locales. Elle est irréversible sans sauvegarde.</p><div class="settings-actions"><button class="btn danger" data-action="reset-all">${I("trash")} Effacer toutes les données</button></div></div>
@@ -1497,8 +1531,13 @@ function fillForm(id = "") {
 function expenseForm(id = "") {
   const x = recordById("expenses", id) || {};
   if (id && !x.id) throw new Error("Cette dépense n’existe plus. Rechargez la page.");
-  const mileage = expenseMileage(x);
-  expenseDraft = { id, expected: x.id ? structuredClone(x) : null, vehicle: structuredClone(getVehicle()), mileageEditable: mileage.editable, mileageTouched: false };
+  const mileage = expenseMileage(x), assigned = x.id ? currencyIndex().get(x.id) : null;
+  const currency = assigned?.currency || "EUR";
+  const currencyChoices = { ...CURRENCY_CHOICES };
+  if (!Object.hasOwn(currencyChoices, currency)) currencyChoices[currency] = `${currency} (devise enregistrée)`;
+  currencyChoices.__other = "Autre devise…";
+  expenseDraft = { id, expected: x.id ? structuredClone(x) : null, expectedCurrency: assigned ? structuredClone(assigned) : null,
+    vehicle: structuredClone(getVehicle()), mileageEditable: mileage.editable, mileageTouched: false };
   const category = typeof x.category === "string" ? x.category : "";
   // Une catégorie d'une autre version ne doit pas être remplacée par le premier choix.
   const choices = x.id && !category ? { "": "Non renseignée", ...EXPENSE_CATEGORIES }
@@ -1514,9 +1553,18 @@ function expenseForm(id = "") {
     id,
     body: `<div class="form-grid">
     <p class="form-help full-width">Les pleins et entretiens sont séparés. Les doublons saisis manuellement ne sont pas détectés. Après enregistrement, vous pourrez ajouter une photo de justificatif depuis la liste.</p>
-    ${field("title", "Intitulé", x.title, { required: true, full: true, placeholder: "Assurance auto" })}${categoryField}${field("date", "Date", x.date || today(), { type: "date", required: true })}${field("amount", "Montant (€)", x.amount ?? "", { type: "number", min: 0, step: "0.01", required: true })}
+    ${field("title", "Intitulé", x.title, { required: true, full: true, placeholder: "Assurance auto" })}${categoryField}${field("date", "Date", x.date || today(), { type: "date", required: true })}${field("amount", "Montant", x.amount ?? "", { type: "number", min: 0, step: "0.01", required: true })}
+    ${selectField("currency", "Devise", currency, currencyChoices, { required:true, help:"Le montant reste dans cette devise ; aucune conversion automatique." })}
+    <div class="field" data-other-currency hidden><label for="f-currencyOther">Code de devise (3 lettres) *</label><input id="f-currencyOther" name="currencyOther" type="text" maxlength="3" pattern="[A-Za-z]{3}" autocomplete="off" autocapitalize="characters" disabled required><small>Code à trois lettres, par exemple SEK. Vérifiez ce code : il n'est pas contrôlé en ligne.</small></div>
+    <p class="form-help full-width">Les pleins et entretiens restent pour l’instant en euros. Une sauvegarde contenant une autre devise ne peut pas être importée dans l’Android actuel.</p>
     ${mileage.editable ? field("odometer", "Kilométrage (facultatif)", mileage.input, { type: "number", min: 0, step: "any", help: "Ce kilométrage décrit la dépense ; il ne modifie pas le compteur du véhicule." }) : '<p class="form-help full-width">Kilométrage d’une autre version ou valeur non prise en charge : il est conservé sans modification.</p>'}
     ${area("notes", "Notes", x.notes, { placeholder: "Facultatif…" })}</div>`,
+  });
+  const currencySelect = modal.querySelector('[name="currency"]'), otherBox = modal.querySelector('[data-other-currency]');
+  currencySelect.addEventListener("change", () => {
+    const other = currencySelect.value === "__other";
+    otherBox.hidden = !other;
+    otherBox.querySelector("input").disabled = !other;
   });
   modal.querySelector('[name="odometer"]')?.addEventListener("input", () => {
     if (expenseDraft?.id === id) expenseDraft.mileageTouched = true;
@@ -1881,8 +1929,27 @@ async function saveForm(form) {
       if (Object.prototype.hasOwnProperty.call(x, "category")) record.category = null;
       else delete record.category;
     }
-    await applyJournalChecked([put("expenses", record)], [
+    const selected = text(d, "currency", true);
+    const currency = (selected === "__other" ? text(d, "currencyOther", true) : selected).toUpperCase();
+    if (!validCurrencyCode(currency)) throw new Error("Indiquez un code de devise à trois lettres.");
+    const usedCurrencies = new Set(["EUR", currency]);
+    for (const [otherId, assignment] of currencyIndex()) if (otherId !== record.id) usedCurrencies.add(assignment.currency);
+    if (usedCurrencies.size > MAX_CURRENCIES) throw new Error(`Au maximum ${MAX_CURRENCIES} devises peuvent coexister.`);
+    const oldCurrency = expenseDraft.expectedCurrency?.currency || "EUR";
+    if (x.id && oldCurrency !== currency && !confirm(`Confirmer la devise ${currency} pour cette dépense ? Le montant n’est pas converti.`)) return;
+    const currencyId = currencyAssignmentId(record.id), original = expenseDraft.expectedCurrency;
+    const operations = [put("expenses", record)];
+    if (currency !== oldCurrency || (!x.id && currency !== "EUR")) {
+      // Un retour en EUR ne supprime aucune extension inconnue de l'affectation.
+      const standardKeys = ["id", "collection", "recordId", "currency"];
+      if (currency === "EUR" && original && Object.keys(original).every((key) => standardKeys.includes(key)))
+        operations.push(del(CURRENCY_STORE, currencyId));
+      else if (currency !== "EUR" || original)
+        operations.push(put(CURRENCY_STORE, { ...(original || {}), id:currencyId, collection:"expenses", recordId:record.id, currency }));
+    }
+    await applyJournalChecked(operations, [
       { store: "expenses", id: record.id, expected: expenseDraft.expected },
+      { store: CURRENCY_STORE, id: currencyId, expected: original },
       { store: "vehicles", id: expenseDraft.vehicle.id, expected: expenseDraft.vehicle },
     ]);
   } else if (type === "expense-receipt") {
@@ -2038,7 +2105,7 @@ async function deleteVehicle(id) {
   const wasActive = state.activeId === id;
   let next = state.records.vehicles.find((x) => x.id !== id)?.id || null;
   if (state.demo) {
-    const ops = [del("vehicles", id), ...stores.flatMap((s) => state.records[s].filter((x) => x.vehicleId === id).map((x) => del(s, x.id)))];
+    const ops = [del("vehicles", id), ...stores.flatMap((s) => state.records[s].filter((x) => x.vehicleId === id).flatMap((x) => s === "expenses" ? [del(s, x.id), del(CURRENCY_STORE, currencyAssignmentId(x.id))] : [del(s, x.id)]))];
     if (wasActive) ops.push(put("settings", { ...(state.records.settings.find((x) => x.id === "activeVehicle") || {}), id: "activeVehicle", value: next }));
     await apply(ops);
   } else {
@@ -2065,7 +2132,13 @@ async function deleteItem(store, id, label) {
   const deletingGps = store === "trips" && x.status === "running" && x.method === "gps" && !state.demo;
   if (deletingGps) await quiesceGps();
   try {
-    if (store === "expenses") await applyJournalChecked([del(store, id)], [{ store, id, expected: structuredClone(x) }]);
+    if (store === "expenses") {
+      const assignment = currencyIndex().get(id), currencyId = currencyAssignmentId(id);
+      await applyJournalChecked([del(store, id), del(CURRENCY_STORE, currencyId)], [
+        { store, id, expected: structuredClone(x) },
+        { store: CURRENCY_STORE, id: currencyId, expected: assignment ? structuredClone(assignment) : null },
+      ]);
+    }
     else await apply([del(store, id)]);
   }
   finally { if (deletingGps) await endGpsMutation(); }
@@ -2123,23 +2196,28 @@ async function exportBackup() {
   // Inclure les points déjà traités, puis lire un instantané cohérent de la base.
   await gps.queue;
   const data = await state.db.readAll();
+  validateCurrencyAssignments(data[CURRENCY_STORE], data.expenses);
+  const hasCurrencies = data[CURRENCY_STORE].length > 0;
+  const legacyData = { ...data };
+  delete legacyData[CURRENCY_STORE];
   const backup = {
     app: "VigieAuto",
-    formatVersion: 3,
+    formatVersion: hasCurrencies ? 4 : 3,
     exportedAt: new Date().toISOString(),
-    data,
+    data: hasCurrencies ? data : legacyData,
   };
   makeDownload(
     new Blob([stringifyBackupJson(backup)], { type: "application/json" }),
     `vigieauto-sauvegarde-${today()}.json`,
   );
-  toast("Sauvegarde téléchargée. Conservez-la dans un endroit sûr.");
+  toast(hasCurrencies ? "Sauvegarde téléchargée (format 4) : Android actuel ne peut pas l’importer." : "Sauvegarde téléchargée. Conservez-la dans un endroit sûr.");
 }
 function validateBackup(obj) {
   const legacy = ["CQ Auto", "VigieAuto"].includes(obj?.app) && obj?.formatVersion === 1;
   const v2 = obj?.app === "VigieAuto" && obj?.formatVersion === 2;
   const v3 = obj?.app === "VigieAuto" && obj?.formatVersion === 3;
-  if ((!legacy && !v2 && !v3) || !obj.data || typeof obj.data !== "object" || Array.isArray(obj.data))
+  const v4 = obj?.app === "VigieAuto" && obj?.formatVersion === 4;
+  if ((!legacy && !v2 && !v3 && !v4) || !obj.data || typeof obj.data !== "object" || Array.isArray(obj.data))
     throw new Error("Ce fichier n’est pas une sauvegarde VigieAuto compatible.");
   if (Object.keys(obj).some((key) => !["app", "formatVersion", "exportedAt", "data"].includes(key)))
     throw new Error("Un champ racine de cette sauvegarde est inconnu ; import annulé pour éviter une perte.");
@@ -2147,10 +2225,11 @@ function validateBackup(obj) {
     throw new Error("La date d’export de cette sauvegarde est invalide.");
   const unknownCollection = Object.keys(obj.data).find((name) => !STORES.includes(name));
   if (unknownCollection) throw new Error(`Collection inconnue : ${unknownCollection}. Import annulé pour éviter une perte.`);
+  if (!v4 && Object.hasOwn(obj.data, CURRENCY_STORE)) throw new Error("Les devises exigent le format de sauvegarde 4.");
   // Une v1 peut omettre les trajets ou contenir une liste vide, jamais les perdre.
   if (legacy && Object.hasOwn(obj.data, "trips") && (!Array.isArray(obj.data.trips) || obj.data.trips.length))
     throw new Error("Trajets inattendus dans une sauvegarde de format 1 ; import annulé pour éviter une perte.");
-  const data = { ...obj.data, ...(legacy ? { trips: [] } : {}) }, ids = {};
+  const data = { ...obj.data, ...(legacy ? { trips: [] } : {}), ...(!v4 ? { [CURRENCY_STORE]: [] } : {}) }, ids = {};
   for (const name of STORES) {
     if (!Array.isArray(data[name]))
       throw new Error(`Collection manquante : ${name}.`);
@@ -2203,6 +2282,7 @@ function validateBackup(obj) {
     checks: ["templateId", "templateName", "date", "status"],
     documents: ["title", "category", "date", "filename", "type", "dataUrl"],
     settings: [],
+    currencyAssignments: [],
   };
   for (const name of STORES)
     for (const x of data[name]) {
@@ -2260,7 +2340,7 @@ function validateBackup(obj) {
     const startedValid = x.startedAt === null || x.startedAt === undefined ||
       (isText(x.startedAt) && Number.isFinite(Date.parse(x.startedAt)));
     const gpsTrip = x.method === "gps";
-    const gpsValid = !gpsTrip || (v3 && !!x.startedAt && isNum(x.gpsDistanceM) &&
+    const gpsValid = !gpsTrip || ((v3 || v4) && !!x.startedAt && isNum(x.gpsDistanceM) &&
       typeof x.gpsHasFix === "boolean" && typeof x.gpsInterrupted === "boolean" &&
       Object.keys(x).every((key) => gpsTripFields.has(key)));
     const minDistance = v2 ? 0.1 : 0.01;
@@ -2323,6 +2403,7 @@ function validateBackup(obj) {
       !validDocument(x.dataUrl)
     )
       throw new Error("Document invalide dans la sauvegarde.");
+  validateCurrencyAssignments(data[CURRENCY_STORE], data.expenses);
   const theme = data.settings.find((x) => x.id === "theme");
   if (theme && !VALID_THEMES.has(theme.value)) throw new Error("Thème invalide dans la sauvegarde.");
   const suggestions = data.settings.find((x) => x.id === SUGGESTION_SETTING_ID);
@@ -2874,6 +2955,14 @@ document.addEventListener("change", async (event) => {
   if (event.target.dataset.setting === "theme") {
     try { await setThemePreference(event.target.value); }
     catch (error) { console.error(error); toast(describeError(error), true); render(); }
+    return;
+  }
+  if (event.target.dataset.filter === "expense-order") {
+    if (["date", "category", "amount"].includes(event.target.value)) state.expenseOrder = event.target.value;
+    render();
+    // Au clavier, conserver le focus. Sur écran tactile, éviter de rouvrir
+    // automatiquement le sélecteur natif du navigateur après le choix.
+    if (!window.matchMedia?.("(pointer: coarse)").matches) document.querySelector("#expense-order")?.focus({ preventScroll: true });
     return;
   }
   if (event.target.dataset.filter === "trips") {

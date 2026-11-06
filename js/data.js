@@ -1,4 +1,5 @@
 import { addDays, today } from "./calc.js";
+import { compareCurrency } from "./currency.js";
 
 export const FUEL_TYPES = {
   diesel: "Diesel",
@@ -32,6 +33,34 @@ export const EXPENSE_CATEGORIES = {
   controle: "Contrôle technique",
   autre: "Autre",
 };
+/** Libellé sûr, y compris catégories importées inconnues ou très longues. */
+export function expenseCategoryLabel(value) {
+  if (typeof value !== "string" || !value) return "Non renseignée";
+  if (Object.prototype.hasOwnProperty.call(EXPENSE_CATEGORIES, value)) return EXPENSE_CATEGORIES[value];
+  return value.length > 200 ? "Catégorie trop longue à afficher" : `Personnalisée : ${value}`;
+}
+const expenseCollator = new Intl.Collator("fr-FR", { sensitivity: "base", numeric: true });
+const safeText = (x) => typeof x === "string" ? x : "";
+const recentExpense = (a, b) => safeText(b.date).localeCompare(safeText(a.date)) ||
+  safeText(b.createdAt).localeCompare(safeText(a.createdAt)) || safeText(a.id).localeCompare(safeText(b.id));
+
+/** Tri purement visuel : ne transforme ni ne réécrit les dépenses. */
+export function orderedExpenses(rows, order = "date", currencyFor = () => "EUR") {
+  return [...rows].sort((a, b) => {
+    if (order === "category") return expenseCollator.compare(expenseCategoryLabel(a.category), expenseCategoryLabel(b.category)) || recentExpense(a,b);
+    if (order === "amount") {
+      // Des devises différentes ne sont pas comparables sans conversion.
+      const currencyOrder = compareCurrency(currencyFor(a.id), currencyFor(b.id));
+      if (currencyOrder) return currencyOrder;
+      const valid = (n) => typeof n === "number" && Number.isFinite(n) && n >= 0;
+      const left = valid(a.amount), right = valid(b.amount);
+      if (left !== right) return left ? -1 : 1;
+      if (left && a.amount !== b.amount) return a.amount > b.amount ? -1 : 1;
+    }
+    return recentExpense(a, b);
+  });
+}
+
 /** Le compteur est facultatif et peut être une extension future inconnue.
  * Ne jamais convertir un objet ou un marqueur numérique précis en Number. */
 export function expenseMileage(record) {
@@ -352,5 +381,6 @@ export function demoRecords() {
     checks: [],
     documents: [],
     settings: [{ id: "activeVehicle", value: vehicleId }],
+    currencyAssignments: [],
   };
 }

@@ -1,6 +1,10 @@
 # Où en est VigieAuto ?
 
-**Actualisation du 5 novembre 2026 — PWA 1.5.2-beta.5 candidate / Android 0.4.0-beta.30 :** ajout, modification et retrait du kilométrage facultatif des dépenses dans la PWA, déjà disponibles sur Android ; ce champ ne change pas le compteur du véhicule. La beta.30 Android ne modifie pas le code métier. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](KILOMETRAGE-DEPENSES-BETA30.md).
+**Actualisation du 5 novembre 2026 — PWA 1.5.2-beta.7 candidate / Android 0.4.0-beta.32 :** choix d’une devise par dépense dans la PWA, euro par défaut, anciens montants en euros et totaux séparés sans conversion. Android et les devises des pleins/entretiens restent à développer. **Une sauvegarde multidevise v4 ne peut pas être importée dans Android beta.32** ; une sauvegarde sans affectation reste en v3. Base PWA IndexedDB 5 ; sauvegarde externe avant essai. [Usage et limites](DEVISES-PWA-BETA7.md).
+
+**Historique du 5 novembre 2026 — PWA 1.5.2-beta.6 candidate / Android 0.4.0-beta.31 :** la PWA permet de trier les dépenses du véhicule actif par date, catégorie ou montant ; ce tri est visuel et ne modifie pas les données. Ces tris existaient déjà sur Android, dont le code métier est inchangé. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](TRI-DEPENSES-BETA31.md).
+
+**Historique du 5 novembre 2026 — PWA 1.5.2-beta.5 candidate / Android 0.4.0-beta.30 :** ajout, modification et retrait du kilométrage facultatif des dépenses dans la PWA, déjà disponibles sur Android ; ce champ ne change pas le compteur du véhicule. La beta.30 Android ne modifie pas le code métier. Devise réglable et liaison sans double comptage restent à développer. [Usage et limites](KILOMETRAGE-DEPENSES-BETA30.md).
 
 **Historique du 5 novembre 2026 — Android 0.4.0-beta.29 et PWA 1.5.2-beta.4 candidate :** une photo facultative par dépense, à ajouter depuis la liste après enregistrement ; aperçu, remplacement et retrait explicites. Android convertit les nouvelles photos en JPEG sans EXIF ; la PWA garde le fichier et ses métadonnées éventuelles. Sauvegardes JSON non chiffrées. Room 15, IndexedDB 4 et JSON v3 inchangés. Devise réglable et liaison plein/dépense sans double comptage restent à faire. [Détails, limites et confidentialité](JUSTIFICATIFS-BETA29.md). [Contrôles et limites des essais](VALIDATION-BETA29.md).
 
@@ -12,11 +16,11 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Point au 5 novembre 2026 · Android 0.4.0-beta.30 · PWA familiale 1.5.1**
+**Point au 5 novembre 2026 · Android 0.4.0-beta.32 · PWA familiale 1.5.1**
 
 ## La réponse courte
 
-VigieAuto existe en deux applications distinctes : une application Android native en **bêta** et une PWA pour la famille, notamment sur iPhone. Elles fonctionnent localement et peuvent échanger un fichier JSON **manuellement** ; elles ne se synchronisent pas. L’application reste gratuite, sans publicité, abonnement ni compte obligatoire.
+VigieAuto existe en deux applications distinctes : une application Android native en **bêta** et une PWA pour la famille, notamment sur iPhone. Elles fonctionnent localement et peuvent échanger un fichier JSON **manuellement** tant qu’il reste au format accepté par les deux versions ; le multidevise v4 n’est pas encore lisible sur Android. Elles ne se synchronisent pas. L’application reste gratuite, sans publicité, abonnement ni compte obligatoire.
 
 Nous avançons maintenant sur les **fonctions principales sans attendre les essais sur téléphone**. Le socle Android reste toutefois en cours de validation : la version 0.4.0 n’est pas déclarée stable et aucun pourcentage ni délai n’est mesuré.
 
@@ -34,7 +38,7 @@ Les rappels sont visibles dans l’application et utilisent des jours et/ou kilo
 
 La PWA familiale 1.5.1 dispose déjà notamment des contrôles qualité, dépenses, symptômes, documents et statistiques. Son GPS est facultatif et dépend de la page visible ; un suivi continu écran éteint n’est pas garanti. L’installation et le stockage restent liés à l’adresse du site.
 
-La **candidate 1.5.2-beta.5** reprend les corrections de précision et le carnet, et permet un justificatif photo local par dépense. Les métadonnées de la photo PWA peuvent rester présentes. L’utilisateur indique avoir installé **beta.1** depuis GitHub Pages sur Android et importé sa sauvegarde sans perte constatée ; aucune vérification indépendante exhaustive n’est revendiquée et elle **n’a pas été validée sur iPhone**. La PWA 1.5.1 peut arrondir certains grands nombres ; conserver les sauvegardes originales. La base mise à niveau par la candidate ne se rouvre pas directement avec l’ancienne version. Voir [PRECISION-SAUVEGARDES.md](PRECISION-SAUVEGARDES.md).
+La **candidate 1.5.2-beta.7** reprend les corrections de précision et le carnet, permet un justificatif et une devise par dépense. Un export avec affectation de devise est en format 4 et ne peut pas encore être importé par Android beta.32. Les métadonnées de la photo PWA peuvent rester présentes. L’utilisateur indique avoir installé **beta.1** depuis GitHub Pages sur Android et importé sa sauvegarde sans perte constatée ; aucune vérification indépendante exhaustive n’est revendiquée et elle **n’a pas été validée sur iPhone**. La PWA 1.5.1 peut arrondir certains grands nombres ; conserver les sauvegardes originales. La base mise à niveau par la candidate ne se rouvre pas directement avec l’ancienne version. Voir [PRECISION-SAUVEGARDES.md](PRECISION-SAUVEGARDES.md).
 
 ## Vérifications de beta.26
 

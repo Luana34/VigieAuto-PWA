@@ -1,10 +1,20 @@
 # Historique du projet VigieAuto
 
-**Dernière mise à jour : 5 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.5 · Android 0.4.0-beta.30**
+**Dernière mise à jour : 5 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.7 · Android 0.4.0-beta.32**
 
 Ce journal rassemble les demandes, les décisions, les réalisations, les corrections et les limites du projet. Il est tenu au fil des échanges : chaque évolution doit être ajoutée ici, sans effacer les décisions précédentes, et les changements de périmètre doivent être indiqués explicitement.
 
 > **Reconstitution :** les premières étapes ci-dessous sont établies à partir du contexte conservé et des versions du projet. Les dates et la formulation exacte de toutes les anciennes demandes ne sont pas disponibles. Les éléments dont le statut est incertain sont marqués comme tels ; ce document n’invente pas de validation manquante.
+
+## Poursuite — devise par opération, premier lot PWA
+
+Le 5 novembre 2026, la personne utilisatrice a choisi de **conserver la devise de chaque opération** : anciens montants en euros, nouvelles devises au choix, totaux séparés sans conversion. La candidate PWA beta.7 applique cette décision aux dépenses ; pleins, entretiens et Android restent à compléter. Les affectations sont séparées des anciennes extensions inconnues ; format de sauvegarde 4 dès qu’une affectation existe. Android beta.32 refuse le v4 sans remplacer ses données ; échange multidevise non disponible dans ce lot. PWA : IndexedDB 4→5 ; sauvegarde externe préalable. Voir [DEVISES-PWA-BETA7.md](DEVISES-PWA-BETA7.md).
+
+Sous Linux : 55/55 tests unitaires PWA, tests de devises et anciens formats sous Chromium/WebKit, un test Room ciblé prouvant le refus d’un vrai export v4 sans remplacement. Code métier Android inchangé. Les tests physiques et mesures réelles restent à faire.
+
+## Poursuite — tri des dépenses PWA
+
+À la demande « Poursuis », ajout dans la candidate PWA d’un tri visuel par date, catégorie ou montant, déjà présent sur Android. Le dernier choix reste dans l’onglet pour la session, sans toucher aux enregistrements ; la carte de dernière dépense reste fondée sur la date. Les catégories futures et les justificatifs restent conservés. Android beta.31 ne change pas le code métier. Le lot reste volontairement ciblé pour éviter les longues attentes signalées. [Détails](TRI-DEPENSES-BETA31.md). La devise et la liaison plein/dépense restent à développer. Sous Linux : 50/50 tests unitaires PWA, scénarios de tri et migration sous Chromium/WebKit, APK Android debug assemblé. Les tests Android n’ont pas été relancés pour beta.31 ; code et tests comparés identiques à beta.30.
 
 ## Poursuite — kilométrage des dépenses et accélération
 

@@ -1,5 +1,6 @@
 // Stockage local. Les écritures groupées ne sont confirmées qu'à la fin de la transaction.
 import { SUGGESTION_SETTING_ID, rememberVehicle } from "./catalogue.js";
+import { CURRENCY_STORE, indexCurrencyAssignments } from "./currency.js";
 export const STORES = [
   "vehicles",
   "services",
@@ -12,13 +13,14 @@ export const STORES = [
   "checks",
   "documents",
   "settings",
+  "currencyAssignments",
 ];
 const DB_NAME = "cq-auto-local";
 // Conserver ce nom : c’est la même base que CQ Auto sur la même origine.
-// Version 4 : mêmes collections ; éviter le retour direct à une ancienne PWA
-// qui modifierait le total sans actualiser les détails et catégories nouveaux.
-// La sauvegarde échangée reste JSON v3 ; conserver un export avant mise à jour.
-const DB_VERSION = 4;
+// Version 5 : collection séparée des devises, sans modifier les anciens enregistrements.
+// Une ancienne PWA ne doit pas rouvrir cette base et afficher une devise étrangère en euros.
+// Sauvegarde v3 si aucune affectation, v4 sinon ; conserver un export avant mise à jour.
+const DB_VERSION = 5;
 
 /** Comparaison structurelle des enregistrements JSON et des marqueurs numériques
  * Uint8Array ; si l'objet courant a changé, l'édition est refusée avant écriture. */
@@ -49,7 +51,7 @@ export class LocalDatabase {
         for (const name of STORES) {
           if (!db.objectStoreNames.contains(name)) {
             const store = db.createObjectStore(name, { keyPath: "id" });
-            if (!["vehicles", "templates", "settings"].includes(name))
+            if (!["vehicles", "templates", "settings", "currencyAssignments"].includes(name))
               store.createIndex("vehicleId", "vehicleId", { unique: false });
           }
         }
@@ -127,8 +129,28 @@ export class LocalDatabase {
             }
           } catch (error) { reason = error; tx.abort(); }
         };
+        // La limite de devises doit être vérifiée dans la même transaction que
+        // l'écriture : deux onglets ne peuvent pas dépasser la limite ensemble.
+        const checkedWrite = () => {
+          const changes = operations.filter((op) => op.store === CURRENCY_STORE);
+          if (!changes.length) { write(); return; }
+          const request = tx.objectStore(CURRENCY_STORE).getAll();
+          request.onsuccess = () => {
+            try {
+              const projected = new Map(request.result.map((x) => [x.id, x]));
+              for (const op of changes) {
+                if (op.type === 'put') projected.set(op.value.id, op.value);
+                else if (op.type === 'delete') projected.delete(op.id);
+                else if (op.type === 'clear') projected.clear();
+                else throw new Error('Opération de devise inconnue.');
+              }
+              indexCurrencyAssignments([...projected.values()]);
+              write();
+            } catch (error) { reason = error; tx.abort(); }
+          };
+        };
         let remaining = guards.length;
-        if (!remaining) write();
+        if (!remaining) checkedWrite();
         for (const guard of guards) {
           const request = tx.objectStore(guard.store).get(guard.id);
           request.onsuccess = () => {
@@ -137,7 +159,7 @@ export class LocalDatabase {
               reason = new Error('Ces données ont changé dans un autre onglet. Fermez le formulaire, rechargez la page et réessayez.');
               tx.abort(); return;
             }
-            if (--remaining === 0) write();
+            if (--remaining === 0) checkedWrite();
           };
         }
       } catch (error) { if (tx) tx.abort(); reject(error); return; }
@@ -286,7 +308,7 @@ export class LocalDatabase {
     // une donnée créée dans un autre onglet ne reste pas orpheline.
     const related = ["services", "fills", "trips", "expenses", "reminders", "symptoms", "checks", "documents"];
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(["vehicles", "settings", ...related], "readwrite");
+      const tx = this.db.transaction(["vehicles", "settings", "currencyAssignments", ...related], "readwrite");
       tx.objectStore("vehicles").delete(id);
       if (wasActive) {
         const settings = tx.objectStore("settings"), current = settings.get("activeVehicle");
@@ -297,7 +319,10 @@ export class LocalDatabase {
         const req = store.index("vehicleId").openKeyCursor(IDBKeyRange.only(id));
         req.onsuccess = () => {
           const cursor = req.result;
-          if (cursor) { store.delete(cursor.primaryKey); cursor.continue(); }
+          if (cursor) {
+            if (name === "expenses") tx.objectStore("currencyAssignments").delete(`expenses:${cursor.primaryKey}`);
+            store.delete(cursor.primaryKey); cursor.continue();
+          }
         };
       }
       tx.oncomplete = () => resolve();

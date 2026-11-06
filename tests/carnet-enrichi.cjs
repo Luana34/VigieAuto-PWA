@@ -218,7 +218,7 @@ async function oldRoundtrip(browser,backup,zip,edit=false){
   await p.locator('[data-category-query]').fill('boug');assert.equal(await p.locator('#category-picker [data-action=choose-service-category]').count(),2);
   await p.locator('[data-action=close-service-categories]').click();await waitPickerClosed(p);await p.locator('#modal [data-action=close-modal]').first().click();
   assert.deepEqual(errors,[]);await ctx.close();
-  console.log('✓ après migration IndexedDB 4 : retour direct bloqué, catalogue et saisie disponibles hors ligne après cache');
+  console.log('✓ après migration IndexedDB : retour direct bloqué, catalogue et saisie disponibles hors ligne après cache');
   console.log(`SUCCÈS ${useWebkit?'WebKit':'Chromium'} : carnet enrichi (données entièrement fictives)`);
  } finally {if(browser)await browser.close();await new Promise(r=>server.close(r));}
 })().catch(error=>{console.error(error);process.exitCode=1;});
