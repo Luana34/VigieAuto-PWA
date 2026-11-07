@@ -14,16 +14,19 @@ import sys
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 from gestion_archives import identity, is_project_archive, prune_known_archives
+from publication import PUBLICATION_DIR, publication_sources
 
 PROJECT = Path(__file__).resolve().parent.parent
 WORKSPACE = PROJECT.parent
 ROOT_NAME = "VigieAuto"
 ALLOWED_FILES = {
     "README.md", "INSTALLER.md", "BILAN-PROJET.md", "index.html", "manifest.webmanifest",
-    "sw.js", "package.json", "package-lock.json",
+    "sw.js", "package.json", "package-lock.json", ".gitignore",
 }
 ALLOWED_DIRS = {"assets", "css", "data", "docs", "icons", "js", "scripts", "tests"}
-IGNORED_DIRS = {"node_modules", ".git", ".cache", "__pycache__", "coverage", "dist", "build"}
+# Le dossier public extrait d'une ancienne archive est ignoré : une copie fraîche
+# est régénérée depuis les sources courantes, sans le modifier ni le supprimer.
+IGNORED_DIRS = {"node_modules", ".git", ".cache", "__pycache__", "coverage", "dist", "build", PUBLICATION_DIR}
 ALIASES = ("VigieAuto.zip", "CQ-Auto.zip")
 
 
@@ -55,14 +58,20 @@ def project_files() -> list[Path]:
             continue
         if rel.parts[0] not in ALLOWED_DIRS and str(rel) not in ALLOWED_FILES:
             raise RuntimeError(f"Fichier non classé : {rel}")
-        if path.name.startswith(".env") or path.suffix.lower() in {".pem", ".key", ".p12", ".pfx"}:
+        if path.name == "local.properties" or path.name.startswith(".env") or path.suffix.lower() in {".pem", ".key", ".p12", ".pfx", ".jks", ".keystore"}:
             raise RuntimeError(f"Fichier potentiellement sensible à exclure : {rel}")
+        # Nom produit par l'export de la PWA. Ne pas essayer d'identifier tous
+        # les JSON : le catalogue et les fixtures fictives sont indispensables.
+        if path.suffix.lower() == ".json" and path.name.lower().startswith("vigieauto-sauvegarde-"):
+            raise RuntimeError(f"Sauvegarde personnelle potentielle à conserver hors du projet : {rel}")
         files.append(path)
     return sorted(files)
 
 
 def verify_source_archive(path: Path, source: list[Path]) -> None:
     expected = {f"{ROOT_NAME}/{p.relative_to(PROJECT).as_posix()}": p for p in source}
+    public = publication_sources(PROJECT)
+    expected.update({f"{ROOT_NAME}/{PUBLICATION_DIR}/{rel}": p for rel, p in public.items()})
     with ZipFile(path) as archive:
         if archive.testzip() is not None:
             raise RuntimeError("Archive corrompue ; anciennes archives conservées.")
@@ -119,7 +128,8 @@ def main() -> None:
     if existing_versions and archive_version(destination) <= max(existing_versions):
         raise RuntimeError("La nouvelle version doit être supérieure aux archives existantes.")
     files = project_files()
-    print(f"Archive prévue : {destination.name} ({len(files)} fichiers).")
+    public = publication_sources(PROJECT)
+    print(f"Archive prévue : {destination.name} ({len(files)} fichiers source, {len(public)} copies pour GitHub).")
     if dry_run:
         print("Simulation seulement : aucune archive créée, aucun fichier supprimé.")
         return
@@ -129,13 +139,17 @@ def main() -> None:
         with ZipFile(temporary, "w", compression=ZIP_DEFLATED, compresslevel=9) as z:
             for p in files:
                 z.write(p, f"{ROOT_NAME}/{p.relative_to(PROJECT).as_posix()}")
+            for rel, p in public.items():
+                z.write(p, f"{ROOT_NAME}/{PUBLICATION_DIR}/{rel}")
         with ZipFile(temporary) as z:
             if z.testzip() is not None:
                 raise RuntimeError("Archive corrompue : aucune ancienne version ne sera supprimée.")
             names = set(z.namelist())
             required = {
                 f"{ROOT_NAME}/index.html", f"{ROOT_NAME}/sw.js", f"{ROOT_NAME}/package.json",
-                f"{ROOT_NAME}/package-lock.json", f"{ROOT_NAME}/manifest.webmanifest", f"{ROOT_NAME}/BILAN-PROJET.md",
+                f"{ROOT_NAME}/package-lock.json", f"{ROOT_NAME}/manifest.webmanifest", f"{ROOT_NAME}/BILAN-PROJET.md", f"{ROOT_NAME}/.gitignore",
+                f"{ROOT_NAME}/scripts/publication.py", f"{ROOT_NAME}/docs/QUOI-PUBLIER-GITHUB.md",
+                f"{ROOT_NAME}/tests/publication.test.py", f"{ROOT_NAME}/tests/publication-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta13.cjs",
                 f"{ROOT_NAME}/docs/AIDES-PLEINS-VIN.md", f"{ROOT_NAME}/tests/aides-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta12.cjs",
                 f"{ROOT_NAME}/tests/plein-complet-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta11.cjs",
                 f"{ROOT_NAME}/docs/PLEIN-COMPLET-PWA-BETA11.md",

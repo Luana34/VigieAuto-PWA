@@ -30,7 +30,8 @@ class ArchiveTests(unittest.TestCase):
         self.workspace = Path(self.tmp.name)
         self.project = self.workspace / "cq-auto"
         paths = [
-            "README.md", "INSTALLER.md", "BILAN-PROJET.md", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
+            "README.md", "INSTALLER.md", "BILAN-PROJET.md", ".gitignore", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
+            "docs/QUOI-PUBLIER-GITHUB.md", "tests/publication.test.py", "tests/publication-interface.cjs", "tests/mise-a-jour-beta13.cjs",
             "docs/AIDES-PLEINS-VIN.md", "tests/aides-interface.cjs", "tests/mise-a-jour-beta12.cjs",
             "docs/PLEIN-COMPLET-PWA-BETA11.md", "tests/plein-complet-interface.cjs", "tests/mise-a-jour-beta11.cjs",
             "docs/FONDS-SOMBRES-BETA39.md", "tests/themes.test.js", "tests/themes-interface.cjs", "tests/mise-a-jour-beta10.cjs",
@@ -54,6 +55,7 @@ class ArchiveTests(unittest.TestCase):
         (self.project / "scripts").mkdir()
         shutil.copy2(SCRIPT, self.project / "scripts" / "creer-archive.py")
         shutil.copy2(SCRIPT.parent / "gestion_archives.py", self.project / "scripts" / "gestion_archives.py")
+        shutil.copy2(SCRIPT.parent / "publication.py", self.project / "scripts" / "publication.py")
         self.set_version("2.0.0")
         current = project_zip_bytes("web", b"current-old")
         older = project_zip_bytes("web", b"older")
@@ -64,6 +66,66 @@ class ArchiveTests(unittest.TestCase):
         }
         for name, content in self.old.items():
             (self.workspace / name).write_bytes(content)
+
+    def test_publication_copy_contains_only_current_runtime_and_keeps_full_project(self):
+        stale = self.project / "A-METTRE-SUR-GITHUB"
+        stale.mkdir(); (stale / "sauvegarde-personnelle.json").write_text("à ne pas publier")
+        result = self.run_script("--sans-nettoyage")
+        self.assertEqual(0, result.returncode, result.stderr)
+        with ZipFile(self.workspace / "VigieAuto-v2.0.0.zip") as z:
+            names = set(z.namelist())
+            prefix = "VigieAuto/A-METTRE-SUR-GITHUB/"
+            public = {name[len(prefix):] for name in names if name.startswith(prefix)}
+            self.assertEqual(public, {"index.html", "manifest.webmanifest", "sw.js", "js/app.js", "js/maintenance.js", "js/expense-receipt.js", "icons/icon.png"})
+            for rel in public:
+                self.assertEqual(z.read(prefix + rel), z.read("VigieAuto/" + rel))
+            self.assertIn("VigieAuto/tests/publication.test.py", names)
+            self.assertIn("VigieAuto/docs/HISTORIQUE.md", names)
+            self.assertIn("VigieAuto/.gitignore", names)
+            self.assertNotIn(prefix + ".gitignore", names)
+            self.assertNotIn(prefix + "sauvegarde-personnelle.json", names)
+        self.assertTrue((stale / "sauvegarde-personnelle.json").exists())
+
+    def test_keys_and_local_configuration_are_never_included_or_deleted(self):
+        for filename in ("local.properties", "signature.jks", "debug.keystore", ".env.local"):
+            path = self.project / "data" / filename
+            path.parent.mkdir(exist_ok=True); path.write_text("secret fictif")
+            result = self.run_script("--sans-nettoyage")
+            self.assertNotEqual(0, result.returncode, filename)
+            self.assertIn("potentiellement sensible", result.stderr)
+            self.assertEqual("secret fictif", path.read_text())
+            self.assertFalse((self.workspace / "VigieAuto-v2.0.0.zip").exists())
+            for name, content in self.old.items(): self.assertEqual((self.workspace / name).read_bytes(), content)
+            path.unlink()  # uniquement la fixture fictive isolée de ce test
+
+    def test_named_personal_export_is_not_included_and_never_deleted(self):
+        backup = self.project / "data/vigieauto-sauvegarde-2026-11-07.json"
+        backup.parent.mkdir(exist_ok=True); backup.write_text('données fictives privées')
+        result = self.run_script("--sans-nettoyage")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("Sauvegarde personnelle potentielle", result.stderr)
+        self.assertEqual('données fictives privées', backup.read_text())
+        self.assertFalse((self.workspace / "VigieAuto-v2.0.0.zip").exists())
+        for name, content in self.old.items(): self.assertEqual((self.workspace / name).read_bytes(), content)
+
+    def test_publication_missing_resource_never_removes_existing_archives(self):
+        (self.project / "js/maintenance.js").unlink()
+        result = self.run_script("--sans-nettoyage")
+        self.assertNotEqual(0, result.returncode)
+        self.assertFalse((self.workspace / "VigieAuto-v2.0.0.zip").exists())
+        for name, content in self.old.items():
+            self.assertEqual((self.workspace / name).read_bytes(), content)
+
+    def test_missing_publication_contract_preserves_previous_archives(self):
+        for rel in ("docs/QUOI-PUBLIER-GITHUB.md", "tests/publication.test.py", "tests/publication-interface.cjs", "tests/mise-a-jour-beta13.cjs"):
+            path = self.project / rel
+            content = path.read_bytes(); path.unlink()
+            result = self.run_script("--sans-nettoyage")
+            self.assertNotEqual(0, result.returncode, rel)
+            self.assertFalse((self.workspace / "VigieAuto-v2.0.0.zip").exists())
+            for name, old in self.old.items():
+                self.assertEqual((self.workspace / name).read_bytes(), old)
+            path.write_bytes(content)
 
     def test_missing_beta12_help_contract_preserves_previous_archives(self):
         for rel in ("docs/AIDES-PLEINS-VIN.md", "tests/aides-interface.cjs", "tests/mise-a-jour-beta12.cjs"):
@@ -112,7 +174,7 @@ class ArchiveTests(unittest.TestCase):
         icon = f"./icons/icon.png?v=vigie-{version}"
         (self.project / "manifest.webmanifest").write_text(json.dumps({"icons": [{"src": icon}]}))
         (self.project / "index.html").write_text(f'<link href="{icon}"><dialog id="category-picker"></dialog><dialog id="info-dialog"></dialog>')
-        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}"; const FILES = ["./js/maintenance.js", "./js/expense-receipt.js", "{icon}"];')
+        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}"; const FILES = ["./", "./index.html", "./manifest.webmanifest", "./js/app.js", "./js/maintenance.js", "./js/expense-receipt.js", "{icon}"];')
 
     def run_script(self, *args):
         return subprocess.run(["python3", str(self.project / "scripts/creer-archive.py"), *args],

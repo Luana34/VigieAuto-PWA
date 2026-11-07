@@ -40,7 +40,7 @@ import {
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.12";
+const APP_VERSION = "1.5.2-beta.13";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
