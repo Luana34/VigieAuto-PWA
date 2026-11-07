@@ -10,6 +10,7 @@ import {
   centsAsNumber, sumCents, fuelSuggestions, mapsSearchUrl,
 } from "./maintenance.js";
 import { consumeGpsFix } from "./gps.js";
+import { VEHICLE_MARKER_COLORS, inspectVehicleMarker, withVehicleMarker } from "./vehicle-marker.js";
 import { inspectExpenseReceipt, receiptPreviewUrl, withExpenseReceipt, validateReceiptFile, requireReceiptRecordSize } from "./expense-receipt.js";
 import {
   SUGGESTION_SETTING_ID, AUTRE_MARQUE, AUTRE_MODELE, FUEL_CHOICES,
@@ -40,7 +41,7 @@ import {
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.13";
+const APP_VERSION = "1.5.2-beta.15";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -133,7 +134,8 @@ const app = $("#app");
 const modal = $("#modal");
 // Instantanés pris à l'ouverture : même une lecture de fichier asynchrone ne
 // peut écraser une modification effectuée depuis un autre onglet.
-let expenseDraft = null, receiptDraft = null, fillDraft = null;
+let expenseDraft = null, receiptDraft = null, fillDraft = null, vehicleDraft = null, markerDraft = null;
+let symptomDraft = null, checkDraft = null;
 const VALID_THEMES = new Set(["sauge", "cyan", "auto"]);
 const darkScheme = window.matchMedia?.("(prefers-color-scheme: dark)") || null;
 function storedTheme(records) {
@@ -204,6 +206,20 @@ function nameOf(v) {
   return v
     ? `${v.brand || ""} ${v.model || ""}`.trim() || "Véhicule"
     : "Aucun véhicule";
+}
+function vehicleMarkerBadge(vehicle) {
+  const marker = inspectVehicleMarker(vehicle);
+  if (!marker.color) return "";
+  return `<span class="vehicle-marker" data-marker-color="${esc(marker.color)}"><span class="vehicle-marker-dot" aria-hidden="true"></span>Repère ${esc(VEHICLE_MARKER_COLORS[marker.color].toLowerCase())}</span>`;
+}
+function vehicleMarkerField(vehicle) {
+  const marker = inspectVehicleMarker(vehicle);
+  if (marker.state === "unsupported") {
+    return `<div class="field full-width"><label for="f-vehicleMarker">Repère de couleur</label><select id="f-vehicleMarker" disabled><option>Repère non modifiable ici</option></select><small>Ce repère n’est pas reconnu par cette version. Il sera conservé sans modification.</small></div>`;
+  }
+  return selectField("vehicleMarker", "Repère de couleur (facultatif)", marker.color,
+    { "": "Sans repère", ...VEHICLE_MARKER_COLORS },
+    { full: true, help: "Pour distinguer vos véhicules dans l’application ; ce n’est pas la couleur de la carrosserie." });
 }
 function validPhoto(data) {
   return (
@@ -352,9 +368,10 @@ function put(store, value) {
 function del(store, id) {
   return { store, type: "delete", id };
 }
-function odometerOperation(vehicleId, km) {
-  const v = recordById("vehicles", vehicleId);
-  return v &&
+function odometerOperation(vehicleId, km, v) {
+  // Utiliser exactement l'instantané protégé par la transaction, pas une
+  // copie possiblement périmée de la fiche en mémoire.
+  return v && v.id === vehicleId &&
     Number.isFinite(Number(km)) &&
     Number(km) > Number(v.odometer || 0)
     ? put("vehicles", {
@@ -556,7 +573,7 @@ function garageVehicle(v) {
   const art = validPhoto(v.photo)
     ? `<img class="garage-photo" src="${esc(v.photo)}" alt="Photo de ${esc(nameOf(v))}">`
     : outlineCar();
-  return `<section class="garage-hero" aria-label="Véhicule actif"><div class="garage-hero-top"><span>VÉHICULE ACTIF${state.demo ? " · EXEMPLE" : ""}</span>${v.plate ? `<span class="garage-plate">${esc(v.plate)}</span>` : ""}</div><div class="garage-hero-name">${esc(nameOf(v))}</div><div class="garage-hero-version">${esc(v.version || "")} ${v.version && v.fuel ? " / " : ""} ${esc(fuelLabel(v))} ${v.year ? ` / ${esc(v.year)}` : ""}</div>${art}<div class="garage-hero-foot"><div><span>COMPTEUR</span><strong>${number(v.odometer)} <small>km</small></strong></div><button class="garage-change" data-route="garage">Mon garage ${I("arrow")}</button></div></section>`;
+  return `<section class="garage-hero" aria-label="Véhicule actif"><div class="garage-hero-top"><span>VÉHICULE ACTIF${state.demo ? " · EXEMPLE" : ""}</span>${v.plate ? `<span class="garage-plate">${esc(v.plate)}</span>` : ""}</div><div class="garage-hero-name">${esc(nameOf(v))}</div><div class="garage-hero-version">${esc(v.version || "")} ${v.version && v.fuel ? " / " : ""} ${esc(fuelLabel(v))} ${v.year ? ` / ${esc(v.year)}` : ""}</div>${vehicleMarkerBadge(v)}${art}<div class="garage-hero-foot"><div><span>COMPTEUR</span><strong>${number(v.odometer)} <small>km</small></strong></div><button class="garage-change" data-route="garage">Mon garage ${I("arrow")}</button></div></section>`;
 }
 function garageAlert(reminders) {
   const late = reminders.filter((r) => r.info.overdue).length;
@@ -912,7 +929,7 @@ function tripsView() {
 }
 function garageView() {
   return `${pageHeading("Mes véhicules", "Tous vos compagnons de route au même endroit.", addButton("Ajouter un véhicule", "add-vehicle"))}
-  ${state.records.vehicles.length ? `<div class="vehicle-grid">${state.records.vehicles.map((v) => `<div class="card vehicle-tile"><div class="vehicle-tile-top">${square("car")}<div class="list-main"><h3>${esc(nameOf(v))}</h3><div class="list-meta">${esc(v.version || fuelLabel(v))} ${v.year ? `· ${esc(v.year)}` : ""} ${v.plate ? `· ${esc(v.plate)}` : ""}</div><div class="list-meta"><b>${number(v.odometer)} km</b></div></div>${v.id === state.activeId ? '<span class="tag">Actif</span>' : ""}</div><div class="tile-actions">${v.id !== state.activeId ? `<button class="btn small" data-action="select-vehicle" data-id="${esc(v.id)}">Choisir ce véhicule</button>` : '<span class="card-intro">Véhicule sélectionné</span>'}<span class="spacer"></span><button class="icon-button" data-action="edit-vehicle" data-id="${esc(v.id)}" aria-label="Modifier ${esc(nameOf(v))}">${I("edit")}</button><button class="icon-button" data-action="delete-vehicle" data-id="${esc(v.id)}" aria-label="Supprimer ${esc(nameOf(v))}">${I("trash")}</button></div></div>`).join("")}</div>` : `<div class="card">${empty("car", "Votre garage est vide", "Ajoutez votre premier véhicule pour commencer.", "add-vehicle", "Ajouter un véhicule")}</div>`}`;
+  ${state.records.vehicles.length ? `<div class="vehicle-grid">${state.records.vehicles.map((v) => `<div class="card vehicle-tile"><div class="vehicle-tile-top">${square("car")}<div class="list-main"><h3>${esc(nameOf(v))}</h3><div class="list-meta">${esc(v.version || fuelLabel(v))} ${v.year ? `· ${esc(v.year)}` : ""} ${v.plate ? `· ${esc(v.plate)}` : ""}</div><div class="list-meta"><b>${number(v.odometer)} km</b></div>${vehicleMarkerBadge(v)}</div>${v.id === state.activeId ? '<span class="tag">Actif</span>' : ""}</div><div class="tile-actions">${v.id !== state.activeId ? `<button class="btn small" data-action="select-vehicle" data-id="${esc(v.id)}">Choisir ce véhicule</button>` : '<span class="card-intro">Véhicule sélectionné</span>'}<button class="btn secondary small vehicle-marker-button" data-action="vehicle-marker" data-id="${esc(v.id)}" aria-label="Repère de couleur pour ${esc(nameOf(v))}">Repère de couleur</button><span class="spacer"></span><button class="icon-button" data-action="edit-vehicle" data-id="${esc(v.id)}" aria-label="Modifier ${esc(nameOf(v))}">${I("edit")}</button><button class="icon-button" data-action="delete-vehicle" data-id="${esc(v.id)}" aria-label="Supprimer ${esc(nameOf(v))}">${I("trash")}</button></div></div>`).join("")}</div>` : `<div class="card">${empty("car", "Votre garage est vide", "Ajoutez votre premier véhicule pour commencer.", "add-vehicle", "Ajouter un véhicule")}</div>`}`;
 }
 function categoryFilter(name, values, selected) {
   return `<select data-filter="${name}" aria-label="Filtrer par catégorie"><option value="all">Toutes les catégories</option>${Object.entries(
@@ -1347,11 +1364,43 @@ function currentSuggestions() {
 }
 function suggestionField(name, label, value, { disabled = false } = {}) {
   const other = name === "brand" ? AUTRE_MARQUE : AUTRE_MODELE;
+  const listLabel = name === "brand" ? "Suggestions de marque" : "Suggestions de modèle";
   return `<div class="field suggestion-field"><label for="f-${name}">${label} <span aria-hidden="true">*</span></label>
-    <input id="f-${name}" name="${name}" value="${esc(value)}" list="${name}-suggestions" autocomplete="off" required ${disabled ? "disabled" : ""} placeholder="Rechercher ou saisir librement">
-    <datalist id="${name}-suggestions"></datalist>
+    <input id="f-${name}" name="${name}" value="${esc(value)}" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="${name}-suggestions" aria-expanded="false" autocomplete="off" required ${disabled ? "disabled" : ""} placeholder="Rechercher ou saisir librement">
+    <div id="${name}-suggestions" class="suggestion-list" role="listbox" aria-label="${listLabel}" hidden></div>
     <button type="button" class="suggestion-free" data-action="free-${name}">${esc(other)}</button>
     <small>${name === "brand" ? "Suggestions locales ou saisie libre." : "Choisissez d’abord une marque ; vous pouvez saisir un autre modèle."}</small></div>`;
+}
+function closeVehicleSuggestions(form) {
+  delete form.dataset.openSuggestion;
+  for (const name of ["brand", "model"]) {
+    form.querySelector(`#${name}-suggestions`).hidden = true;
+    form.elements[name].setAttribute("aria-expanded", "false");
+    form.elements[name].removeAttribute("aria-activedescendant");
+  }
+}
+function drawVehicleSuggestions(form, name, values) {
+  const input = form.elements[name], list = form.querySelector(`#${name}-suggestions`);
+  // La liste est dessinée par l'app, pas par <datalist> : sinon le navigateur
+  // élimine parfois les corrections approchantes avant de les afficher.
+  const fragment = document.createDocumentFragment();
+  values.slice(0, 80).forEach((value, i) => {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.id = `${name}-suggestion-${i}`;
+    option.className = "suggestion-option";
+    option.setAttribute("role", "option");
+    option.setAttribute("aria-selected", "false");
+    option.tabIndex = -1;
+    option.dataset.action = "choose-vehicle-suggestion";
+    option.dataset.field = name;
+    option.textContent = value; // Les choix personnels ne sont jamais interprétés comme du HTML.
+    fragment.append(option);
+  });
+  list.replaceChildren(fragment);
+  list.hidden = form.dataset.openSuggestion !== name || input.disabled || !list.children.length;
+  input.setAttribute("aria-expanded", String(!list.hidden));
+  input.removeAttribute("aria-activedescendant");
 }
 function updateVehicleOptions(form, { brandChanged = false } = {}) {
   const brand = form.elements.brand, model = form.elements.model, suggestions = currentSuggestions();
@@ -1360,18 +1409,30 @@ function updateVehicleOptions(form, { brandChanged = false } = {}) {
   model.dataset.brandKey = key;
   model.disabled = !key;
   form.querySelector('[data-action="free-model"]').disabled = !key;
-  // « Autre… » est un bouton séparé, pas un texte réservé dans le datalist :
-  // même une marque qui porterait littéralement ce nom peut être saisie.
-  const options = (values) => values.map((v) => `<option value="${esc(v)}"></option>`).join("");
-  form.querySelector("#brand-suggestions").innerHTML = options(brandSuggestions(state.catalogue, suggestions, brand.value));
-  form.querySelector("#model-suggestions").innerHTML = options(modelSuggestions(state.catalogue, suggestions, brand.value, model.value));
+  // « Autre… » est un bouton séparé : même une marque qui porterait
+  // littéralement ce nom peut être saisie et enregistrée librement.
+  drawVehicleSuggestions(form, "brand", brandSuggestions(state.catalogue, suggestions, brand.value));
+  drawVehicleSuggestions(form, "model", modelSuggestions(state.catalogue, suggestions, brand.value, model.value));
   const custom = form.querySelector("#fuel-custom-field");
   custom.hidden = form.elements.fuel.value !== "autre";
   form.elements.fuelCustom.disabled = custom.hidden;
 }
+function chooseVehicleSuggestion(form, name, value) {
+  if (!["brand", "model"].includes(name) || form.elements[name].disabled) return;
+  const input = form.elements[name];
+  input.value = value;
+  closeVehicleSuggestions(form);
+  updateVehicleOptions(form, { brandChanged: name === "brand" });
+  input.focus({ preventScroll: true });
+  closeVehicleSuggestions(form);
+}
 function vehicleForm(id = "") {
   const x = recordById("vehicles", id) || {};
+  if (id && !x.id) throw new Error("Ce véhicule n’existe plus. Rechargez VigieAuto.");
   const edit = !!x.id, memory = currentSuggestions();
+  // La fiche éditée ne doit jamais recréer un véhicule supprimé ou écraser une
+  // modification effectuée dans une autre fenêtre pendant la saisie.
+  vehicleDraft = { id, expected: edit ? structuredClone(x) : null };
   const brand = edit ? x.brand : (memory?.lastBrand || "");
   const model = edit ? x.model : (memory?.lastModel || "");
   const choice = edit ? fuelChoice(x) : "diesel";
@@ -1393,6 +1454,20 @@ function vehicleForm(id = "") {
   </div>`,
   });
   updateVehicleOptions(modal.querySelector('form[data-form="vehicle"]'));
+}
+function vehicleMarkerForm(id) {
+  const vehicle = recordById("vehicles", id);
+  if (!vehicle) throw new Error("Ce véhicule n’existe plus. Rechargez VigieAuto.");
+  if (inspectVehicleMarker(vehicle).state === "unsupported") {
+    contentModal("Repère de couleur", esc(nameOf(vehicle)), vehicleMarkerField(vehicle));
+    return;
+  }
+  markerDraft = { id, expected: structuredClone(vehicle) };
+  formModal({
+    title: "Repère de couleur", subtitle: esc(nameOf(vehicle)),
+    form: "vehicle-marker", id, submit: "Enregistrer le repère",
+    body: `<div class="form-grid">${vehicleMarkerField(vehicle)}</div>`,
+  });
 }
 // Le formulaire principal reste ouvert sous le sélecteur : son brouillon ne
 // dépend ni d'un glissement, ni de la reconstruction du DOM de la liste.
@@ -1742,7 +1817,9 @@ function reminderForm(id = "") {
 }
 function symptomForm(id = "") {
   const x = recordById("symptoms", id) || {};
+  if (id && !x.id) throw new Error("Ce symptôme n’existe plus. Rechargez la page.");
   const v = getVehicle();
+  symptomDraft = { id, expected: x.id ? structuredClone(x) : null, vehicle: structuredClone(v) };
   formModal({
     title: x.id ? "Modifier un symptôme" : "Ajouter un symptôme",
     subtitle: "Une observation utile à partager avec un professionnel.",
@@ -1808,6 +1885,7 @@ function checkForm(id) {
   const t = recordById("templates", id);
   if (!t) return;
   const v = getVehicle();
+  checkDraft = { id, template: structuredClone(t), vehicle: structuredClone(v) };
   const items = t.items
     .map(
       (item, i) =>
@@ -1903,9 +1981,16 @@ async function saveForm(form) {
     x,
     record;
   const v = getVehicle();
-  if (type !== "vehicle" && !v) throw new Error("Ajoutez d’abord un véhicule.");
-  if (type === "vehicle") {
-    x = recordById("vehicles", id) || {};
+  if (!["vehicle", "vehicle-marker"].includes(type) && !v) throw new Error("Ajoutez d’abord un véhicule.");
+  if (type === "vehicle-marker") {
+    if (!markerDraft || markerDraft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
+    record = withVehicleMarker(markerDraft.expected, text(d, "vehicleMarker"));
+    // Le contrôle et l'écriture sont atomiques, même entre onglets. Aucune
+    // autre propriété, donnée liée ou sélection de véhicule n'est modifiée.
+    await applyJournalChecked([put("vehicles", record)], [{ store: "vehicles", id, expected: markerDraft.expected }]);
+  } else if (type === "vehicle") {
+    if (!vehicleDraft || vehicleDraft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
+    x = vehicleDraft.expected || {};
     const odometer = asNumber(d, "odometer"),
       year = asNumber(d, "year", { optional: true });
     let photo = x.photo || "";
@@ -1934,7 +2019,7 @@ async function saveForm(form) {
       const active = { ...(state.records.settings.find((item) => item.id === "activeVehicle") || {}), id: "activeVehicle", value: record.id };
       applyToMemory([put("vehicles", record), put("settings", active), put("settings", suggestions)]);
     } else {
-      const { suggestions, active } = await state.db.saveVehicleWithSuggestions(record);
+      const { suggestions, active } = await state.db.saveVehicleWithSuggestions(record, vehicleDraft.expected);
       applyToMemory([put("vehicles", record), put("settings", active), put("settings", suggestions)]);
     }
     state.activeId = record.id;
@@ -1996,7 +2081,7 @@ async function saveForm(form) {
           updatedAt: now,
         }),
       );
-    const op = odometerOperation(v.id, record.odometer);
+    const op = odometerOperation(v.id, record.odometer, serviceDraft.vehicle);
     if (op) ops.push(op);
     await applyJournalChecked(ops, [
       {store:"vehicles", id:v.id, expected:serviceDraft.vehicle},
@@ -2030,7 +2115,7 @@ async function saveForm(form) {
     const currencyWrite = currencyOperations("fills", record, fillDraft, d);
     if (!currencyWrite) return;
     ops.push(...currencyWrite.operations);
-    const op = odometerOperation(v.id, record.odometer);
+    const op = odometerOperation(v.id, record.odometer, fillDraft.vehicle);
     if (op) ops.push(op);
     await applyJournalChecked(ops, [
       {store:"vehicles", id:v.id, expected:fillDraft.vehicle},
@@ -2114,7 +2199,9 @@ async function saveForm(form) {
     };
     await apply([put("reminders", record)]);
   } else if (type === "symptom") {
-    x = recordById("symptoms", id) || {};
+    if (!symptomDraft || symptomDraft.id !== id || symptomDraft.vehicle?.id !== v.id)
+      throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
+    x = symptomDraft.expected || {};
     record = {
       ...x,
       id: x.id || uid(),
@@ -2130,9 +2217,14 @@ async function saveForm(form) {
       updatedAt: now,
     };
     ops.push(put("symptoms", record));
-    const op = odometerOperation(v.id, record.odometer);
+    const op = odometerOperation(v.id, record.odometer, symptomDraft.vehicle);
     if (op) ops.push(op);
-    await apply(ops);
+    // Une saisie concurrente du repère ne doit pas être écrasée par le
+    // kilométrage, ni recréer un véhicule ou un symptôme supprimé entre-temps.
+    await applyJournalChecked(ops, [
+      { store: "vehicles", id: v.id, expected: symptomDraft.vehicle },
+      { store: "symptoms", id: record.id, expected: symptomDraft.expected },
+    ]);
   } else if (type === "template") {
     x = recordById("templates", id) || {};
     let items;
@@ -2170,8 +2262,9 @@ async function saveForm(form) {
     };
     await apply([put("templates", record)]);
   } else if (type === "check") {
-    const t = recordById("templates", id);
-    if (!t) throw new Error("Cette liste n’existe plus.");
+    if (!checkDraft || checkDraft.id !== id || checkDraft.vehicle?.id !== v.id)
+      throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
+    const t = checkDraft.template;
     const results = t.items.map((item, i) => ({
       itemId: item.id,
       title: item.title,
@@ -2191,9 +2284,13 @@ async function saveForm(form) {
       updatedAt: now,
     };
     ops.push(put("checks", record));
-    const op = odometerOperation(v.id, record.odometer);
+    const op = odometerOperation(v.id, record.odometer, checkDraft.vehicle);
     if (op) ops.push(op);
-    await apply(ops);
+    await applyJournalChecked(ops, [
+      { store: "vehicles", id: v.id, expected: checkDraft.vehicle },
+      { store: "templates", id: t.id, expected: t },
+      { store: "checks", id: record.id, expected: null },
+    ]);
   } else if (type === "document") {
     const file = d.get("file"),
       dataUrl = await readAttachment(file);
@@ -2634,7 +2731,7 @@ function describeError(error) {
 }
 modal.addEventListener("cancel", (event) => { if (modal.dataset.saving === "true") event.preventDefault(); });
 modal.addEventListener("close", () => {
-  if (!modal.open) { expenseDraft = null; receiptDraft = null; fillDraft = null; serviceDraft = null; }
+  if (!modal.open) { expenseDraft = null; receiptDraft = null; fillDraft = null; serviceDraft = null; vehicleDraft = null; markerDraft = null; symptomDraft = null; checkDraft = null; }
   if (!gps.finishTripId) return;
   const id = gps.finishTripId;
   gps.finishTripId = null;
@@ -2808,6 +2905,11 @@ document.addEventListener("click", async (event) => {
         }
         break;
       }
+      case "choose-vehicle-suggestion": {
+        const form = target.closest('form[data-form="vehicle"]');
+        if (form) chooseVehicleSuggestion(form, target.dataset.field, target.textContent);
+        break;
+      }
       case "free-brand":
       case "free-model": {
         const form = target.closest('form[data-form="vehicle"]');
@@ -2817,6 +2919,8 @@ document.addEventListener("click", async (event) => {
             input.value = "";
             updateVehicleOptions(form, { brandChanged: action === "free-brand" });
             input.focus();
+            // Le bouton « Autre… » invite d'abord à écrire librement.
+            closeVehicleSuggestions(form);
           }
         }
         break;
@@ -2834,6 +2938,9 @@ document.addEventListener("click", async (event) => {
         break;
       case "edit-vehicle":
         vehicleForm(id);
+        break;
+      case "vehicle-marker":
+        vehicleMarkerForm(id);
         break;
       case "select-vehicle":
         await chooseVehicle(id);
@@ -3016,7 +3123,7 @@ document.addEventListener("submit", async (event) => {
   const button = form.querySelector("[type=submit]"),
     errorBox = form.querySelector(".form-error");
   button.disabled = true;
-  const lockModal = form.dataset.form === "expense-receipt";
+  const lockModal = ["expense-receipt", "vehicle", "vehicle-marker", "symptom", "check"].includes(form.dataset.form);
   if (lockModal) {
     modal.dataset.saving = "true";
     form.querySelectorAll('[data-action="close-modal"]').forEach((control) => { control.disabled = true; });
@@ -3037,6 +3144,62 @@ document.addEventListener("submit", async (event) => {
     }
   }
 });
+// Le curseur reste dans le champ pendant le clic sur une proposition. Sur
+// tactile, ne pas annuler pointerdown : la liste doit rester défilable.
+document.addEventListener("mousedown", (event) => {
+  if (event.target.closest('[data-action="choose-vehicle-suggestion"]')) event.preventDefault();
+});
+document.addEventListener("pointerdown", (event) => {
+  const form = modal.querySelector('form[data-form="vehicle"]');
+  if (form?.dataset.openSuggestion && !event.target.closest(".suggestion-field")) closeVehicleSuggestions(form);
+});
+document.addEventListener("focusin", (event) => {
+  const input = event.target;
+  if (!(input instanceof Element)) return;
+  const form = input.closest('form[data-form="vehicle"]');
+  if (!form || !["brand", "model"].includes(input.name) || input.disabled) return;
+  form.dataset.openSuggestion = input.name;
+  updateVehicleOptions(form);
+});
+document.addEventListener("focusout", (event) => {
+  const input = event.target;
+  if (!(input instanceof Element)) return;
+  const form = input.closest('form[data-form="vehicle"]');
+  if (!form || !["brand", "model"].includes(input.name)) return;
+  setTimeout(() => {
+    if (!form.isConnected || form.dataset.openSuggestion !== input.name) return;
+    const active = document.activeElement, list = form.querySelector(`#${input.name}-suggestions`);
+    if (active !== input && !list.contains(active)) closeVehicleSuggestions(form);
+  }, 0);
+});
+document.addEventListener("keydown", (event) => {
+  const input = event.target;
+  if (!(input instanceof Element)) return;
+  const form = input.closest('form[data-form="vehicle"]');
+  if (!form || !["brand", "model"].includes(input.name) || input.disabled || event.isComposing || event.keyCode === 229) return;
+  let list = form.querySelector(`#${input.name}-suggestions`);
+  if (event.key === "Tab") { closeVehicleSuggestions(form); return; }
+  if (event.key === "Escape" && !list.hidden) {
+    event.preventDefault(); event.stopPropagation(); closeVehicleSuggestions(form); return;
+  }
+  if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+    if (list.hidden) { form.dataset.openSuggestion = input.name; updateVehicleOptions(form); list = form.querySelector(`#${input.name}-suggestions`); }
+    const options = Array.from(list.querySelectorAll('[role="option"]'));
+    if (list.hidden || !options.length) return;
+    event.preventDefault();
+    const active = options.findIndex((option) => option.id === input.getAttribute("aria-activedescendant"));
+    const next = event.key === "ArrowDown" ? (active + 1) % options.length : (active < 0 ? options.length - 1 : (active - 1 + options.length) % options.length);
+    options.forEach((option, i) => option.setAttribute("aria-selected", String(i === next)));
+    input.setAttribute("aria-activedescendant", options[next].id);
+    options[next].scrollIntoView({ block: "nearest" });
+    return;
+  }
+  if (event.key === "Enter" && !list.hidden) {
+    const active = input.getAttribute("aria-activedescendant");
+    const option = Array.from(list.querySelectorAll('[role="option"]')).find((item) => item.id === active);
+    if (option) { event.preventDefault(); event.stopPropagation(); chooseVehicleSuggestion(form, input.name, option.textContent); }
+  }
+});
 document.addEventListener("input", (event) => {
   if (event.target.matches("[data-category-query]")) { drawCategoryPickerResults(event.target.value); return; }
   const serviceFormElement = event.target.closest('form[data-form="service"]');
@@ -3054,6 +3217,7 @@ document.addEventListener("input", (event) => {
   }
   const vehicleFormElement = event.target.closest('form[data-form="vehicle"]');
   if (vehicleFormElement && ["brand", "model"].includes(event.target.name)) {
+    vehicleFormElement.dataset.openSuggestion = event.target.name;
     updateVehicleOptions(vehicleFormElement, { brandChanged: event.target.name === "brand" });
     return;
   }

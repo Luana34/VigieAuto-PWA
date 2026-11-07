@@ -20,7 +20,8 @@ async function serve(){
  return {server,url:`http://127.0.0.1:${server.address().port}/`};
 }
 const fill=(p,n,v)=>p.locator(`#modal [name="${n}"]`).fill(String(v));
-const options=(p,id)=>p.locator(`#${id} option`).evaluateAll(nodes=>nodes.map(n=>n.value));
+// Conserver les assertions d'origine en lisant les options de la liste propre à l'app.
+const options=(p,id)=>p.locator(`#${id} [role=option]`).evaluateAll(nodes=>nodes.map(n=>n.textContent));
 const submit=async p=>{await p.locator('#modal button[type=submit]').click();await p.locator('#modal').waitFor({state:'hidden'});};
 const garage=async p=>{await p.evaluate(()=>location.hash='garage');await p.waitForFunction(()=>document.title==='Mes véhicules — VigieAuto');};
 const add=async p=>{await garage(p);await p.locator('[data-action=add-vehicle]').first().click();};

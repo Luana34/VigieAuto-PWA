@@ -109,6 +109,8 @@ def main() -> None:
         raise RuntimeError("Le module du carnet enrichi manque au cache hors ligne.")
     if '"./js/expense-receipt.js"' not in sw:
         raise RuntimeError("Le module des justificatifs manque au cache hors ligne.")
+    if '"./js/vehicle-marker.js"' not in sw:
+        raise RuntimeError("Le module des repères de véhicule manque au cache hors ligne.")
     index = (PROJECT / "index.html").read_text(encoding="utf-8")
     if 'id="category-picker"' not in index or f"?v=vigie-{version}" not in index:
         raise RuntimeError("Sélecteur de catégories ou version des icônes absent de index.html.")
@@ -150,6 +152,11 @@ def main() -> None:
                 f"{ROOT_NAME}/package-lock.json", f"{ROOT_NAME}/manifest.webmanifest", f"{ROOT_NAME}/BILAN-PROJET.md", f"{ROOT_NAME}/.gitignore",
                 f"{ROOT_NAME}/scripts/publication.py", f"{ROOT_NAME}/docs/QUOI-PUBLIER-GITHUB.md",
                 f"{ROOT_NAME}/tests/publication.test.py", f"{ROOT_NAME}/tests/publication-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta13.cjs",
+                f"{ROOT_NAME}/docs/REPERES-VEHICULES-PWA-BETA15.md", f"{ROOT_NAME}/js/vehicle-marker.js", f"{ROOT_NAME}/tests/vehicle-marker.test.js",
+                f"{ROOT_NAME}/tests/reperes-vehicules-beta15.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta15.cjs",
+                f"{ROOT_NAME}/tests/pont-reperes-retour.cjs", f"{ROOT_NAME}/tests/android/MarkerBridge15Test.kt",
+                f"{ROOT_NAME}/docs/RECHERCHE-CATALOGUE-PWA-BETA14.md", f"{ROOT_NAME}/tests/catalogue-approximatif.test.js",
+                f"{ROOT_NAME}/tests/recherche-catalogue-beta14.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta14.cjs",
                 f"{ROOT_NAME}/docs/AIDES-PLEINS-VIN.md", f"{ROOT_NAME}/tests/aides-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta12.cjs",
                 f"{ROOT_NAME}/tests/plein-complet-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta11.cjs",
                 f"{ROOT_NAME}/docs/PLEIN-COMPLET-PWA-BETA11.md",

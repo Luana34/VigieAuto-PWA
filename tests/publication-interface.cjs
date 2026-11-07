@@ -7,6 +7,7 @@ const http = require('node:http');
 const {spawnSync} = require('node:child_process');
 const {chromium, webkit} = require('playwright');
 const source = path.resolve(__dirname, '..');
+const currentVersion = JSON.parse(fs.readFileSync(path.join(source,'package.json'),'utf8')).version;
 const useWebkit = process.env.VIGIE_BROWSER === 'webkit';
 const engine = useWebkit ? webkit : chromium;
 const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.webmanifest':'application/manifest+json'};
@@ -56,7 +57,7 @@ async function exportData(p) {
     await p.locator('#modal button[type=submit]').click(); await p.locator('#modal').waitFor({state:'hidden'});
     const before=await exportData(p); assert.ok(before.vehicles.some(v=>v.brand==='Citroën' && v.model==='C3'));
     await p.evaluate(async()=>navigator.serviceWorker.ready); await p.waitForFunction(()=>!!navigator.serviceWorker.controller);
-    const cached=await p.evaluate(async()=>{const names=await caches.keys();const c=await caches.open(names.find(n=>n.endsWith('v1.5.2-beta.13')));return (await c.keys()).map(r=>new URL(r.url).pathname)});
+    const cached=await p.evaluate(async(version)=>{const names=await caches.keys();const cacheName=names.find(n=>n.endsWith('v'+version));if(!cacheName)throw Error('Cache de la version courante absent');const c=await caches.open(cacheName);return (await c.keys()).map(r=>new URL(r.url).pathname)},currentVersion);
     assert.ok(cached.some(x=>x.endsWith('/js/catalogue.js'))); assert.ok(cached.some(x=>x.endsWith('/data/brands_models_fr.json')));
     assert.ok(cached.some(x=>x.endsWith('/assets/garage.jpg')));
     if(useWebkit) server.disconnect=true; else await ctx.setOffline(true);
