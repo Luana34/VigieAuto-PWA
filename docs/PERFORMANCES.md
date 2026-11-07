@@ -1,5 +1,15 @@
 # Performance et fluidité — objectifs et méthode
 
+**Checklist PWA beta.15 / Android beta.44 — 7 novembre 2026 :**
+
+- [x] Repère local, bouton de 44 px minimum vérifié sous Chromium et WebKit Linux ; pas de nouvelle dépendance de production ni de requête réseau. La sélection protège l’écriture du véhicule contre les modifications concurrentes.
+- [ ] Mesurer la réactivité et la mémoire sur appareil avec de nombreux véhicules et de grandes photos : l’instantané du véhicule complet est conservé pendant l’édition. Tester le toucher et la lisibilité sur iPhone/Safari et avec un lecteur d’écran réel. Les cibles ci-dessous restent non mesurées.
+
+**Checklist historique PWA beta.14 / Android beta.44 — 7 novembre 2026 :**
+
+- [x] Recherche approximative bornée à une erreur, requêtes de 3–64 caractères et libellés au plus 128 caractères ; affichage limité à 80 propositions. Aucun accès réseau ni écriture en recherchant.
+- [ ] Mesurer la latence, la mémoire, la fluidité et les autres cibles sur appareils réels avec de nombreuses suggestions. Tester Safari iPhone et VoiceOver ; les essais Linux ne les valident pas.
+
 **Checklist PWA beta.13 / Android beta.44 — 7 novembre 2026 :**
 
 - [x] Le dossier public est limité aux ressources locales requises et son fonctionnement hors ligne a été vérifié sous Chromium et WebKit Linux. Aucun test de maintenance n’a été retiré.

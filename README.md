@@ -1,22 +1,27 @@
 # VigieAuto — carnet de bord automobile
 
-**PWA beta.13 :** le ZIP source complet fournit `VigieAuto/A-METTRE-SUR-GITHUB/` ; publiez uniquement **le contenu** de ce dossier, et gardez le ZIP pour les tests et la documentation. Aucun dépôt n’est modifié automatiquement. [Quels fichiers garder ou publier ?](docs/QUOI-PUBLIER-GITHUB.md).
+**PWA beta.15 :** ajoutez un repère de couleur facultatif par véhicule dans **Mes véhicules**. Il sert à les distinguer, pas à décrire la carrosserie ; Android beta.44 ne l’affiche pas encore. [Utilisation et limites](docs/REPERES-VEHICULES-PWA-BETA15.md).
+
+**Depuis beta.14 :** la recherche locale des marques et modèles accepte certaines petites fautes, par exemple `cio` pour proposer Clio. Le choix reste explicite et la saisie libre est conservée. [Utilisation et limites](docs/RECHERCHE-CATALOGUE-PWA-BETA14.md).
+
+**Depuis beta.13 :** le ZIP source complet fournit `VigieAuto/A-METTRE-SUR-GITHUB/` ; publiez uniquement **le contenu** de ce dossier, et gardez le ZIP pour les tests et la documentation. Aucun dépôt n’est modifié automatiquement. [Quels fichiers garder ou publier ?](docs/QUOI-PUBLIER-GITHUB.md).
 
 **Depuis beta.12 :** des aides ⓘ expliquent le plein complet ou partiel, le calcul de consommation et le VIN. Le bouton d’aide ne change pas la case. [Guide](docs/AIDES-PLEINS-VIN.md).
 
 **Depuis beta.11 :** la case « Plein complet » est plus grande et en gras ; son libellé reste cliquable en dehors du bouton d’aide. Elle reste cochée par défaut : décochez-la pour un plein partiel. Les pleins enregistrés ne sont pas modifiés automatiquement. [Détails](docs/PLEIN-COMPLET-PWA-BETA11.md).
 
-VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.13, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
+VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.15, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
 
 **Candidate de test, non validée sur iPhone réel.** La version familiale 1.5.1 reste disponible. Cette candidate protège les nombres précis des extensions JSON, refuse avant remplacement les valeurs fonctionnelles impossibles à utiliser sans arrondi, et conserve les extensions du thème et des points CQ édités. Elle ne reconstitue pas les chiffres déjà perdus. La candidate ajoute le carnet enrichi ; l’IndexedDB passe de 2, 3, 4 ou 5 à 6 : les anciennes PWA ne peuvent pas rouvrir directement la base mise à niveau. Sauvegardez chaque appareil avant tout essai ; voir [Précision des sauvegardes](docs/PRECISION-SAUVEGARDES.md).
 
 Pour savoir quoi faire du ZIP et installer la PWA sur Android, consultez [INSTALLER.md](INSTALLER.md).
 
-**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.44 et PWA beta.13 prennent en charge ces formats. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
+**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.44 et PWA beta.15 prennent en charge ces formats. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
 
 ### Documents de suivi du projet
 
 - [Bilan du projet](BILAN-PROJET.md)
+- [Repères de véhicules PWA beta.15](docs/REPERES-VEHICULES-PWA-BETA15.md)
 - [Aides Pleins et VIN : utilisation et limites](docs/AIDES-PLEINS-VIN.md)
 - [Case « Plein complet » : utilisation et tests](docs/PLEIN-COMPLET-PWA-BETA11.md)
 
@@ -124,7 +129,7 @@ Les fichiers sont statiques ; aucun serveur applicatif n’est nécessaire. Un h
 
 Pour tester sans toucher à la base familiale, choisissez un appareil de test ou une **origine différente** (protocole, domaine ou port). Un autre chemin sur le même domaine — par exemple deux dépôts du même compte GitHub Pages — peut partager IndexedDB. Un changement de domaine, de port, de navigateur ou d’appareil peut entraîner un stockage différent. **Exportez avant le changement, puis importez la sauvegarde dans la nouvelle installation.** L’aperçu fourni pendant le développement n’est pas un hébergement pérenne.
 
-**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Une base plus ancienne migre vers IndexedDB 6 (la beta.8 est déjà en 6) ; fermez les autres onglets, puis laissez la PWA se mettre en cache en ligne. L’ancienne version ne peut plus rouvrir directement cette base. Les formats compatibles v1 à v5 restent importables. L’export est en v3 sans affectation, v4 pour les dépenses seules, et v5 si un plein ou entretien est affecté. Android beta.37 accepte v5, beta.35 le refuse. Vérifiez Réglages → version 1.5.2-beta.13 et ne supprimez pas les données du navigateur pour forcer une mise à jour. [Détails](docs/DEVISES-OPERATIONS-BETA8.md).
+**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Une base plus ancienne migre vers IndexedDB 6 (la beta.8 est déjà en 6) ; fermez les autres onglets, puis laissez la PWA se mettre en cache en ligne. L’ancienne version ne peut plus rouvrir directement cette base. Les formats compatibles v1 à v5 restent importables. L’export est en v3 sans affectation, v4 pour les dépenses seules, et v5 si un plein ou entretien est affecté. Android beta.37 accepte v5, beta.35 le refuse. Vérifiez Réglages → version 1.5.2-beta.15 et ne supprimez pas les données du navigateur pour forcer une mise à jour. [Détails](docs/DEVISES-OPERATIONS-BETA8.md).
 
 ### Installer sur téléphone
 
@@ -157,9 +162,17 @@ npm run test:catalogue
 npm run test:logo
 npm run test:archive
 npm run test:publication
-# Mise à jour réelle beta.12 -> beta.13 : nécessite le ZIP beta.12 non simulé,
+npm run test:recherche-catalogue
+npm run test:reperes-vehicules
+# Mise à jour réelle beta.14 -> beta.15 : fournir le vrai ZIP beta.14
+# par VIGIE_PREVIOUS_PWA s’il n’est plus conservé à côté du projet.
+npm run test:mise-a-jour-beta15
+# Pont PWA/Android fictif : voir docs/REPERES-VEHICULES-PWA-BETA15.md.
+# Test historique beta.13 -> beta.14 : nécessite le ZIP beta.13 non simulé,
 # à indiquer par VIGIE_PREVIOUS_PWA s’il n’est plus présent à côté du projet.
-npm run test:mise-a-jour-beta13
+npm run test:mise-a-jour-beta14
+# L’ancien test beta.12 -> beta.13 est aussi conservé :
+# npm run test:mise-a-jour-beta13
 # Facultatif : installer WebKit puis VIGIE_BROWSER=webkit npm run test:catalogue
 # Test facultatif d’une mise à jour réelle à partir du ZIP précédent :
 npm run test:migration -- /chemin/VigieAuto-v1.5.1.zip
@@ -173,6 +186,7 @@ Sur certains systèmes Linux, des bibliothèques système supplémentaires peuve
 - `js/gps.js` : estimation et filtres GPS en mémoire, sans persistance des points.
 - `data/brands_models_fr.json` et `js/catalogue.js` : référentiel partagé hors ligne, recherche et mémoire des suggestions.
 - `js/db.js` : accès IndexedDB, migration CQ Auto → VigieAuto et transactions.
+- `js/vehicle-marker.js` : repère facultatif par véhicule, inspection prudente et préservation des extensions inconnues.
 - `js/logo.js` et `assets/logo-vigieauto.svg` : vectorisation du logo fourni, adaptée au thème ; les icônes PNG dérivent de l’image fournie (`assets/logo-original.png`).
 - `js/data.js` : catégories, listes par défaut et données fictives.
 - `js/app.js` : écrans, formulaires, sauvegarde, suivi GPS et navigation ; `APP_VERSION` doit être mis à jour avec les autres versions.

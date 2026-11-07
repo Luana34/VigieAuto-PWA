@@ -1,6 +1,10 @@
 # Feuille de route — VigieAuto
 
-**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.13 / Android 0.4.0-beta.44 :** le ZIP source PWA conserve tous les tests et documents et fournit un dossier `A-METTRE-SUR-GITHUB` avec seulement les fichiers nécessaires au site. Le numéro, le cache et les références d’icônes changent ; les fonctionnalités, données et calculs restent identiques à beta.12. Aucune publication automatique. Essais de la copie publique et de la mise à jour beta.12 → beta.13 sous Chromium et WebKit Linux ; Safari iPhone et performances réelles non validés. [Guide](QUOI-PUBLIER-GITHUB.md).
+**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.15 / Android 0.4.0-beta.44 :** repère facultatif par véhicule dans la PWA, distinct de la couleur réelle du véhicule. Choix explicite, noms visibles et protection transactionnelle contre les conflits ; formats inconnus conservés en lecture seule. IndexedDB 6 et versions JSON v3/v4/v5 conservées. Android ne l’affiche pas encore ; un aller-retour fictif avec Room beta.44, édition et annulation réussit, ainsi que la mise à jour PWA beta.14 → beta.15 sous Chromium et WebKit Linux. Les essais iPhone/Safari, lecteur d’écran réel et performances restent à faire ; le socle et la phase 2.3 restent ouverts. [Détails](REPERES-VEHICULES-PWA-BETA15.md).
+
+**Historique du 7 novembre 2026 — PWA 1.5.2-beta.14 / Android 0.4.0-beta.44 :** recherche locale approchante des marques et modèles dans la PWA, avec priorité aux choix mémorisés à qualité égale. Les propositions sont affichées par l’application et sélectionnées explicitement ; saisie libre et association modèle/marque conservées. Données, IndexedDB, JSON et référentiel inchangés. Essais logiciels sous Chromium et WebKit Linux ; Safari iPhone, VoiceOver et performances réelles restent à valider. La phase 2.3 reste ouverte. [Détails](RECHERCHE-CATALOGUE-PWA-BETA14.md).
+
+**Historique du 7 novembre 2026 — PWA 1.5.2-beta.13 / Android 0.4.0-beta.44 :** le ZIP source PWA conserve tous les tests et documents et fournit un dossier `A-METTRE-SUR-GITHUB` avec seulement les fichiers nécessaires au site. Le numéro, le cache et les références d’icônes changent ; les fonctionnalités, données et calculs restent identiques à beta.12. Aucune publication automatique. Essais de la copie publique et de la mise à jour beta.12 → beta.13 sous Chromium et WebKit Linux ; Safari iPhone et performances réelles non validés. [Guide](QUOI-PUBLIER-GITHUB.md).
 
 **Historique du 7 novembre 2026 — Android 0.4.0-beta.44 / PWA 1.5.2-beta.12 inchangée :** sur Android, recherche approximative locale des marques et modèles (par exemple « cio » → Clio), avec priorité aux suggestions mémorisées à qualité de correspondance égale. Choix toujours explicite ; saisie libre et association modèle/marque conservées. La PWA conserve sa recherche par texte inclus. Room 17, JSON et référentiel partagé restent inchangés. La phase 2.3 reste en cours. [Utilisation et limites](RECHERCHE-CATALOGUE-BETA44.md).
 
@@ -42,7 +46,7 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Mise à jour : 7 novembre 2026 · PWA familiale : 1.5.1 ; candidate : 1.5.2-beta.13 · Android : 0.4.0-beta.44**
+**Mise à jour : 7 novembre 2026 · PWA familiale : 1.5.1 ; candidate : 1.5.2-beta.15 · Android : 0.4.0-beta.44**
 
 Cette feuille de route distingue ce qui est terminé, ce qui est souhaité et les décisions à prendre. Les choix explicitement décidés sont indiqués ; les autres priorités futures restent **à confirmer**, sans date ni engagement de livraison. Le détail des exigences est dans `CAHIER-DES-CHARGES.md` et l’historique des décisions dans `HISTORIQUE.md`.
 
@@ -191,7 +195,19 @@ L’adresse publique copiée a renvoyé 404 depuis notre accès. Cela ne permet 
 5. Versionner chaque branche indépendamment : pour la PWA, `package.json`, `package-lock.json`, `sw.js` et `APP_VERSION` ; pour Android, Gradle `versionName`/`versionCode`, schémas Room et migrations. Actualiser la documentation puis tester avant l’archivage. Les deux projets ont un script `scripts/creer-archive.py` avec `--dry-run`.
 6. Ranger le workspace : conserver **les deux sources complètes** et, normalement, **trois ZIP de versions de projet**. Tant que la PWA candidate attend ses essais réels, garder la nouvelle version Android, la PWA familiale stable et la candidate ; sans candidate, garder si possible un repli Android stable pendant la bêta. Les ZIP inconnus, corrompus ou les doublons contradictoires sont conservés et signalés même si cela dépasse trois fichiers ; les sauvegardes personnelles ne sont pas supprimées.
 
-## Archives conservées après la livraison PWA beta.13
+## Archives conservées après la livraison PWA beta.15
+
+1. `VigieAuto-Android-v0.4.0-beta.44.zip` — projet Android complet.
+2. `VigieAuto-v1.5.2-beta.15.zip` — PWA candidate avec dossier de publication ; validation sur iPhone à faire.
+3. `VigieAuto-v1.5.1.zip` — PWA familiale stable inchangée.
+
+### Historique : archives après la livraison PWA beta.14
+
+1. `VigieAuto-Android-v0.4.0-beta.44.zip` — projet Android complet.
+2. `VigieAuto-v1.5.2-beta.14.zip` — PWA candidate avec dossier de publication ; validation sur iPhone à faire.
+3. `VigieAuto-v1.5.1.zip` — PWA familiale stable inchangée.
+
+### Historique : archives après la livraison PWA beta.13
 
 1. `VigieAuto-Android-v0.4.0-beta.44.zip` — projet Android complet.
 2. `VigieAuto-v1.5.2-beta.13.zip` — PWA candidate avec dossier de publication ; validation sur iPhone à faire.

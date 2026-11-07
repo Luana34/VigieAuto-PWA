@@ -10,7 +10,7 @@ VigieAuto est un carnet automobile en français, gratuit, sans publicité, abonn
 Il existe deux applications distinctes :
 
 - **Android natif : 0.4.0-beta.44** — projet Kotlin/Compose avec base Room ; Android 8.0 et supérieur. C’est encore une préversion, pas la version 0.4.0 stable.
-- **PWA : 1.5.2-beta.13** — candidate Web installable, notamment destinée à la famille sur iPhone. La version familiale **1.5.1** est conservée séparément ; la candidate doit encore être validée sur iPhone.
+- **PWA : 1.5.2-beta.15** — candidate Web installable, notamment destinée à la famille sur iPhone. La version familiale **1.5.1** est conservée séparément ; la candidate doit encore être validée sur iPhone.
 
 Pour GitHub Pages, publier seulement le contenu du dossier `A-METTRE-SUR-GITHUB` du ZIP PWA. Garder le ZIP source complet sur ordinateur : les tests et documents ne sont pas nécessaires au site, mais servent à la maintenance. Le projet Android complet reste dans son ZIP distinct.
 
@@ -26,7 +26,8 @@ Les appareils ne se synchronisent pas entre eux : les données peuvent être éc
 
 - Ajouter et sélectionner plusieurs véhicules sur Android et dans la PWA.
 - Chercher une marque et un modèle dans un catalogue local, mais aussi saisir librement et mémoriser ses propres choix. L’année, l’énergie et les détails du véhicule restent souples ; le kilométrage est obligatoire à la création.
-- Sur Android, rechercher une marque ou un modèle même avec une petite faute ; les choix mémorisés remontent à qualité égale, sans correction automatique. La PWA conserve sa recherche directe. [Guide](docs/RECHERCHE-CATALOGUE-BETA44.md).
+- Sur Android beta.44 et depuis PWA beta.14, rechercher une marque ou un modèle même avec certaines petites fautes ; les choix mémorisés remontent à qualité égale, sans correction automatique. [Guide Android](docs/RECHERCHE-CATALOGUE-BETA44.md) · [Guide PWA](docs/RECHERCHE-CATALOGUE-PWA-BETA14.md).
+- Depuis PWA beta.15, attribuer un **repère de couleur facultatif** à chaque véhicule pour les distinguer, sans lien avec la couleur de la carrosserie. Android beta.44 ne l’affiche pas encore. [Guide](docs/REPERES-VEHICULES-PWA-BETA15.md).
 - Modifier la fiche du véhicule actif et corriger son compteur sans modifier automatiquement les anciennes entrées. Depuis beta.42, choisir le véhicule en haut de l’accueil dans une liste avec miniatures demandées à la vue.
 - Ajouter une photo depuis la galerie ou, sur Android beta.41, la prendre avec l’application photo du téléphone ; remplacement et retrait confirmés, sans Undo. Sur Android beta.40, supprimer le véhicule actif après décompte, export préalable proposé et seconde confirmation ; les données liées peuvent être restaurées avec l’Undo. La PWA possède son propre parcours de suppression.
 
@@ -84,9 +85,9 @@ La phase 1 reste donc ouverte. On peut continuer les fonctions sans attendre ces
 
 ### Phase 2 — Véhicules complets : en cours
 
-**Réalisé :** multivéhicule, catalogue et saisie libre, modification de la fiche, correction du compteur, photo depuis la galerie ou l’appareil photo, suppression sécurisée du véhicule actif avec Undo (beta.40), sélecteur avec aperçus et choix conservé (beta.42), recherche approximative et priorité aux suggestions mémorisées sur Android (beta.44).
+**Réalisé :** multivéhicule, catalogue et saisie libre, modification de la fiche, correction du compteur, photo depuis la galerie ou l’appareil photo, suppression sécurisée du véhicule actif avec Undo (beta.40), sélecteur avec aperçus et choix conservé (beta.42), recherche approximative et priorité aux suggestions mémorisées sur Android (beta.44) et sur la PWA (beta.14), puis repère facultatif PWA (beta.15).
 
-**Reste à faire :** avatars ou couleurs, vue combinée éventuelle et recherche équivalente sur la PWA à étudier ; puis champs complémentaires après vérification des champs déjà présents. L’historique détaillé des corrections du compteur reste à étudier avant de coder. Les essais de la liste et de la suppression sur émulateur et téléphone restent à faire ; la phase 2.3 n’est pas terminée.
+**Reste à faire :** porter le repère sur Android ; étudier les avatars et la vue combinée éventuelle ; puis champs complémentaires après vérification des champs déjà présents. L’historique détaillé des corrections du compteur reste à étudier avant de coder. Les essais de la liste et de la suppression sur émulateur et téléphone restent à faire ; la phase 2.3 n’est pas terminée.
 
 ### Phase 3 — Carnet complet : en cours
 
@@ -139,7 +140,11 @@ NFC facultatif, partage sélectif ou QR, mode tablette, fonctions de flotte et a
 
 **Android beta.44 :** 86 tests JVM ciblés réussis sous Linux sans échec ni ignoré, dont 18 nouveaux. La suite complète n’a pas été relancée. L’APK debug est assemblé ; 69 scénarios instrumentés sont compilés mais non exécutés ; lint : 0 erreur, 24 avertissements et 5 indications. Contrôles des scripts : 33 archive, 32 CI, 7 workflow et 22 R8 réussis. Aucun ancien test n’a été retiré. [Guide](docs/RECHERCHE-CATALOGUE-BETA44.md).
 
-**PWA beta.13 :** 64 tests Node, 14 tests de sélection et 27 tests d’archive réussis. Copie publique seule et vraie mise à jour beta.12 → beta.13 avec données fictives et export v5 vérifiées sous Chromium et WebKit Linux, y compris hors ligne. D’autres parcours (catalogue, aides, thèmes, carnet, dépenses, justificatifs et précision JSON) ont réussi ; l’échange avec le ZIP beta.1 manquant est ignoré et la précision est testée sur fixture PWA fictive, sans relancer le pont Android/Room. Aucun site GitHub ni Safari iPhone réel testé. [Guide de publication](docs/QUOI-PUBLIER-GITHUB.md).
+**PWA beta.15 :** 85 tests Node, 29 tests d’archive et 14 tests de publication réussis. Repères, conflits (dont symptômes et contrôles), quatre thèmes, hors-ligne et vraie mise à jour beta.14 → beta.15 vérifiés sous Chromium et WebKit Linux. Un aller-retour fictif PWA → Android/Room beta.44 → PWA a conservé le repère et les données après modification et annulation d’une suppression. Les échanges historiques beta.1 et beta.6 n’ont pas été rejoués, ZIP absents. Pas de test sur iPhone/Safari ou lecteur d’écran réel ; performances non mesurées. [Guide](docs/REPERES-VEHICULES-PWA-BETA15.md).
+
+**PWA beta.14, historique :** 78 tests Node, 14 tests de sélection du site et 28 tests d’archive réussis. Recherche visible et sélectionnable, conservation des suggestions et mise à jour réelle beta.13 → beta.14 testées avec données fictives sous Chromium et WebKit Linux, aussi hors ligne. Une migration depuis l’archive stable 1.5.1 a aussi été simulée ; l’échange historique avec la beta.1 absente est ignoré et le pont Android/Room n’a pas été relancé. Aucun iPhone, Safari iOS ou lecteur d’écran réel testé ; performances non mesurées. [Guide](docs/RECHERCHE-CATALOGUE-PWA-BETA14.md).
+
+**PWA beta.13, historique :** 64 tests Node, 14 tests de sélection et 27 tests d’archive réussis. Copie publique seule et vraie mise à jour beta.12 → beta.13 avec données fictives et export v5 vérifiées sous Chromium et WebKit Linux, y compris hors ligne. D’autres parcours (catalogue, aides, thèmes, carnet, dépenses, justificatifs et précision JSON) ont réussi ; l’échange avec le ZIP beta.1 manquant est ignoré et la précision est testée sur fixture PWA fictive, sans relancer le pont Android/Room. Aucun site GitHub ni Safari iPhone réel testé. [Guide de publication](docs/QUOI-PUBLIER-GITHUB.md).
 
 **PWA beta.12, historique :** 64 tests Node et 22 tests d’archivage réussis ; aides et mise à jour réelle beta.11 → beta.12 vérifiées sous Chromium et WebKit Linux, y compris hors ligne.
 
@@ -176,7 +181,7 @@ Les priorités peuvent être ajustées selon tes demandes, tout en préservant l
 Les trois ZIP de projet conservés à la date de ce bilan sont :
 
 - `VigieAuto-Android-v0.4.0-beta.44.zip` — source Android.
-- `VigieAuto-v1.5.2-beta.13.zip` — PWA candidate avec dossier `A-METTRE-SUR-GITHUB`.
+- `VigieAuto-v1.5.2-beta.15.zip` — PWA candidate avec dossier `A-METTRE-SUR-GITHUB`.
 - `VigieAuto-v1.5.1.zip` — PWA familiale conservée.
 
 Les deux ZIP Android et PWA ont une racine nommée `VigieAuto` : les extraire dans **deux dossiers parents différents**. Ils contiennent aussi l’historique détaillé, le cahier des charges, les feuilles de route, le récapitulatif des fonctions et la checklist de performance.

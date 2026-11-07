@@ -38,6 +38,8 @@ Les caches et dossiers générés tels que `node_modules/`, `.gradle/`, `.idea/`
 
 Si un dépôt existe déjà, ne supprimez ni ses fichiers ni une installation familiale précipitamment. Exportez et vérifiez d’abord les données de chaque appareil, gardez une copie hors téléphone et testez la candidate sur un appareil de test ou une origine différente. Deux chemins `nom.github.io/...` d’un même compte partagent la même origine et peuvent donc partager IndexedDB. Un import confirmé **remplace** la base du destinataire : il ne fusionne pas les données. Aucune modification de votre dépôt n’est effectuée automatiquement.
 
-## Ce que ne fait pas ce lot
+## Évolution du projet
 
-La PWA beta.13 ne change pas les fonctionnalités, les données, les calculs ou le schéma IndexedDB ; son numéro, le cache et les références d’icônes évoluent pour distinguer le paquet. La recherche approximative disponible sur Android beta.44 n’est pas encore portée dans la PWA. Les essais sur Android physique et sur Safari iPhone restent à faire ; les performances restent non mesurées.
+La PWA beta.15 ajoute un repère de couleur facultatif par véhicule et comprend le module correspondant dans le dossier public. [Guide](REPERES-VEHICULES-PWA-BETA15.md). La PWA beta.14 avait ajouté une recherche approchante des marques et modèles, sans choix automatique ni changement des données. [Détails](RECHERCHE-CATALOGUE-PWA-BETA14.md). Les essais sur Android physique et sur Safari iPhone restent à faire ; les performances restent non mesurées.
+
+**Historique beta.13 :** ce lot de publication n’avait pas changé les fonctionnalités, les données, les calculs ou le schéma IndexedDB ; seuls le numéro, le cache et les références d’icônes avaient évolué.

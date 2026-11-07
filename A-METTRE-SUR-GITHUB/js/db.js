@@ -173,25 +173,35 @@ export class LocalDatabase {
       tx.onabort = () => reject(reason || tx.error || new Error('Transaction annulée.'));
     });
   }
-  async saveVehicleWithSuggestions(vehicle) {
-    // Lire et fusionner la liste courante dans la même transaction que le véhicule :
-    // deux onglets ne peuvent pas écraser silencieusement leurs suggestions respectives.
+  async saveVehicleWithSuggestions(vehicle, expected) {
+    // Exiger une image à l'ouverture : une ancienne interface mélangée à ce
+    // module ne doit pas contourner la protection en omettant l'argument.
+    if (expected === undefined) throw new Error("Mise à jour en cours : fermez les anciens onglets et rechargez VigieAuto.");
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction(["vehicles", "settings"], "readwrite");
       const settings = tx.objectStore("settings"), vehicles = tx.objectStore("vehicles");
       let reason, updatedSuggestions, updatedActive;
-      const suggestionRequest = settings.get(SUGGESTION_SETTING_ID);
-      suggestionRequest.onsuccess = () => {
-        try {
-          updatedSuggestions = rememberVehicle(suggestionRequest.result, vehicle.brand, vehicle.model);
-          settings.put(updatedSuggestions);
-          vehicles.put(vehicle);
-        } catch (error) { reason = error; tx.abort(); }
-      };
-      const activeRequest = settings.get("activeVehicle");
-      activeRequest.onsuccess = () => {
-        updatedActive = { ...(activeRequest.result || {}), id: "activeVehicle", value: vehicle.id };
-        settings.put(updatedActive);
+      const vehicleRequest = vehicles.get(vehicle.id);
+      vehicleRequest.onsuccess = () => {
+        if (!sameStoredValue(vehicleRequest.result ?? null, expected)) {
+          reason = new Error("Ce véhicule a changé ou a été supprimé dans une autre fenêtre. Fermez le formulaire, rechargez VigieAuto et réessayez.");
+          tx.abort(); return;
+        }
+        // Lire et fusionner les suggestions actuelles dans la même transaction :
+        // deux nouveaux véhicules ne peuvent pas perdre leurs suggestions.
+        const suggestionRequest = settings.get(SUGGESTION_SETTING_ID);
+        suggestionRequest.onsuccess = () => {
+          try {
+            updatedSuggestions = rememberVehicle(suggestionRequest.result, vehicle.brand, vehicle.model);
+            settings.put(updatedSuggestions);
+            vehicles.put(vehicle);
+          } catch (error) { reason = error; tx.abort(); }
+        };
+        const activeRequest = settings.get("activeVehicle");
+        activeRequest.onsuccess = () => {
+          updatedActive = { ...(activeRequest.result || {}), id: "activeVehicle", value: vehicle.id };
+          settings.put(updatedActive);
+        };
       };
       tx.oncomplete = () => resolve({ suggestions: updatedSuggestions, active: updatedActive });
       tx.onerror = () => reject(reason || tx.error || new Error("Enregistrement du véhicule impossible."));

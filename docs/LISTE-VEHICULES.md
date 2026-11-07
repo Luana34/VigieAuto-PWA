@@ -1,5 +1,7 @@
 # Mes véhicules — Android 0.4.0-beta.42
 
+> Actualisation PWA beta.15 : un repère de couleur facultatif existe maintenant dans la PWA ; Android beta.44 ne l’affiche pas encore. La description Android ci-dessous reste historique. [Guide du repère PWA](REPERES-VEHICULES-PWA-BETA15.md).
+
 ## Utilisation
 
 Depuis **Accueil**, sous la carte « Mon garage », touchez **Choisir un véhicule** ; avec un seul véhicule, le bouton s’appelle **Voir mon véhicule**. La fenêtre « Mes véhicules » montre les noms, le compteur, une miniature lorsque la photo est lisible et la mention **Actif** pour le véhicule sélectionné. Faites défiler la liste si nécessaire, puis touchez **Choisir** sur un autre véhicule. **Fermer** ne change rien.

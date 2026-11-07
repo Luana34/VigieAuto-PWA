@@ -1,5 +1,7 @@
 # Marques et modèles : recherche Android beta.44
 
+**Suite PWA :** depuis beta.14, une recherche approchante avec choix explicite existe aussi dans la candidate Web. [Guide PWA](RECHERCHE-CATALOGUE-PWA-BETA14.md).
+
 ## Comment l’utiliser
 
 Dans l’ajout ou la modification d’un véhicule, commencez par saisir ou choisir une **marque**, puis un **modèle**. Par exemple, avec Renault, saisir `cio` peut proposer **Clio**. Vous choisissez vous-même la proposition ; le texte saisi n’est jamais corrigé automatiquement. Il est toujours possible de saisir un autre nom ou d’utiliser **Autre marque…** et **Autre modèle…**.

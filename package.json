@@ -1,6 +1,6 @@
 {
   "name": "vigieauto",
-  "version": "1.5.2-beta.13",
+  "version": "1.5.2-beta.15",
   "private": true,
   "type": "module",
   "description": "Carnet de bord automobile local et hors ligne, sans dépendance.",
@@ -24,7 +24,12 @@
     "test:plein-complet": "node tests/plein-complet-interface.cjs",
     "test:themes": "node tests/themes-interface.cjs",
     "test:publication": "python3 tests/publication.test.py && node tests/publication-interface.cjs",
-    "test:mise-a-jour-beta13": "node tests/mise-a-jour-beta13.cjs"
+    "test:mise-a-jour-beta13": "node tests/mise-a-jour-beta13.cjs",
+    "test:recherche-catalogue": "node tests/recherche-catalogue-beta14.cjs",
+    "test:mise-a-jour-beta14": "node tests/mise-a-jour-beta14.cjs",
+    "test:reperes-vehicules": "node tests/reperes-vehicules-beta15.cjs",
+    "test:mise-a-jour-beta15": "node tests/mise-a-jour-beta15.cjs",
+    "test:pont-reperes-retour": "node tests/pont-reperes-retour.cjs"
   },
   "devDependencies": {
     "playwright": "1.55.1"
