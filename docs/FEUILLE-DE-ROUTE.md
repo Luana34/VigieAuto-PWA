@@ -1,6 +1,8 @@
 # Feuille de route — VigieAuto
 
-**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.11 / Android 0.4.0-beta.42 inchangé :** la case « Plein complet » et son libellé sont plus visibles ; la ligne entière est cliquable et un texte aide à reconnaître un plein partiel. La recharge électrique bénéficie du même confort. Un nouveau plein reste coché par défaut ; les données, les calculs et les sauvegardes ne changent pas. Essais logiciels sous Chromium et WebKit Linux ; aucun essai sur téléphone ou Safari iOS dans ce lot. [Détails](PLEIN-COMPLET-PWA-BETA11.md).
+**Actualisation du 7 novembre 2026 — Android 0.4.0-beta.43 / PWA 1.5.2-beta.12 :** aides locales ⓘ près du plein complet, du VIN et dans l’écran Pleins ; dialogue ciblé et panneau inférieur explicatif, sans modifier calculs, valeurs par défaut, données ni formats. Sur Android, le VIN se trouve dans la modification ; dans la PWA aussi à la création. Sauvegarde préalable recommandée ; validation sur appareils encore nécessaire. [Détails et limites](AIDES-PLEINS-VIN.md).
+
+**Historique du 7 novembre 2026 — PWA 1.5.2-beta.11 / Android 0.4.0-beta.42 inchangé :** la case « Plein complet » et son libellé sont plus visibles ; la ligne entière est cliquable et un texte aide à reconnaître un plein partiel. La recharge électrique bénéficie du même confort. Un nouveau plein reste coché par défaut ; les données, les calculs et les sauvegardes ne changent pas. Essais logiciels sous Chromium et WebKit Linux ; aucun essai sur téléphone ou Safari iOS dans ce lot. [Détails](PLEIN-COMPLET-PWA-BETA11.md).
 
 **Historique du 7 novembre 2026 — Android 0.4.0-beta.42 / PWA 1.5.2-beta.10 inchangée :** sélecteur en haut de l’accueil, véhicule actif indiqué et miniatures des lignes visibles avec chargement borné. La sélection ne modifie pas les photos ou données liées ; les identifiants longs sont relus sans ambiguïté. Room 17 et JSON inchangés. Partie de 2.3 seulement ; recherche approximative, priorités d’usage, vue combinée éventuelle et champs complémentaires restent à faire. Essais sur appareil et mesures nécessaires. [Guide](LISTE-VEHICULES.md).
 
@@ -36,7 +38,7 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Mise à jour : 7 novembre 2026 · PWA familiale : 1.5.1 ; candidate : 1.5.2-beta.11 · Android : 0.4.0-beta.42**
+**Mise à jour : 7 novembre 2026 · PWA familiale : 1.5.1 ; candidate : 1.5.2-beta.12 · Android : 0.4.0-beta.43**
 
 Cette feuille de route distingue ce qui est terminé, ce qui est souhaité et les décisions à prendre. Les choix explicitement décidés sont indiqués ; les autres priorités futures restent **à confirmer**, sans date ni engagement de livraison. Le détail des exigences est dans `CAHIER-DES-CHARGES.md` et l’historique des décisions dans `HISTORIQUE.md`.
 

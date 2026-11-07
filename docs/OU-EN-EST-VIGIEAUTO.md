@@ -1,6 +1,8 @@
 # Où en est VigieAuto ?
 
-**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.11 / Android 0.4.0-beta.42 inchangé :** la case « Plein complet » et son libellé sont plus visibles ; la ligne entière est cliquable et un texte aide à reconnaître un plein partiel. La recharge électrique bénéficie du même confort. Un nouveau plein reste coché par défaut ; les données, les calculs et les sauvegardes ne changent pas. Essais logiciels sous Chromium et WebKit Linux ; aucun essai sur téléphone ou Safari iOS dans ce lot. [Détails](PLEIN-COMPLET-PWA-BETA11.md).
+**Actualisation du 7 novembre 2026 — Android 0.4.0-beta.43 / PWA 1.5.2-beta.12 :** aides locales ⓘ près du plein complet, du VIN et dans l’écran Pleins ; dialogue ciblé et panneau inférieur explicatif, sans modifier calculs, valeurs par défaut, données ni formats. Sur Android, le VIN se trouve dans la modification ; dans la PWA aussi à la création. Sauvegarde préalable recommandée ; validation sur appareils encore nécessaire. [Détails et limites](AIDES-PLEINS-VIN.md).
+
+**Historique du 7 novembre 2026 — PWA 1.5.2-beta.11 / Android 0.4.0-beta.42 inchangé :** la case « Plein complet » et son libellé sont plus visibles ; la ligne entière est cliquable et un texte aide à reconnaître un plein partiel. La recharge électrique bénéficie du même confort. Un nouveau plein reste coché par défaut ; les données, les calculs et les sauvegardes ne changent pas. Essais logiciels sous Chromium et WebKit Linux ; aucun essai sur téléphone ou Safari iOS dans ce lot. [Détails](PLEIN-COMPLET-PWA-BETA11.md).
 
 **Historique du 7 novembre 2026 — Android 0.4.0-beta.42 / PWA 1.5.2-beta.10 inchangée :** sélecteur en haut de l’accueil, véhicule actif indiqué et miniatures des lignes visibles avec chargement borné. La sélection ne modifie pas les photos ou données liées ; les identifiants longs sont relus sans ambiguïté. Room 17 et JSON inchangés. Partie de 2.3 seulement ; recherche approximative, priorités d’usage, vue combinée éventuelle et champs complémentaires restent à faire. Essais sur appareil et mesures nécessaires. [Guide](LISTE-VEHICULES.md).
 
@@ -38,11 +40,11 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Point au 7 novembre 2026 · Android 0.4.0-beta.42 · PWA familiale 1.5.1 / candidate 1.5.2-beta.11**
+**Point au 7 novembre 2026 · Android 0.4.0-beta.43 · PWA familiale 1.5.1 / candidate 1.5.2-beta.12**
 
 ## La réponse courte
 
-VigieAuto existe en deux applications distinctes : Android natif et PWA familiale, notamment sur iPhone. Elles fonctionnent localement et échangent manuellement des sauvegardes JSON v3/v4/v5 entre Android beta.42 et la PWA beta.11 ; pas de synchronisation. Les anciennes versions peuvent refuser les formats récents. L’application reste gratuite, sans publicité, abonnement ni compte obligatoire.
+VigieAuto existe en deux applications distinctes : Android natif et PWA familiale, notamment sur iPhone. Elles fonctionnent localement et échangent manuellement des sauvegardes JSON v3/v4/v5 entre Android beta.43 et la PWA beta.12 ; pas de synchronisation. Les anciennes versions peuvent refuser les formats récents. L’application reste gratuite, sans publicité, abonnement ni compte obligatoire.
 
 Nous avançons maintenant sur les **fonctions principales sans attendre les essais sur téléphone**. Le socle Android reste toutefois en cours de validation : la version 0.4.0 n’est pas déclarée stable et aucun pourcentage ni délai n’est mesuré.
 
@@ -62,7 +64,7 @@ Les rappels sont visibles dans l’application et utilisent des jours et/ou kilo
 
 La PWA familiale 1.5.1 dispose déjà notamment des contrôles qualité, dépenses, symptômes, documents et statistiques. Son GPS est facultatif et dépend de la page visible ; un suivi continu écran éteint n’est pas garanti. L’installation et le stockage restent liés à l’adresse du site.
 
-La **candidate 1.5.2-beta.11** conserve les devises des dépenses, pleins et entretiens ; les exports v5 sont compatibles avec Android beta.42. Android affiche les totaux par devise et la consommation entre pleins complets ; le tableau de bord complet reste à développer. Aucun lien automatique plein/dépense. L’utilisatrice indique avoir essayé beta.1 sur Android sans perte constatée ; cela ne valide pas beta.11 ni l’iPhone. Sauvegardez séparément chaque appareil ; la PWA 1.5.1 peut arrondir certains grands nombres. [Détails](DEVISES-ANDROID-BETA36.md).
+La **candidate 1.5.2-beta.12** conserve les devises des dépenses, pleins et entretiens ; les exports v5 sont compatibles avec Android beta.43. Android affiche les totaux par devise et la consommation entre pleins complets ; le tableau de bord complet reste à développer. Aucun lien automatique plein/dépense. L’utilisatrice indique avoir essayé beta.1 sur Android sans perte constatée ; cela ne valide pas beta.12 ni l’iPhone. Sauvegardez séparément chaque appareil ; la PWA 1.5.1 peut arrondir certains grands nombres. [Détails](DEVISES-ANDROID-BETA36.md).
 
 ## Vérifications de beta.26
 

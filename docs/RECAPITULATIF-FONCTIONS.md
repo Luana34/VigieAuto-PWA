@@ -1,6 +1,8 @@
 # VigieAuto — récapitulatif des fonctions
 
-**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.11 / Android 0.4.0-beta.42 inchangé :** la case « Plein complet » et son libellé sont plus visibles ; la ligne entière est cliquable et un texte aide à reconnaître un plein partiel. La recharge électrique bénéficie du même confort. Un nouveau plein reste coché par défaut ; les données, les calculs et les sauvegardes ne changent pas. Essais logiciels sous Chromium et WebKit Linux ; aucun essai sur téléphone ou Safari iOS dans ce lot. [Détails](PLEIN-COMPLET-PWA-BETA11.md).
+**Actualisation du 7 novembre 2026 — Android 0.4.0-beta.43 / PWA 1.5.2-beta.12 :** aides locales ⓘ près du plein complet, du VIN et dans l’écran Pleins ; dialogue ciblé et panneau inférieur explicatif, sans modifier calculs, valeurs par défaut, données ni formats. Sur Android, le VIN se trouve dans la modification ; dans la PWA aussi à la création. Sauvegarde préalable recommandée ; validation sur appareils encore nécessaire. [Détails et limites](AIDES-PLEINS-VIN.md).
+
+**Historique du 7 novembre 2026 — PWA 1.5.2-beta.11 / Android 0.4.0-beta.42 inchangé :** la case « Plein complet » et son libellé sont plus visibles ; la ligne entière est cliquable et un texte aide à reconnaître un plein partiel. La recharge électrique bénéficie du même confort. Un nouveau plein reste coché par défaut ; les données, les calculs et les sauvegardes ne changent pas. Essais logiciels sous Chromium et WebKit Linux ; aucun essai sur téléphone ou Safari iOS dans ce lot. [Détails](PLEIN-COMPLET-PWA-BETA11.md).
 
 **Historique du 7 novembre 2026 — Android 0.4.0-beta.42 / PWA 1.5.2-beta.10 inchangée :** sélecteur en haut de l’accueil, véhicule actif indiqué et miniatures des lignes visibles avec chargement borné. La sélection ne modifie pas les photos ou données liées ; les identifiants longs sont relus sans ambiguïté. Room 17 et JSON inchangés. Partie de 2.3 seulement ; recherche approximative, priorités d’usage, vue combinée éventuelle et champs complémentaires restent à faire. Essais sur appareil et mesures nécessaires. [Guide](LISTE-VEHICULES.md).
 
@@ -36,7 +38,7 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Document vivant : à actualiser à chaque mise à jour.** Dernière mise à jour : 7 novembre 2026. PWA familiale **1.5.1**, candidate **1.5.2-beta.11** et Android **0.4.0-beta.42**. Ce sont des préversions ; les étapes futures ne sont pas des fonctions disponibles.
+**Document vivant : à actualiser à chaque mise à jour.** Dernière mise à jour : 7 novembre 2026. PWA familiale **1.5.1**, candidate **1.5.2-beta.12** et Android **0.4.0-beta.43**. Ce sont des préversions ; les étapes futures ne sont pas des fonctions disponibles.
 
 **Décision du 4 novembre — carnet :** détails multi-pièces, catégories par familles et sélecteur plein écran, liens cartes, sous-types carburant et compatibilité JSON à vérifier ; un premier lot existe dans la **PWA beta.2 candidate et Android beta.27** ; les essais réels restent à faire. L’utilisateur indique avoir installé la candidate sur Android et importé son JSON sans perte constatée ; iPhone non disponible. [Détails](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet).
 
@@ -68,7 +70,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Fonctions communes
 
-| Fonction | PWA 1.5.2-beta.11 candidate | Android 0.4.0-beta.42 |
+| Fonction | PWA 1.5.2-beta.12 candidate | Android 0.4.0-beta.43 |
 |---|---|---|
 | Utilisation en français, plusieurs véhicules, fonctionnement local | Oui | Oui |
 | Sans compte, abonnement, pub, serveur de synchronisation ou télémétrie dans l’application | Oui | Oui |
@@ -124,7 +126,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Dépenses, contrôles qualité, symptômes et documents
 
-| Rubrique | PWA 1.5.2-beta.11 candidate | Android 0.4.0-beta.42 |
+| Rubrique | PWA 1.5.2-beta.12 candidate | Android 0.4.0-beta.43 |
 |---|---|---|
 | Dépenses et justificatif photo | Tri, devise par dépense, totaux séparés ; kilométrage et photo facultatifs ; EXIF éventuelles conservées | Tri, devise par dépense, totaux séparés, édition, suppression avec Undo ; photo JPEG sans EXIF ajoutée par Android ; lien sans double comptage à faire |
 | Devises des pleins et interventions | Devise par opération, totaux séparés ; coût/km masqué si intervalles multidevises | Devise par opération, édition et Undo ; totaux par devise sur chaque écran, pour le véhicule sélectionné ; pas encore de tableau de bord complet |
@@ -137,14 +139,14 @@ L’application ne remplace ni un professionnel ni un diagnostic mécanique. Pou
 
 ## Sauvegardes et échange Android ↔ PWA
 
-- **JSON v3** sans affectation, **v4** pour les dépenses seules et **v5** pour les devises de plein/entretien sont compatibles entre PWA beta.10 et Android beta.41. Android beta.35 et PWA beta.7 refusent v5. Ne pas modifier le numéro ni effacer les affectations. Garder les originaux ; voir `PRECISION-SAUVEGARDES.md`.
+- **JSON v3** sans affectation, **v4** pour les dépenses seules et **v5** pour les devises de plein/entretien sont compatibles entre PWA beta.12 et Android beta.43. Android beta.35 et PWA beta.7 refusent v5. Ne pas modifier le numéro ni effacer les affectations. Garder les originaux ; voir `PRECISION-SAUVEGARDES.md`.
 - **Android beta.6 :** Réglages → Vérifier un JSON donne le format et les quantités des 11 catégories sans remplacer la base ni modifier le fichier sélectionné. Cela ne garantit ni une sauvegarde complète/récente, ni l’ouverture des pièces jointes, ni une restauration réussie. Une copie temporaire privée non chiffrée est créée ; son nettoyage est tenté mais peut échouer.
 - Les fichiers JSON sont **non chiffrés**, potentiellement volumineux et contiennent des données personnelles. Les transmettre uniquement par un moyen choisi et sûr. Aucune liaison directe, serveur obligatoire ni synchronisation n’est fournie.
 - Côté Android, l’analyse précède la confirmation puis le remplacement s’effectue en transaction. Les documents sont conservés en blocs et contrôlés par empreinte SHA-256 ; les limites documentées sont 256 Mio par fichier, 100 000 entrées et environ 16 Mio de caractères JSON par objet, avec une limite de 32 Mio UTF-8 par objet.
 - Pour revenir d’Android vers la PWA : faire d’abord une sauvegarde de la PWA destinataire, exporter depuis Android, puis importer après confirmation. L’import remplace toute sa base locale. Garder les deux copies initiales jusqu’à vérification.
 - Room 17 conserve les données typées, projections et extensions, ainsi que les affectations de devises des dépenses, pleins et entretiens. Les longues valeurs et pièces jointes peuvent rester en blocs vérifiés. Les totaux Android des pleins/entretiens sont disponibles séparément par devise ; le tableau de bord complet reste à développer.
 
-- **Prudence PWA :** la version familiale 1.5.1 peut arrondir certains nombres. La candidate beta.9 n’a pas été essayée sur iPhone réel ; sauvegarder avant mise à jour. Une base IndexedDB migrée en v6 ne se rouvre pas directement dans les anciennes PWA.
+- **Prudence PWA :** la version familiale 1.5.1 peut arrondir certains nombres. La candidate beta.12 n’a pas été essayée sur iPhone réel ; sauvegarder avant mise à jour. Une base IndexedDB migrée en v6 ne se rouvre pas directement dans les anciennes PWA.
 
 ## Installation et fonctionnement hors ligne
 

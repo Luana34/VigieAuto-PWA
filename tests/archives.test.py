@@ -31,6 +31,7 @@ class ArchiveTests(unittest.TestCase):
         self.project = self.workspace / "cq-auto"
         paths = [
             "README.md", "INSTALLER.md", "BILAN-PROJET.md", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
+            "docs/AIDES-PLEINS-VIN.md", "tests/aides-interface.cjs", "tests/mise-a-jour-beta12.cjs",
             "docs/PLEIN-COMPLET-PWA-BETA11.md", "tests/plein-complet-interface.cjs", "tests/mise-a-jour-beta11.cjs",
             "docs/FONDS-SOMBRES-BETA39.md", "tests/themes.test.js", "tests/themes-interface.cjs", "tests/mise-a-jour-beta10.cjs",
             "tests/mise-a-jour-beta9.cjs", "tests/fixtures/pwa-v5-operations.json", "docs/DEVISES-ANDROID-BETA36.md", "docs/MIGRATION-V16-V17.md",
@@ -63,6 +64,15 @@ class ArchiveTests(unittest.TestCase):
         }
         for name, content in self.old.items():
             (self.workspace / name).write_bytes(content)
+
+    def test_missing_beta12_help_contract_preserves_previous_archives(self):
+        for rel in ("docs/AIDES-PLEINS-VIN.md", "tests/aides-interface.cjs", "tests/mise-a-jour-beta12.cjs"):
+            path = self.project / rel
+            data = path.read_bytes(); path.unlink()
+            result = self.run_script("--sans-nettoyage")
+            self.assertNotEqual(0, result.returncode, rel)
+            self.assertEqual(6, len(list(self.workspace.glob("*.zip"))))
+            path.write_bytes(data)
 
     def test_missing_beta11_accessibility_contract_preserves_previous_archives(self):
         for rel in ("BILAN-PROJET.md", "docs/PLEIN-COMPLET-PWA-BETA11.md", "tests/plein-complet-interface.cjs", "tests/mise-a-jour-beta11.cjs"):
@@ -101,7 +111,7 @@ class ArchiveTests(unittest.TestCase):
         (self.project / "package-lock.json").write_text(json.dumps({"version": version, "packages": {"": {"version": version}}}))
         icon = f"./icons/icon.png?v=vigie-{version}"
         (self.project / "manifest.webmanifest").write_text(json.dumps({"icons": [{"src": icon}]}))
-        (self.project / "index.html").write_text(f'<link href="{icon}"><dialog id="category-picker"></dialog>')
+        (self.project / "index.html").write_text(f'<link href="{icon}"><dialog id="category-picker"></dialog><dialog id="info-dialog"></dialog>')
         (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}"; const FILES = ["./js/maintenance.js", "./js/expense-receipt.js", "{icon}"];')
 
     def run_script(self, *args):
@@ -229,6 +239,7 @@ class ArchiveTests(unittest.TestCase):
             ("sw.js", lambda s: s.replace('"./js/maintenance.js"', '"./js/autre.js"'), "cache"),
             ("sw.js", lambda s: s.replace('"./js/expense-receipt.js"', '"./js/autre.js"'), "cache"),
             ("index.html", lambda s: s.replace('category-picker', 'autre-dialogue'), "Sélecteur"),
+            ("index.html", lambda s: s.replace('info-dialog', 'autre-aide'), "Dialogue d’aide"),
             ("index.html", lambda s: s.replace('vigie-2.0.0', 'vigie-1.0.0'), "version"),
             ("manifest.webmanifest", lambda s: s.replace('vigie-2.0.0', 'vigie-1.0.0'), "version"),
             ("sw.js", lambda s: s.replace('./icons/icon.png', './icons/autre.png'), "icône"),

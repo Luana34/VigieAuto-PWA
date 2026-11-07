@@ -1,6 +1,12 @@
 # Performance et fluidité — objectifs et méthode
 
-**Checklist PWA beta.11 / Android beta.42 — 7 novembre 2026 :**
+**Checklist Android beta.43 / PWA beta.12 — 7 novembre 2026 :**
+
+- [x] Textes et aides locaux ; aucune dépendance de production, aucun nouveau traitement des données ou requête réseau. Zone tactile PWA de 44 px et texte de 16 px contrôlés aux petits formats et dans les quatre thèmes.
+- [ ] Vérifier lisibilité, retour et toucher sur Android et Safari iOS réels. WebKit Linux ne valide pas Safari iPhone.
+- [ ] Les cibles de démarrage, fluidité, mémoire, import/export et taille release restent **non mesurées** ; aucune performance garantie.
+
+**Checklist historique PWA beta.11 / Android beta.42 — 7 novembre 2026 :**
 
 - [x] Règle CSS limitée au formulaire de plein, sans nouvelle dépendance de production, requête réseau ou migration. Case 24 px, texte de 16 px en gras et ligne tactile de 56 px minimum ; contraste, 320/390 px et clavier contrôlés dans les quatre thèmes sous Chromium et WebKit Linux.
 - [ ] Vérifier lisibilité, toucher et mise à jour hors ligne sur téléphones Android et iPhone réels ; WebKit Linux ne remplace pas Safari iOS.

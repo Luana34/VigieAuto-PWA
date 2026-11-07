@@ -40,7 +40,7 @@ import {
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.11";
+const APP_VERSION = "1.5.2-beta.12";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -444,8 +444,9 @@ function demoBanner() {
     ? `<div class="demo-banner"><span class="demo-icon">${I("spark")}</span><span class="demo-copy"><b>Bienvenue en mode découverte</b><br>Ce véhicule est un exemple : les modifications de ses données ne sont pas enregistrées.</span><button class="btn small" data-action="start-real">Commencer avec mon véhicule ${I("arrow")}</button></div>`
     : "";
 }
-function pageHeading(title, subtitle, button = "") {
-  return `<div class="page-heading"><div><p class="eyebrow">MON CARNET DE BORD</p><h1>${title}</h1><p class="subheading">${subtitle}</p></div>${button}</div>`;
+function pageHeading(title, subtitle, button = "", info = "") {
+  const heading = info ? `<div class="heading-with-info"><h1>${title}</h1>${info}</div>` : `<h1>${title}</h1>`;
+  return `<div class="page-heading"><div><p class="eyebrow">MON CARNET DE BORD</p>${heading}<p class="subheading">${subtitle}</p></div>${button}</div>`;
 }
 function addButton(label, action) {
   return `<button class="btn" data-action="${action}">${I("plus")} ${label}</button>`;
@@ -958,7 +959,7 @@ function fillsView() {
     v.fuel === "electrique"
       ? "Recharges & consommation"
       : "Pleins & consommation";
-  return `${pageHeading(title, `Le suivi de ${esc(nameOf(v))}, plein après plein.`, addButton(v.fuel === "electrique" ? "Ajouter une recharge" : "Ajouter un plein", "add-fill"))}
+  return `${pageHeading(title, `Le suivi de ${esc(nameOf(v))}, plein après plein.`, addButton(v.fuel === "electrique" ? "Ajouter une recharge" : "Ajouter un plein", "add-fill"), infoButton("consumption", "Comprendre le calcul de consommation"))}
     <div class="summary-grid fuel-summary-grid">${metric("Consommation moyenne", calc.average === null ? "—" : number(calc.average, 2), `${unit}/100 km`, "Moyenne pondérée sur intervalles valides", "fuel")}${metric("Coût énergie moyen", cost === null ? "—" : `${number(cost.value, 3)} ${cost.currency === "EUR" ? "€" : esc(cost.currency)}`, "/ km", "Indisponible si les intervalles mêlent des devises", "route")}${metric("Dépenses énergie", currencyTotals(totals), "", "Totaux par devise, sans conversion", "receipt")}${metric("Enregistrements", number(all.length), "", "Pleins complets et partiels", "chart")}</div>
     <div class="alert-box info">${I("info")}<span><b>Comment est calculée la consommation ?</b> Entre deux ${unit === "kWh" ? "charges complètes" : "pleins complets"}, les ${unit === "kWh" ? "charges" : "pleins"} partiels intermédiaires sont inclus. Il faut saisir tous les ravitaillements et un kilométrage cohérent.${unit === "kWh" ? " La valeur correspond à l’énergie rechargée, pertes comprises." : ""}</span></div>
     <div class="section-heading"><div><h2>Historique</h2><p>Vos derniers passages à la ${unit === "kWh" ? "borne" : "pompe"}.</p></div></div>
@@ -1135,8 +1136,12 @@ function field(name, label, value = "", options = {}) {
     help = "",
     accept = "",
     extra = "",
+    infoTopic = "",
+    infoLabel = "En savoir plus",
   } = options;
-  return `<div class="field ${full ? "full-width" : ""}"><label for="f-${name}">${label}${required ? ' <span aria-hidden="true">*</span>' : ""}</label><input id="f-${name}" name="${name}" type="${type}" ${type !== "file" ? `value="${esc(value)}"` : ""} ${required ? "required" : ""} ${placeholder ? `placeholder="${esc(placeholder)}"` : ""} ${min !== undefined ? `min="${esc(min)}"` : ""} ${max !== undefined ? `max="${esc(max)}"` : ""} ${step !== undefined ? `step="${esc(step)}"` : ""} ${accept ? `accept="${esc(accept)}"` : ""} ${extra}>${help ? `<small>${help}</small>` : ""}</div>`;
+  const fieldLabel = `<label for="f-${name}">${label}${required ? ' <span aria-hidden="true">*</span>' : ""}</label>`;
+  const heading = infoTopic ? `<div class="field-heading-with-info">${fieldLabel}${infoButton(infoTopic, infoLabel)}</div>` : fieldLabel;
+  return `<div class="field ${full ? "full-width" : ""}">${heading}<input id="f-${name}" name="${name}" type="${type}" ${type !== "file" ? `value="${esc(value)}"` : ""} ${required ? "required" : ""} ${placeholder ? `placeholder="${esc(placeholder)}"` : ""} ${min !== undefined ? `min="${esc(min)}"` : ""} ${max !== undefined ? `max="${esc(max)}"` : ""} ${step !== undefined ? `step="${esc(step)}"` : ""} ${accept ? `accept="${esc(accept)}"` : ""} ${extra}>${help ? `<small>${help}</small>` : ""}</div>`;
 }
 function area(name, label, value = "", options = {}) {
   return `<div class="field ${options.full === false ? "" : "full-width"}"><label for="f-${name}">${label}${options.required ? " *" : ""}</label><textarea id="f-${name}" name="${name}" ${options.required ? "required" : ""} ${options.placeholder ? `placeholder="${esc(options.placeholder)}"` : ""}>${esc(value)}</textarea>${options.help ? `<small>${options.help}</small>` : ""}</div>`;
@@ -1156,6 +1161,86 @@ function selectField(name, label, value, choices, options = {}) {
 function checkbox(name, label, checked = false, full = true) {
   return `<label class="checkbox-line ${full ? "field full-width" : ""}"><input type="checkbox" name="${name}" ${checked ? "checked" : ""}><span>${label}</span></label>`;
 }
+function infoButton(topic, label) {
+  return `<button type="button" class="info-button" data-action="open-info" data-topic="${esc(topic)}" aria-label="${esc(label)}" title="${esc(label)}">${I("info")}</button>`;
+}
+// Textes locaux et statiques : ouvrir une aide ne modifie aucun brouillon ni donnée.
+const INFO_TOPICS = {
+  "full-fuel": {
+    title: "Plein complet ou partiel ?", presentation: "dialog",
+    body: `<p><strong>Plein complet :</strong> cochez si le réservoir a été rempli jusqu’à l’arrêt automatique de la pompe.</p>
+      <p><strong>Plein partiel :</strong> décochez si le réservoir n’est pas plein, quel que soit le montant ajouté.</p>
+      <p>Pour un nouveau plein, la case est cochée par défaut. Vous pouvez aussi corriger un plein déjà enregistré.</p>
+      <p>Les partiels sont inclus dans l’estimation entre deux pleins complets. Pensez à saisir chaque ravitaillement et le kilométrage.</p>`,
+  },
+  "full-electric": {
+    title: "Recharge complète ou partielle ?", presentation: "dialog",
+    body: `<p><strong>Recharge complète :</strong> cochez si la batterie a été rechargée à 100 %.</p>
+      <p><strong>Recharge partielle :</strong> décochez si elle n’a pas atteint 100 %.</p>
+      <p>Pour une nouvelle recharge, la case est cochée par défaut. Vous pouvez aussi corriger une recharge déjà enregistrée.</p>
+      <p>Les charges partielles sont incluses dans l’estimation entre deux charges complètes. Saisissez chaque recharge et le kilométrage.</p>`,
+  },
+  consumption: {
+    title: "Comment est estimée la consommation ?", presentation: "sheet",
+    body: `<p>VigieAuto calcule une <strong>estimation entre deux pleins complets</strong>. Le cycle doit utiliser la même unité (L ou kWh), avec des saisies et des kilométrages cohérents.</p>
+      <ul><li>Le premier plein complet sert de point de départ : son volume n’est pas compté.</li>
+      <li>Saisissez tous les pleins partiels, avec le kilométrage, puis le plein complet suivant.</li>
+      <li>Les quantités ajoutées entre les deux, y compris au dernier plein, sont rapportées aux kilomètres parcourus.</li></ul>
+      <p><strong>Exemple :</strong> 18 L + 42 L sur 800 km donnent 7,5 L/100 km.</p>
+      <p>Sans deuxième plein complet, ce cycle reste en attente. Les résultats d’anciens cycles complets peuvent rester affichés ; les montants des pleins enregistrés restent consultables et totalisés par devise lorsqu’ils sont exploitables.</p>
+      <p>Le coût énergie/km utilise les dépenses des cycles calculables ; il peut être masqué si les devises sont mélangées. Aucune conversion n’est faite.</p>
+      <p>Ces valeurs dépendent des saisies et du remplissage. Les litres et les kWh restent distincts ; pour une recharge, les kWh saisis peuvent inclure les pertes.</p>`,
+  },
+  vin: {
+    title: "Numéro de série (VIN)", presentation: "dialog",
+    body: `<p>Le VIN est le numéro d’identification du véhicule. Sur une carte grise française, il figure généralement au <strong>repère E</strong>.</p>
+      <p>Il comporte souvent 17 caractères. Ce champ est <strong>facultatif</strong> : un format de 17 caractères n’est pas imposé.</p>`,
+  },
+};
+const infoDialog = $("#info-dialog");
+let infoToken = null, infoHistoryPending = false, infoQueued = null, infoReturnFocus = null;
+function openInfo(topic, trigger) {
+  if (!Object.hasOwn(INFO_TOPICS, topic)) return;
+  const content = INFO_TOPICS[topic];
+  if (infoDialog.open || (trigger && !trigger.isConnected)) return;
+  if (infoHistoryPending) { infoQueued = {topic, trigger}; return; }
+  infoReturnFocus = trigger || document.activeElement;
+  infoDialog.dataset.presentation = content.presentation;
+  infoDialog.innerHTML = `<div class="info-shell"><div class="info-header"><h2 id="info-dialog-title">${content.title}</h2></div><div class="info-body">${content.body}</div><div class="info-footer"><button type="button" class="btn" data-action="close-info" autofocus>Compris</button></div></div>`;
+  infoDialog.showModal();
+  const token = uid();
+  try {
+    const previous = history.state && typeof history.state === "object" ? history.state : {};
+    history.pushState({ ...previous, vigieInfo:token }, "", location.href);
+    infoToken = token;
+  } catch { infoToken = null; }
+}
+function closeInfo({fromHistory = false} = {}) {
+  if (!infoDialog.open) return;
+  const token = infoToken, returnFocus = infoReturnFocus;
+  infoToken = null; infoReturnFocus = null;
+  infoDialog.close();
+  if (returnFocus?.isConnected) returnFocus.focus({preventScroll:true});
+  if (!fromHistory && token && history.state?.vigieInfo === token) {
+    infoHistoryPending = true;
+    try { history.back(); } catch { infoHistoryPending = false; }
+  }
+}
+infoDialog.addEventListener("cancel", (event) => { event.preventDefault(); closeInfo(); });
+window.addEventListener("popstate", () => {
+  if (infoHistoryPending) {
+    infoHistoryPending = false;
+    const queued = infoQueued; infoQueued = null;
+    if (queued) openInfo(queued.topic, queued.trigger);
+    return;
+  }
+  if (infoDialog.open && (!infoToken || history.state?.vigieInfo !== infoToken)) closeInfo({fromHistory:true});
+  // Un retour suivi d’un « suivant » ne doit pas laisser de marqueur d’aide fantôme.
+  if (!infoDialog.open && history.state?.vigieInfo) {
+    const previous = { ...history.state }; delete previous.vigieInfo;
+    try { history.replaceState(previous, "", location.href); } catch { /* historique indisponible */ }
+  }
+});
 function formModal({
   title,
   subtitle = "",
@@ -1301,7 +1386,7 @@ function vehicleForm(id = "") {
     ${field("version", "Finition / motorisation", x.version, { placeholder: "1.5 dCi 68" })}${field("year", "Année", x.year, { type: "number", min: 0, step: 1, placeholder: "2008" })}
     ${field("plate", "Immatriculation", x.plate, { placeholder: "AB-123-CD" })}${selectField("fuel", "Énergie", choice, fuelOptions)}
     <div id="fuel-custom-field" class="full-width" ${choice === "autre" ? "" : "hidden"}>${field("fuelCustom", "Autre énergie", x.fuel === "autre" ? x.fuelDetail : "", { placeholder: "Saisissez votre énergie" })}</div>
-    ${field("odometer", "Kilométrage actuel (km)", x.odometer ?? "", { type: "number", min: 0, step: 1, required: true, help: "Obligatoire ; vous pourrez le mettre à jour plus tard." })}${field("vin", "Numéro de série (VIN)", x.vin, { placeholder: "Facultatif" })}
+    ${field("odometer", "Kilométrage actuel (km)", x.odometer ?? "", { type: "number", min: 0, step: 1, required: true, help: "Obligatoire ; vous pourrez le mettre à jour plus tard." })}${field("vin", "Numéro de série (VIN)", x.vin, { placeholder: "Facultatif", infoTopic: "vin", infoLabel: "En savoir plus sur le VIN" })}
     ${field("photo", "Photo du véhicule", "", { type: "file", accept: "image/jpeg,image/png,image/webp,image/gif", full: true, help: "Facultatif · image jusqu’à 5 Mo, stockée uniquement sur cet appareil." })}
     ${validPhoto(x.photo) ? checkbox("removePhoto", "Supprimer la photo actuelle.") : ""}${area("notes", "Notes", x.notes, { placeholder: "Informations utiles…" })}
     <p class="form-help">Vos marques et modèles sont mémorisés après l’enregistrement et inclus dans la sauvegarde JSON.</p>
@@ -1573,7 +1658,7 @@ function fillForm(id = "") {
     ${field("volume", `Quantité (${unit})`, x.volume ?? "", { type:"number", min:0.01, step:"0.01", required:true, placeholder:electric ? "30,00" : "45,00" })}${field("unitPrice", `Prix par ${unit}`, x.unitPrice ?? "", { type:"number", min:0, step:"0.001", placeholder:"Facultatif" })}
     ${currencyFormFields(assigned?.currency || "EUR")}
     ${field("total", "Prix total", x.total ?? "", { type:"number", min:0, step:"0.01", required:true, help:"Calculé si quantité et prix unitaire sont indiqués ; vous pouvez le modifier." })}${mapField("station", electric ? "Borne" : "Station-service", x.station, "Facultatif")}
-    ${checkbox("full", electric ? "Batterie rechargée à 100 %" : "Plein complet", x.id ? !!x.full : true)}
+    <div class="fill-full-choice full-width">${checkbox("full", electric ? "Batterie rechargée à 100 %" : "Plein complet", x.id ? !!x.full : true)}${infoButton(electric ? "full-electric" : "full-fuel", electric ? "Comprendre la recharge complète" : "Comprendre le plein complet")}</div>
     <p class="form-help full-width">${electric ? "Décochez si la batterie n’a pas atteint 100 %. La consommation est estimée entre deux charges à 100 %, en incluant les charges intermédiaires." : "Décochez si le réservoir n’a pas été rempli complètement. Les pleins partiels sont pris en compte entre deux pleins complets."}</p>
     ${area("notes", "Notes", x.notes, { placeholder:"Une précision à conserver…" })}
   </div>`,
@@ -2607,6 +2692,12 @@ document.addEventListener("click", async (event) => {
       return;
     }
     switch (action) {
+      case "open-info":
+        openInfo(target.dataset.topic, target);
+        break;
+      case "close-info":
+        closeInfo();
+        break;
       case "close-modal":
         if (modal.dataset.saving === "true") break;
         if (categoryPicker.open) closeCategoryPicker();

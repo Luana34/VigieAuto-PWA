@@ -1,5 +1,11 @@
 # Historique du projet VigieAuto
 
+## 7 novembre 2026 — aides Pleins et VIN sur les deux versions
+
+La personne utilisatrice a choisi des explications sur Android et la PWA, sans nouveau calcul. Android beta.43/code 47 et PWA beta.12 ajoutent un rappel, des boutons ⓘ ciblés et un panneau inférieur global sur l’écran Pleins ; les aides VIN restent facultatives. L’ouverture ne modifie pas la case ni le formulaire. Les règles de calcul, la valeur par défaut et les données restent inchangées. [Guide](AIDES-PLEINS-VIN.md).
+
+Sous Linux : 82 tests JVM Android ciblés réussis, suite complète non relancée ; APK debug et 69 scénarios instrumentés compilés mais non exécutés ; lint 0 erreur, 24 avertissements, 5 indications. PWA : 64 tests Node et 22 tests d’archive ; aides et vraie mise à jour beta.11 → beta.12 vérifiées sous Chromium et WebKit Linux. Ni appareil réel, ni émulateur, Windows, GitHub ou Safari iOS validés ; aucune performance mesurée. Aucun ancien test retiré.
+
 ## 7 novembre 2026 — PWA 1.5.2-beta.11 : meilleure visibilité de « Plein complet »
 
 Après la capture d’un ravitaillement partiel affiché comme complet, la personne utilisatrice demande une case plus grosse et un texte en gras. La PWA agrandit la case et sa zone de contact, met le libellé en gras et rappelle de décocher pour un plein partiel ; même présentation pour les recharges. La case d’un nouveau plein reste cochée par défaut et aucun plein existant n’est modifié. La quantité ne détermine pas à elle seule si le plein est complet. Les calculs, la base IndexedDB 6, les formats JSON et Android beta.42 restent inchangés. La personne a également signalé les 53 minutes de préparation du ZIP Android précédent ; ce lot PWA utilise des vérifications ciblées sans relancer de build Android.
@@ -12,7 +18,7 @@ Sélecteur près du haut de l’accueil, véhicule actif, liste paresseuse et mi
 
 Suite JVM Linux : **745 réussis, 8 ignorés** faute des anciennes fixtures de retour PWA, aucun échec ; APK debug et **69 scénarios instrumentés compilés mais non exécutés** ; lint : **0 erreur, 24 avertissements, 5 indications**. Aucun essai sur téléphone, émulateur, Windows ou GitHub ; aucune mesure de performance. Aucun avertissement CloseGuard reconnu dans ces rapports (détection non exhaustive).
 
-**Dernière mise à jour : 7 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.11 · Android 0.4.0-beta.42**
+**Dernière mise à jour : 7 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.12 · Android 0.4.0-beta.43**
 
 Ce journal rassemble les demandes, les décisions, les réalisations, les corrections et les limites du projet. Il est tenu au fil des échanges : chaque évolution doit être ajoutée ici, sans effacer les décisions précédentes, et les changements de périmètre doivent être indiqués explicitement.
 
