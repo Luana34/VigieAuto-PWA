@@ -1,6 +1,14 @@
 # VigieAuto — récapitulatif des fonctions
 
-**Actualisation du 6 novembre 2026 — Android 0.4.0-beta.39 / PWA candidate 1.5.2-beta.10 :** pour Sauge et Cyan sombres, seul le fond général est remplacé par `#121212` ; les cartes, surfaces et accents actuels de chaque plateforme sont conservés, comme les deux modes clairs. Le mode suit toujours le téléphone ; le choix mixte automatique est préservé. Room 17, IndexedDB 6 et sauvegardes JSON v1–v5 sont inchangés. Sauvegarder avant essai ; aucun téléphone ni Safari iOS n’a été validé. [Détails et contrôles](FONDS-SOMBRES-BETA39.md).
+**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.11 / Android 0.4.0-beta.42 inchangé :** la case « Plein complet » et son libellé sont plus visibles ; la ligne entière est cliquable et un texte aide à reconnaître un plein partiel. La recharge électrique bénéficie du même confort. Un nouveau plein reste coché par défaut ; les données, les calculs et les sauvegardes ne changent pas. Essais logiciels sous Chromium et WebKit Linux ; aucun essai sur téléphone ou Safari iOS dans ce lot. [Détails](PLEIN-COMPLET-PWA-BETA11.md).
+
+**Historique du 7 novembre 2026 — Android 0.4.0-beta.42 / PWA 1.5.2-beta.10 inchangée :** sélecteur en haut de l’accueil, véhicule actif indiqué et miniatures des lignes visibles avec chargement borné. La sélection ne modifie pas les photos ou données liées ; les identifiants longs sont relus sans ambiguïté. Room 17 et JSON inchangés. Partie de 2.3 seulement ; recherche approximative, priorités d’usage, vue combinée éventuelle et champs complémentaires restent à faire. Essais sur appareil et mesures nécessaires. [Guide](LISTE-VEHICULES.md).
+
+**Historique du 7 novembre 2026 — Android 0.4.0-beta.41 / PWA candidate 1.5.2-beta.10 inchangée :** ajout de la prise de photo directe pour le véhicule actif, à côté de la galerie. La tentative n’écrase pas la photo en cas d’annulation ou d’échec ; remplacement confirmé sans Undo. Room 17 et formats JSON inchangés. Aperçus multivéhicules, émulateur, téléphone et Safari iOS restent à vérifier ou réaliser ; conserver une sauvegarde externe. [Guide et limites](PHOTO-VEHICULE.md).
+
+**Historique du 7 novembre 2026 — Android 0.4.0-beta.40 / PWA candidate 1.5.2-beta.10 inchangée :** la phase 2.1 ajoute la suppression confirmée du véhicule actif, un récapitulatif complet et une annulation locale transactionnelle, avec photo, documents, devises et extensions. Room 17 et formats JSON inchangés. Le téléphone, l’émulateur et Safari iOS restent à valider ; une sauvegarde externe reste indispensable. [Mode d’emploi et limites](SUPPRESSION-VEHICULE-BETA40.md).
+
+**Historique du 6 novembre 2026 — Android 0.4.0-beta.39 / PWA candidate 1.5.2-beta.10 :** pour Sauge et Cyan sombres, seul le fond général est remplacé par `#121212` ; les cartes, surfaces et accents actuels de chaque plateforme sont conservés, comme les deux modes clairs. Le mode suit toujours le téléphone ; le choix mixte automatique est préservé. Room 17, IndexedDB 6 et sauvegardes JSON v1–v5 sont inchangés. Sauvegarder avant essai ; aucun téléphone ni Safari iOS n’a été validé. [Détails et contrôles](FONDS-SOMBRES-BETA39.md).
 
 **Historique du 6 novembre 2026 — Android 0.4.0-beta.38 / PWA candidate 1.5.2-beta.9 inchangée :** l’écran Pleins Android affiche la consommation du véhicule sélectionné entre pleins complets, partiels inclus : moyenne pondérée, dernier intervalle calculable et coût/km indicatif. Litres et kWh sont distincts ; le coût est masqué si les devises sont mélangées. Les lectures incomplètes, trop précises ou d’ordre ambigu ne produisent pas de résultat. Room 17 et JSON v1–v5 inchangés ; tableau de bord complet et liaison plein/dépense restent à développer. Sauvegarde externe avant essai ; aucun téléphone ni Safari iOS validé. [Usage et limites](CONSOMMATION-ANDROID-BETA38.md).
 
@@ -28,11 +36,11 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Document vivant : à actualiser à chaque mise à jour.** Dernière mise à jour : 6 novembre 2026. PWA familiale **1.5.1**, candidate **1.5.2-beta.9** et Android **0.4.0-beta.38**. Ce sont des préversions ; les étapes futures ne sont pas des fonctions disponibles.
+**Document vivant : à actualiser à chaque mise à jour.** Dernière mise à jour : 7 novembre 2026. PWA familiale **1.5.1**, candidate **1.5.2-beta.11** et Android **0.4.0-beta.42**. Ce sont des préversions ; les étapes futures ne sont pas des fonctions disponibles.
 
 **Décision du 4 novembre — carnet :** détails multi-pièces, catégories par familles et sélecteur plein écran, liens cartes, sous-types carburant et compatibilité JSON à vérifier ; un premier lot existe dans la **PWA beta.2 candidate et Android beta.27** ; les essais réels restent à faire. L’utilisateur indique avoir installé la candidate sur Android et importé son JSON sans perte constatée ; iPhone non disponible. [Détails](PLAN-PRIORITES-APRES-BETA16.md#enrichissement-carnet).
 
-**Beta.26 — photo du véhicule actif :** depuis l’accueil, choisir dans le sélecteur système une image d’au plus 12 Mio ; l’application applique l’orientation EXIF lorsqu’elle est reconnue, la réduit en JPEG de 1 600 px au plus et 3 Mio au plus, sans recopier les métadonnées, puis affiche un aperçu. Remplacement et retrait sont confirmés et sans Undo ; la photo précédente n’est pas perdue si l’import échoue. Les photos importées illisibles ou trop grosses sont conservées. Room 15, JSON v3 et PWA ne changent pas ; aucune permission générale de galerie, caméra, GPS, Bluetooth ou réseau n’est ajoutée. Prise de vue directe et aperçus de tous les véhicules restent à faire. [Détails](PHOTO-VEHICULE.md).
+**Beta.26 — photo du véhicule actif :** depuis l’accueil, choisir dans le sélecteur système une image d’au plus 12 Mio ; l’application applique l’orientation EXIF lorsqu’elle est reconnue, la réduit en JPEG de 1 600 px au plus et 3 Mio au plus, sans recopier les métadonnées, puis affiche un aperçu. Remplacement et retrait sont confirmés et sans Undo ; la photo précédente n’est pas perdue si l’import échoue. Les photos importées illisibles ou trop grosses sont conservées. Room 15, JSON v3 et PWA ne changent pas ; aucune permission générale de galerie, caméra, GPS, Bluetooth ou réseau n’est ajoutée. À cette étape, la prise de vue directe et les aperçus de tous les véhicules restaient à faire ; la prise directe est ajoutée en beta.41 puis les aperçus de liste en beta.42. [Détails](PHOTO-VEHICULE.md).
 
 Avant la correction EXIF : suite JVM complète **548 réussis et 8 ignorés**, lint zéro erreur/20 avertissements et 61 scénarios instrumentés compilés mais non exécutés. Après remplacement par AndroidX : APK debug compilé, **73/73 tests ciblés réussis** et pont photo fictif Android ↔ PWA stable et candidate vérifié sous Chromium. La suite complète et le lint n’ont pas été relancés après la correction ; la recompilation des instrumentés après correction n’est pas confirmée. Aucun essai Android beta.26 sur Windows, GitHub, émulateur ou téléphone.
 
@@ -60,7 +68,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Fonctions communes
 
-| Fonction | PWA 1.5.2-beta.9 candidate | Android 0.4.0-beta.38 |
+| Fonction | PWA 1.5.2-beta.11 candidate | Android 0.4.0-beta.42 |
 |---|---|---|
 | Utilisation en français, plusieurs véhicules, fonctionnement local | Oui | Oui |
 | Sans compte, abonnement, pub, serveur de synchronisation ou télémétrie dans l’application | Oui | Oui |
@@ -72,7 +80,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 | Création d’un véhicule et correction du compteur | Oui | Oui |
 | Confirmation avant abandon d’un formulaire modifié | Non pour les formulaires ordinaires | Oui : véhicule, compteur, entretien, plein, trajet, rappel et dépense |
 | Modifier les informations principales d’un véhicule | Oui | Oui, fiche du véhicule actif ; compteur séparé |
-| Modifier la photo ou supprimer un véhicule | Oui | Photo du véhicule actif depuis galerie, remplacement/retrait confirmés ; suppression du véhicule à développer |
+| Modifier la photo ou supprimer un véhicule | Oui | Photo galerie ou prise directe ; suppression du véhicule actif avec récapitulatif, double confirmation et Undo (beta.40) |
 | Marques/modèles hors ligne, recherchables, libres et mémorisés | Oui | Oui |
 | Entretiens, pleins/recharges, rappels et trajets manuels : ajout, modification, suppression | Oui | Oui |
 | Détail d’entretien, catégories, sous-type libre et recherche cartes | Oui, candidate | Oui, beta.27 ; essais appareils réels à faire |
@@ -89,7 +97,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 - Le même référentiel embarqué comprend **48 marques, 432 modèles et 7 types d’énergie**, sans connexion et sans imposer une génération de modèle. Il comporte notamment Renault, Peugeot, Citroën, Dacia, Volkswagen et les autres marques demandées.
 - Année libre, énergie, détail de motorisation/finition et immatriculation : facultatifs ; **kilométrage obligatoire** à la création. L’exemple Renault Clio 2008 Diesel 1.5 dCi 68 ne crée pas de véhicule réel et ne suppose aucun kilométrage.
 - Le compteur actuel peut être corrigé sans modifier les anciennes interventions. Un entretien ou un plein avec compteur supérieur augmente le compteur actuel ; une suppression ou modification ancienne ne le baisse pas automatiquement. Le chronomètre de trajet ne calcule pas le compteur.
-- Dans la PWA : modification complète, photo, notes et suppression du véhicule avec ses données associées. **Android beta.7 :** Depuis Accueil → **Modifier ce véhicule**, modifier marque et modèle libres, année, énergie et détail libre, finition/motorisation, immatriculation, VIN et notes. Le compteur se corrige séparément ; photo, données du carnet et propriétés non affichées restent conservées. Sans changement, aucune écriture n’est effectuée. Un conflit ou une donnée trop longue est refusé sans tronquer ; un formulaire modifié demande confirmation avant abandon. Depuis beta.26, l’accueil permet de choisir, remplacer et retirer après confirmation la photo du véhicule actif ; une photo importée illisible ou trop volumineuse est conservée sans aperçu. La prise de vue directe, la suppression du véhicule et les autres champs enrichis restent à réaliser.
+- Dans la PWA : modification complète, photo, notes et suppression du véhicule avec ses données associées. **Android beta.7 :** Depuis Accueil → **Modifier ce véhicule**, modifier marque et modèle libres, année, énergie et détail libre, finition/motorisation, immatriculation, VIN et notes. Le compteur se corrige séparément ; photo, données du carnet et propriétés non affichées restent conservées. Sans changement, aucune écriture n’est effectuée. Un conflit ou une donnée trop longue est refusé sans tronquer ; un formulaire modifié demande confirmation avant abandon. Depuis beta.26, l’accueil permet de choisir, remplacer et retirer après confirmation la photo du véhicule actif ; une photo importée illisible ou trop volumineuse est conservée sans aperçu. Beta.40 ajoute la suppression du véhicule actif avec décompte et Undo. Beta.41 ajoute la prise de vue directe ; beta.42 apporte la liste avec aperçus. Autres éléments de 2.3 et champs enrichis restent à réaliser.
 - Pour une fiche Android, les champs courts sont limités à 500 caractères, les notes à 8 000 et la représentation de l’année à 128 à l’ouverture ; une valeur importée plus longue est refusée sans troncature ni changement de la base. Un code ou détail d’énergie atypique reste inchangé tant que l’énergie n’est pas modifiée. En cas de conflit, fermer puis rouvrir la fiche. La sauvegarde externe reste indispensable.
 
 ## Entretien et rappels
@@ -116,7 +124,7 @@ VigieAuto est un carnet de suivi de véhicules en français, gratuit, sans publi
 
 ## Dépenses, contrôles qualité, symptômes et documents
 
-| Rubrique | PWA 1.5.2-beta.9 candidate | Android 0.4.0-beta.38 |
+| Rubrique | PWA 1.5.2-beta.11 candidate | Android 0.4.0-beta.42 |
 |---|---|---|
 | Dépenses et justificatif photo | Tri, devise par dépense, totaux séparés ; kilométrage et photo facultatifs ; EXIF éventuelles conservées | Tri, devise par dépense, totaux séparés, édition, suppression avec Undo ; photo JPEG sans EXIF ajoutée par Android ; lien sans double comptage à faire |
 | Devises des pleins et interventions | Devise par opération, totaux séparés ; coût/km masqué si intervalles multidevises | Devise par opération, édition et Undo ; totaux par devise sur chaque écran, pour le véhicule sélectionné ; pas encore de tableau de bord complet |
@@ -129,7 +137,7 @@ L’application ne remplace ni un professionnel ni un diagnostic mécanique. Pou
 
 ## Sauvegardes et échange Android ↔ PWA
 
-- **JSON v3** sans affectation, **v4** pour les dépenses seules et **v5** pour les devises de plein/entretien sont compatibles entre PWA beta.9 et Android beta.38. Android beta.35 et PWA beta.7 refusent v5. Ne pas modifier le numéro ni effacer les affectations. Garder les originaux ; voir `PRECISION-SAUVEGARDES.md`.
+- **JSON v3** sans affectation, **v4** pour les dépenses seules et **v5** pour les devises de plein/entretien sont compatibles entre PWA beta.10 et Android beta.41. Android beta.35 et PWA beta.7 refusent v5. Ne pas modifier le numéro ni effacer les affectations. Garder les originaux ; voir `PRECISION-SAUVEGARDES.md`.
 - **Android beta.6 :** Réglages → Vérifier un JSON donne le format et les quantités des 11 catégories sans remplacer la base ni modifier le fichier sélectionné. Cela ne garantit ni une sauvegarde complète/récente, ni l’ouverture des pièces jointes, ni une restauration réussie. Une copie temporaire privée non chiffrée est créée ; son nettoyage est tenté mais peut échouer.
 - Les fichiers JSON sont **non chiffrés**, potentiellement volumineux et contiennent des données personnelles. Les transmettre uniquement par un moyen choisi et sûr. Aucune liaison directe, serveur obligatoire ni synchronisation n’est fournie.
 - Côté Android, l’analyse précède la confirmation puis le remplacement s’effectue en transaction. Les documents sont conservés en blocs et contrôlés par empreinte SHA-256 ; les limites documentées sont 256 Mio par fichier, 100 000 entrées et environ 16 Mio de caractères JSON par objet, avec une limite de 32 Mio UTF-8 par objet.
@@ -235,7 +243,7 @@ La beta.9 ne modifie aucune fonction du carnet : elle corrige la configuration e
 
 ## Ce qui est prévu mais pas encore réalisé
 
-Phases futures : terminer le véhicule Android (suppression, prise de vue et autres champs) ; liaison des dépenses, CQ/symptômes/documents complets ; tableau de bord statistique ; GPS Android facultatif puis Bluetooth assisté de l’autoradio ; notifications, widgets, recherche et accessibilité ; partage familial, flotte et tablette. Stations après 0.4.0 stable. Voir [le plan](PLAN-PRIORITES-APRES-BETA16.md).
+Phases futures : terminer le véhicule Android (autres éléments de 2.3 et champs complémentaires) ; liaison des dépenses, CQ/symptômes/documents complets ; tableau de bord statistique ; GPS Android facultatif puis Bluetooth assisté de l’autoradio ; notifications, widgets, recherche et accessibilité ; partage familial, flotte et tablette. Stations après 0.4.0 stable. Voir [le plan](PLAN-PRIORITES-APRES-BETA16.md).
 
 **Stations & Prix carburants :** module Android futur spécifié, non implémenté et prévu après le socle 0.4.0 stable. Il envisage des prix officiels, une localisation ponctuelle facultative et un cache local partiel. La carte, la source, les services réseau et leurs implications pour la confidentialité restent à vérifier. Voir [`module-stations-carburants.md`](module-stations-carburants.md).
 

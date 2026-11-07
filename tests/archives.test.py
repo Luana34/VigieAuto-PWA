@@ -30,7 +30,8 @@ class ArchiveTests(unittest.TestCase):
         self.workspace = Path(self.tmp.name)
         self.project = self.workspace / "cq-auto"
         paths = [
-            "README.md", "INSTALLER.md", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
+            "README.md", "INSTALLER.md", "BILAN-PROJET.md", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
+            "docs/PLEIN-COMPLET-PWA-BETA11.md", "tests/plein-complet-interface.cjs", "tests/mise-a-jour-beta11.cjs",
             "docs/FONDS-SOMBRES-BETA39.md", "tests/themes.test.js", "tests/themes-interface.cjs", "tests/mise-a-jour-beta10.cjs",
             "tests/mise-a-jour-beta9.cjs", "tests/fixtures/pwa-v5-operations.json", "docs/DEVISES-ANDROID-BETA36.md", "docs/MIGRATION-V16-V17.md",
             "tests/devises-operations-interface.cjs", "docs/DEVISES-OPERATIONS-BETA8.md", "docs/DEVISES-ANDROID-BETA35.md",
@@ -62,6 +63,15 @@ class ArchiveTests(unittest.TestCase):
         }
         for name, content in self.old.items():
             (self.workspace / name).write_bytes(content)
+
+    def test_missing_beta11_accessibility_contract_preserves_previous_archives(self):
+        for rel in ("BILAN-PROJET.md", "docs/PLEIN-COMPLET-PWA-BETA11.md", "tests/plein-complet-interface.cjs", "tests/mise-a-jour-beta11.cjs"):
+            path = self.project / rel
+            data = path.read_bytes(); path.unlink()
+            result = self.run_script("--sans-nettoyage")
+            self.assertNotEqual(0, result.returncode, rel)
+            self.assertEqual(6, len(list(self.workspace.glob("*.zip"))))
+            path.write_bytes(data)
 
     def test_missing_beta10_theme_contract_preserves_previous_archives(self):
         for rel in ("docs/FONDS-SOMBRES-BETA39.md", "tests/themes.test.js", "tests/themes-interface.cjs", "tests/mise-a-jour-beta10.cjs"):

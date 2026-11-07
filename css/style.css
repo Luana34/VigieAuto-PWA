@@ -1377,6 +1377,29 @@ input[type="radio"] {
 .checkbox-line input {
   margin: 2px 0 0;
 }
+/* Le choix de plein complet doit être lisible et facile à toucher. */
+form[data-form="fill"] .checkbox-line {
+  min-height: 56px;
+  padding: 12px 14px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-alt);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+}
+form[data-form="fill"] .checkbox-line input[type="checkbox"] {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+}
 .form-divider {
   grid-column: 1/-1;
   border: 0;

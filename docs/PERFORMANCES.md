@@ -1,5 +1,28 @@
 # Performance et fluidité — objectifs et méthode
 
+**Checklist PWA beta.11 / Android beta.42 — 7 novembre 2026 :**
+
+- [x] Règle CSS limitée au formulaire de plein, sans nouvelle dépendance de production, requête réseau ou migration. Case 24 px, texte de 16 px en gras et ligne tactile de 56 px minimum ; contraste, 320/390 px et clavier contrôlés dans les quatre thèmes sous Chromium et WebKit Linux.
+- [ ] Vérifier lisibilité, toucher et mise à jour hors ligne sur téléphones Android et iPhone réels ; WebKit Linux ne remplace pas Safari iOS.
+- [ ] Toutes les cibles (froid <1 s, chaud <300 ms, écran <100 ms, 60 fps/1 000 éléments, import 10 Mo <3 s, export <2 s, APK release <15 Mo, RAM <100 Mo) restent **non mesurées**, sans garantie de résultat.
+
+**Checklist historique Android beta.42 / PWA beta.10 — 7 novembre 2026 :** liste paresseuse, aperçu ≤192 px pour les seules lignes visibles et une lecture/décodage à la fois ; pas de cache Base64 global. L’accueil actif reste séparé et les résumés ne sont pas paginés. Ce sont des choix d’architecture, **pas des mesures de performance**. Toutes les cibles ci-dessous restent à mesurer sur appareil réel. Voir [LISTE-VEHICULES.md](LISTE-VEHICULES.md).
+
+**Checklist historique Android beta.41 / PWA beta.10 — 7 novembre 2026 :**
+
+- [x] Traitement photo local borné : entrée limitée à 12 Mio, JPEG à 1 600 px / 3 Mio ; aperçu du seul véhicule actif. Aucun changement des sauvegardes ou schémas.
+- [ ] La taille du fichier brut écrit par l’application photo externe n’est pas contrôlée pendant sa prise ; mesurer mémoire, durée, stockage et comportement avec différents appareils.
+- [ ] Affichage simultané des photos dans la liste 2.3 à concevoir avec chargement paresseux et mémoire bornée ; aucune promesse de fluidité ni de 100 Ko par photo.
+- [ ] Cibles sur appareil : froid <1 s, chaud <300 ms, écran <100 ms, 60 fps avec 1 000 éléments, import 10 Mo <3 s, export <2 s, APK release <15 Mo et RAM <100 Mo ; aucune n’est mesurée ni déclarée atteinte.
+
+APK **debug** de contrôle : 13 191 402 octets ; ce chiffre n’est pas une mesure de taille de release. [Détails des contrôles](PHOTO-VEHICULE.md).
+
+**Checklist Android beta.40 / PWA beta.10 — 7 novembre 2026 :**
+
+- [x] Image d’Undo traitée ligne par ligne en blocs, avec contrôles d’intégrité ; aucune copie complète JSON du véhicule ni fichier média externe. Les limites et besoins d’espace sont explicités dans [le guide](SUPPRESSION-VEHICULE-BETA40.md).
+- [ ] Mesurer sur appareil le coût des deux analyses, de la transaction, de l’Undo et des médias pour 1 000 éléments et un volume élevé ; aucun benchmark n’a été effectué dans ce lot.
+- [ ] Les cibles (<1 s à froid, <300 ms à chaud, écran <100 ms, 60 fps/1 000 éléments, import 10 Mo <3 s, export <2 s, APK release <15 Mo, RAM <100 Mo) ne sont pas déclarées atteintes sans mesure réelle.
+
 **Checklist Android beta.39 / PWA beta.10 — 6 novembre 2026 :**
 
 - [x] Changement limité aux constantes de fond, au fond racine HTML sombre et au cache ; pas de nouvelle requête, migration, dépendance ou calcul. Les autres couleurs restent inchangées.

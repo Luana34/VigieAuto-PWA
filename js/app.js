@@ -40,7 +40,7 @@ import {
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.10";
+const APP_VERSION = "1.5.2-beta.11";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -1574,7 +1574,7 @@ function fillForm(id = "") {
     ${currencyFormFields(assigned?.currency || "EUR")}
     ${field("total", "Prix total", x.total ?? "", { type:"number", min:0, step:"0.01", required:true, help:"Calculé si quantité et prix unitaire sont indiqués ; vous pouvez le modifier." })}${mapField("station", electric ? "Borne" : "Station-service", x.station, "Facultatif")}
     ${checkbox("full", electric ? "Batterie rechargée à 100 %" : "Plein complet", x.id ? !!x.full : true)}
-    <p class="form-help">${electric ? "La consommation est estimée entre deux charges à 100 %, en incluant les charges intermédiaires." : "Les pleins partiels sont pris en compte entre deux pleins complets."}</p>
+    <p class="form-help full-width">${electric ? "Décochez si la batterie n’a pas atteint 100 %. La consommation est estimée entre deux charges à 100 %, en incluant les charges intermédiaires." : "Décochez si le réservoir n’a pas été rempli complètement. Les pleins partiels sont pris en compte entre deux pleins complets."}</p>
     ${area("notes", "Notes", x.notes, { placeholder:"Une précision à conserver…" })}
   </div>`,
   });

@@ -1,10 +1,34 @@
 # Historique du projet VigieAuto
 
-**Dernière mise à jour : 6 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.10 · Android 0.4.0-beta.39**
+## 7 novembre 2026 — PWA 1.5.2-beta.11 : meilleure visibilité de « Plein complet »
+
+Après la capture d’un ravitaillement partiel affiché comme complet, la personne utilisatrice demande une case plus grosse et un texte en gras. La PWA agrandit la case et sa zone de contact, met le libellé en gras et rappelle de décocher pour un plein partiel ; même présentation pour les recharges. La case d’un nouveau plein reste cochée par défaut et aucun plein existant n’est modifié. La quantité ne détermine pas à elle seule si le plein est complet. Les calculs, la base IndexedDB 6, les formats JSON et Android beta.42 restent inchangés. La personne a également signalé les 53 minutes de préparation du ZIP Android précédent ; ce lot PWA utilise des vérifications ciblées sans relancer de build Android.
+
+Sous Linux : 64 tests Node et 21 tests d’archiveur ; formulaire et quatre thèmes vérifiés sous Chromium et WebKit Linux ; mise à jour de beta.10 vers beta.11 avec données fictives et export hors ligne sous les deux moteurs. Aucun essai de ce lot sur téléphone ni Safari iOS ; aucune mesure de performance. [Détails](PLEIN-COMPLET-PWA-BETA11.md).
+
+## 7 novembre 2026 — Android 0.4.0-beta.42 : liste multivéhicules (partie de 2.3)
+
+Sélecteur près du haut de l’accueil, véhicule actif, liste paresseuse et miniatures demandées pour les lignes visibles. Sélection sauvegardée sans modifier les photos ou données liées ; valeurs longues vérifiées sans confusion avec leur préfixe. Galerie, caméra, suppression et Undo conservés. Room 17, sauvegardes JSON et PWA inchangés. Recherche approximative, priorité aux choix utilisés, vue combinée éventuelle et champs complémentaires restent à traiter. [Guide](LISTE-VEHICULES.md).
+
+Suite JVM Linux : **745 réussis, 8 ignorés** faute des anciennes fixtures de retour PWA, aucun échec ; APK debug et **69 scénarios instrumentés compilés mais non exécutés** ; lint : **0 erreur, 24 avertissements, 5 indications**. Aucun essai sur téléphone, émulateur, Windows ou GitHub ; aucune mesure de performance. Aucun avertissement CloseGuard reconnu dans ces rapports (détection non exhaustive).
+
+**Dernière mise à jour : 7 novembre 2026 · PWA familiale 1.5.1, candidate 1.5.2-beta.11 · Android 0.4.0-beta.42**
 
 Ce journal rassemble les demandes, les décisions, les réalisations, les corrections et les limites du projet. Il est tenu au fil des échanges : chaque évolution doit être ajoutée ici, sans effacer les décisions précédentes, et les changements de périmètre doivent être indiqués explicitement.
 
 > **Reconstitution :** les premières étapes ci-dessous sont établies à partir du contexte conservé et des versions du projet. Les dates et la formulation exacte de toutes les anciennes demandes ne sont pas disponibles. Les éléments dont le statut est incertain sont marqués comme tels ; ce document n’invente pas de validation manquante.
+
+## Phase 2.2 — prise de photo du véhicule Android
+
+Après « Poursuis », beta.41/code 45 ajoute une prise de photo déléguée à une application du téléphone sans retirer la galerie. Remplacement confirmé, cible et empreinte conservées, refus des images invalides, nettoyage temporaire et contrôle des résultats tardifs ; aucun Undo après remplacement. Room 17, JSON et PWA sont inchangés. À cette étape, les aperçus simultanés de la liste sont reportés à la liste multivéhicules 2.3 afin d’en borner la mémoire ; ils sont ajoutés en beta.42. Les champs complémentaires 2.4 et l’étude préalable de l’historique du compteur 2.5 restent à faire. [Mode d’emploi et limites](PHOTO-VEHICULE.md).
+
+sous Linux, suite JVM complète : **733 réussis, 8 ignorés** faute des huit anciennes fixtures de retour PWA, aucun échec. Pont photo fictif Android → PWA beta.10 → Room réussi séparément sous Chromium et WebKit Linux. APK debug assemblé et **68 scénarios instrumentés compilés mais non exécutés** ; lint : 0 erreur, 24 avertissements et 5 indications. La suite initiale a signalé un avertissement CloseGuard SQLite dans `BackupVerificationTest` ; la reprise ciblée de ses trois tests a réussi sans le reproduire. Cela ne prouve ni n’exclut une fuite sur appareil : à examiner. Aucun essai sur téléphone, émulateur, Windows, GitHub ou Safari iOS ; aucune mesure de performance.
+
+## Phase 2.1 — suppression sécurisée du véhicule Android
+
+La personne utilisatrice a demandé de poursuivre la phase 2 sans attendre les essais sur téléphone. Beta.40/code 44 ajoute une zone sensible dans la fiche, le décompte des données, l’export préalable, une seconde confirmation et l’Undo transactionnel complet. Les photos et documents sont stockés en blocs dans Room ; aucune suppression de fichier externe n’est supposée. Un choix récent d’un autre véhicule est conservé et les conflits sont signalés. Room 17 et les formats JSON restent inchangés ; la PWA n’est pas modifiée.
+
+Suite JVM Linux : 723 tests au premier lancement, dont 714 réussis, huit ignorés faute de fixtures PWA et un échec d’environnement (jar Robolectric API 26 absent). Après téléchargement et vérification du jar, ce test a réussi séparément ; les rapports combinés comptent 715 réussis, huit ignorés et aucun échec, sur deux exécutions. APK debug et 66 scénarios instrumentés compilés ; instrumentés non exécutés. Lint : 0 erreur, 20 avertissements et 5 indications. Pont de suppression avec données fictives : Chromium et WebKit Linux réussis ; ni téléphone ni Safari iOS validés. [Détails](SUPPRESSION-VEHICULE-BETA40.md). À cette étape, phase 1 non déclarée stable ; prise de vue directe, liste enrichie, champs complémentaires et étude de l’historique du compteur restaient à faire. La nouvelle description des stations (saisie locale) diffère de l’ancienne option de prix externes : à clarifier avant modification du plan correspondant.
 
 ## Choix du fond sombre — Sauge et Cyan
 

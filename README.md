@@ -1,16 +1,19 @@
 # VigieAuto — carnet de bord automobile
 
-**Beta.10 :** les fonds Sauge et Cyan sombres passent à `#121212` ; les cartes, accents et modes clairs restent inchangés. [Détails](docs/FONDS-SOMBRES-BETA39.md).
+**PWA beta.11 :** la case « Plein complet » est plus grande, son texte en gras et toute la ligne est cliquable. Elle reste cochée par défaut : décochez-la pour un plein partiel. Les pleins enregistrés ne sont pas modifiés. [Détails](docs/PLEIN-COMPLET-PWA-BETA11.md).
 
-VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.10, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
+VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.11, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
 
 **Candidate de test, non validée sur iPhone réel.** La version familiale 1.5.1 reste disponible. Cette candidate protège les nombres précis des extensions JSON, refuse avant remplacement les valeurs fonctionnelles impossibles à utiliser sans arrondi, et conserve les extensions du thème et des points CQ édités. Elle ne reconstitue pas les chiffres déjà perdus. La candidate ajoute le carnet enrichi ; l’IndexedDB passe de 2, 3, 4 ou 5 à 6 : les anciennes PWA ne peuvent pas rouvrir directement la base mise à niveau. Sauvegardez chaque appareil avant tout essai ; voir [Précision des sauvegardes](docs/PRECISION-SAUVEGARDES.md).
 
 Pour savoir quoi faire du ZIP et installer la PWA sur Android, consultez [INSTALLER.md](INSTALLER.md).
 
-**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.39 et PWA beta.10 sont compatibles. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
+**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.42 et PWA beta.11 prennent en charge ces formats. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
 
 ### Documents de suivi du projet
+
+- [Bilan du projet](BILAN-PROJET.md)
+- [Case « Plein complet » : utilisation et tests](docs/PLEIN-COMPLET-PWA-BETA11.md)
 
 - [Totaux Android beta.37 et limites d’échange](docs/TOTAUX-ANDROID-BETA37.md)
 - [Portage historique des devises beta.36](docs/DEVISES-ANDROID-BETA36.md)
@@ -116,7 +119,7 @@ Les fichiers sont statiques ; aucun serveur applicatif n’est nécessaire. Un h
 
 Pour tester sans toucher à la base familiale, choisissez un appareil de test ou une **origine différente** (protocole, domaine ou port). Un autre chemin sur le même domaine — par exemple deux dépôts du même compte GitHub Pages — peut partager IndexedDB. Un changement de domaine, de port, de navigateur ou d’appareil peut entraîner un stockage différent. **Exportez avant le changement, puis importez la sauvegarde dans la nouvelle installation.** L’aperçu fourni pendant le développement n’est pas un hébergement pérenne.
 
-**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Une base plus ancienne migre vers IndexedDB 6 (la beta.8 est déjà en 6) ; fermez les autres onglets, puis laissez la PWA se mettre en cache en ligne. L’ancienne version ne peut plus rouvrir directement cette base. Les formats compatibles v1 à v5 restent importables. L’export est en v3 sans affectation, v4 pour les dépenses seules, et v5 si un plein ou entretien est affecté. Android beta.37 accepte v5, beta.35 le refuse. Vérifiez Réglages → version 1.5.2-beta.10 et ne supprimez pas les données du navigateur pour forcer une mise à jour. [Détails](docs/DEVISES-OPERATIONS-BETA8.md).
+**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Une base plus ancienne migre vers IndexedDB 6 (la beta.8 est déjà en 6) ; fermez les autres onglets, puis laissez la PWA se mettre en cache en ligne. L’ancienne version ne peut plus rouvrir directement cette base. Les formats compatibles v1 à v5 restent importables. L’export est en v3 sans affectation, v4 pour les dépenses seules, et v5 si un plein ou entretien est affecté. Android beta.37 accepte v5, beta.35 le refuse. Vérifiez Réglages → version 1.5.2-beta.11 et ne supprimez pas les données du navigateur pour forcer une mise à jour. [Détails](docs/DEVISES-OPERATIONS-BETA8.md).
 
 ### Installer sur téléphone
 
