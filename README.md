@@ -1,16 +1,18 @@
 # VigieAuto — carnet de bord automobile
 
-**PWA beta.12 :** des aides ⓘ expliquent le plein complet ou partiel, le calcul de consommation et le VIN. Le bouton d’aide ne change pas la case. [Guide](docs/AIDES-PLEINS-VIN.md).
+**PWA beta.13 :** le ZIP source complet fournit `VigieAuto/A-METTRE-SUR-GITHUB/` ; publiez uniquement **le contenu** de ce dossier, et gardez le ZIP pour les tests et la documentation. Aucun dépôt n’est modifié automatiquement. [Quels fichiers garder ou publier ?](docs/QUOI-PUBLIER-GITHUB.md).
+
+**Depuis beta.12 :** des aides ⓘ expliquent le plein complet ou partiel, le calcul de consommation et le VIN. Le bouton d’aide ne change pas la case. [Guide](docs/AIDES-PLEINS-VIN.md).
 
 **Depuis beta.11 :** la case « Plein complet » est plus grande et en gras ; son libellé reste cliquable en dehors du bouton d’aide. Elle reste cochée par défaut : décochez-la pour un plein partiel. Les pleins enregistrés ne sont pas modifiés automatiquement. [Détails](docs/PLEIN-COMPLET-PWA-BETA11.md).
 
-VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.12, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
+VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.13, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
 
 **Candidate de test, non validée sur iPhone réel.** La version familiale 1.5.1 reste disponible. Cette candidate protège les nombres précis des extensions JSON, refuse avant remplacement les valeurs fonctionnelles impossibles à utiliser sans arrondi, et conserve les extensions du thème et des points CQ édités. Elle ne reconstitue pas les chiffres déjà perdus. La candidate ajoute le carnet enrichi ; l’IndexedDB passe de 2, 3, 4 ou 5 à 6 : les anciennes PWA ne peuvent pas rouvrir directement la base mise à niveau. Sauvegardez chaque appareil avant tout essai ; voir [Précision des sauvegardes](docs/PRECISION-SAUVEGARDES.md).
 
 Pour savoir quoi faire du ZIP et installer la PWA sur Android, consultez [INSTALLER.md](INSTALLER.md).
 
-**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.43 et PWA beta.12 prennent en charge ces formats. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
+**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.44 et PWA beta.13 prennent en charge ces formats. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
 
 ### Documents de suivi du projet
 
@@ -115,14 +117,14 @@ Les fichiers sont statiques ; aucun serveur applicatif n’est nécessaire. Un h
 
 ### Exemple avec GitHub Pages
 
-1. Créez un dépôt GitHub et déposez **le contenu** du dossier `VigieAuto` à sa racine, notamment `index.html`, `sw.js`, `manifest.webmanifest` et les dossiers `js`, `css`, `data`, `assets` et `icons`.
+1. Créez un dépôt GitHub et déposez à sa racine **le contenu** de `VigieAuto/A-METTRE-SUR-GITHUB/`, notamment `index.html`, `sw.js`, `manifest.webmanifest` et les dossiers `js`, `css`, `data`, `assets` et `icons`. Conservez séparément le ZIP source complet ; ne publiez aucune sauvegarde personnelle.
 2. Dans **Settings → Pages**, sélectionnez la publication depuis la branche et le dossier qui contiennent ces fichiers.
 3. Une fois la publication terminée, ouvrez l’adresse HTTPS indiquée par GitHub Pages. Les chemins relatifs permettent de servir l’application dans un sous-dossier de type `/VigieAuto/`.
 4. Laissez la première visite se terminer en ligne ; le service worker met en cache les ressources nécessaires. Vérifiez ensuite le fonctionnement hors ligne.
 
 Pour tester sans toucher à la base familiale, choisissez un appareil de test ou une **origine différente** (protocole, domaine ou port). Un autre chemin sur le même domaine — par exemple deux dépôts du même compte GitHub Pages — peut partager IndexedDB. Un changement de domaine, de port, de navigateur ou d’appareil peut entraîner un stockage différent. **Exportez avant le changement, puis importez la sauvegarde dans la nouvelle installation.** L’aperçu fourni pendant le développement n’est pas un hébergement pérenne.
 
-**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Une base plus ancienne migre vers IndexedDB 6 (la beta.8 est déjà en 6) ; fermez les autres onglets, puis laissez la PWA se mettre en cache en ligne. L’ancienne version ne peut plus rouvrir directement cette base. Les formats compatibles v1 à v5 restent importables. L’export est en v3 sans affectation, v4 pour les dépenses seules, et v5 si un plein ou entretien est affecté. Android beta.37 accepte v5, beta.35 le refuse. Vérifiez Réglages → version 1.5.2-beta.11 et ne supprimez pas les données du navigateur pour forcer une mise à jour. [Détails](docs/DEVISES-OPERATIONS-BETA8.md).
+**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Une base plus ancienne migre vers IndexedDB 6 (la beta.8 est déjà en 6) ; fermez les autres onglets, puis laissez la PWA se mettre en cache en ligne. L’ancienne version ne peut plus rouvrir directement cette base. Les formats compatibles v1 à v5 restent importables. L’export est en v3 sans affectation, v4 pour les dépenses seules, et v5 si un plein ou entretien est affecté. Android beta.37 accepte v5, beta.35 le refuse. Vérifiez Réglages → version 1.5.2-beta.13 et ne supprimez pas les données du navigateur pour forcer une mise à jour. [Détails](docs/DEVISES-OPERATIONS-BETA8.md).
 
 ### Installer sur téléphone
 
@@ -154,6 +156,10 @@ npm run test:devises-operations
 npm run test:catalogue
 npm run test:logo
 npm run test:archive
+npm run test:publication
+# Mise à jour réelle beta.12 -> beta.13 : nécessite le ZIP beta.12 non simulé,
+# à indiquer par VIGIE_PREVIOUS_PWA s’il n’est plus présent à côté du projet.
+npm run test:mise-a-jour-beta13
 # Facultatif : installer WebKit puis VIGIE_BROWSER=webkit npm run test:catalogue
 # Test facultatif d’une mise à jour réelle à partir du ZIP précédent :
 npm run test:migration -- /chemin/VigieAuto-v1.5.1.zip

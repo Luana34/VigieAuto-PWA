@@ -1,5 +1,19 @@
 # Historique du projet VigieAuto
 
+## 7 novembre 2026 — PWA beta.13 : dossier de publication simplifié
+
+À la demande concernant les fichiers utiles sur GitHub et sur ordinateur, création automatique dans le ZIP source complet d’un dossier `A-METTRE-SUR-GITHUB` qui regroupe uniquement les 23 ressources de fonctionnement de la PWA. Les sources complètes, tests et documents sont conservés ailleurs dans le même ZIP. La publication est manuelle ; aucune sauvegarde personnelle, clé ou réglage local n’est ajouté. Le numéro, le cache et les références d’icônes évoluent ; fonctionnalités, calculs et données ne changent pas. [Guide](QUOI-PUBLIER-GITHUB.md).
+
+Sous Linux : 64 tests Node, 14 tests de sélection du site et 27 tests d’archive réussis. La copie publique seule, en sous-dossier, la création d’un véhicule et l’export hors ligne, ainsi que la mise à jour de la vraie archive beta.12 vers beta.13 avec données fictives, export v5 et hors-ligne, ont réussi sous Chromium et WebKit. Catalogue, aides, thèmes, dépenses, justificatifs et carnet fictif ont aussi été essayés ; l’échange historique avec le ZIP beta.1 absent est resté ignoré. Les vérifications de précision ont réussi sur une fixture fictive issue de la PWA seule : le pont Android/Room n’a pas été relancé. Une première commande de précision sans ses deux arguments a échoué avant le test ; elle a ensuite été relancée avec une fixture explicitement PWA et un fichier de sortie. Aucun site GitHub, appareil réel ni Safari iOS n’a été validé ; aucune performance n’a été mesurée. La PWA ne bénéficie pas de la recherche approximative Android beta.44.
+
+## 7 novembre 2026 — Android beta.44 : recherche du catalogue
+
+Après le signalement des 56 minutes du lot précédent, poursuite par un lot Android ciblé : recherche locale approchante (`cio` peut proposer Clio) et priorité des marques/modèles mémorisés à qualité de correspondance égale. Le choix reste explicite et les modèles personnels restent liés à leur marque. Saisie libre, « Autre… », Room 17, sauvegarde JSON et référentiel partagé conservés. PWA beta.12 inchangée : recherche par texte inclus, sans ce classement. Pas de nouvelle donnée d’usage. [Guide](RECHERCHE-CATALOGUE-BETA44.md).
+
+Sous Linux, 86 tests JVM ciblés ont réussi sans ignoré, dont 18 nouveaux ; suite complète non relancée. APK debug assemblé et 69 scénarios instrumentés compilés mais non exécutés ; lint : 0 erreur, 24 avertissements et 5 indications. Contrôles des scripts d’archive et de CI réussis ; aucun ancien fichier ou méthode de test JVM trouvé retiré. Aucun téléphone, émulateur, Windows ou GitHub validé ; aucune performance mesurée.
+
+La phase 2.3 reste ouverte : avatars/couleurs et éventuelle vue combinée à étudier ; essais et mesures sur appareils nécessaires.
+
 ## 7 novembre 2026 — aides Pleins et VIN sur les deux versions
 
 La personne utilisatrice a choisi des explications sur Android et la PWA, sans nouveau calcul. Android beta.43/code 47 et PWA beta.12 ajoutent un rappel, des boutons ⓘ ciblés et un panneau inférieur global sur l’écran Pleins ; les aides VIN restent facultatives. L’ouverture ne modifie pas la case ni le formulaire. Les règles de calcul, la valeur par défaut et les données restent inchangées. [Guide](AIDES-PLEINS-VIN.md).

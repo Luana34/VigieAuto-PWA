@@ -1,6 +1,16 @@
 # Performance et fluidité — objectifs et méthode
 
-**Checklist Android beta.43 / PWA beta.12 — 7 novembre 2026 :**
+**Checklist PWA beta.13 / Android beta.44 — 7 novembre 2026 :**
+
+- [x] Le dossier public est limité aux ressources locales requises et son fonctionnement hors ligne a été vérifié sous Chromium et WebKit Linux. Aucun test de maintenance n’a été retiré.
+- [ ] Mesurer les temps de démarrage, fluidité, mémoire et import/export sur appareils réels. Aucune cible n’est validée par ce lot ; Safari iOS reste à tester.
+
+**Checklist Android beta.44 / PWA beta.12 — 7 novembre 2026 :**
+
+- [x] Recherche locale avec comparaison approchante bornée à une erreur ; pas de nouvelle dépendance de production, requête réseau, écriture, migration ou historique. Les résultats affichés restent limités à 80.
+- [ ] Mesurer le temps de recherche, la fluidité et la mémoire avec de nombreuses suggestions sur téléphone ; aucune performance réelle n’est garantie. Les cibles de démarrage, fluidité, import/export, taille release et RAM restent non mesurées.
+
+**Checklist historique Android beta.43 / PWA beta.12 — 7 novembre 2026 :**
 
 - [x] Textes et aides locaux ; aucune dépendance de production, aucun nouveau traitement des données ou requête réseau. Zone tactile PWA de 44 px et texte de 16 px contrôlés aux petits formats et dans les quatre thèmes.
 - [ ] Vérifier lisibilité, retour et toucher sur Android et Safari iOS réels. WebKit Linux ne valide pas Safari iPhone.

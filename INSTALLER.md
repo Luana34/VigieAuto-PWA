@@ -1,6 +1,8 @@
 # Installer la PWA VigieAuto sur Android ou iPhone
 
-**Candidate beta.12 :** des boutons ⓘ expliquent les pleins, les recharges et le VIN. La case « Plein complet » reste cochée par défaut : décochez-la pour un plein partiel. La mise à jour ne corrige pas automatiquement les entrées existantes. [Détails et limites](docs/AIDES-PLEINS-VIN.md).
+**Candidate beta.13 :** le ZIP complet contient désormais un dossier `A-METTRE-SUR-GITHUB` prêt à publier. Les fonctionnalités et le modèle de données de la PWA ne changent pas ; le numéro de version, les références d’icônes et le cache sont actualisés. [Quels fichiers garder ou publier ?](docs/QUOI-PUBLIER-GITHUB.md).
+
+Depuis beta.12, des boutons ⓘ expliquent les pleins, les recharges et le VIN. La case « Plein complet » reste cochée par défaut : décochez-la pour un plein partiel. La mise à jour ne corrige pas automatiquement les entrées existantes. [Détails et limites](docs/AIDES-PLEINS-VIN.md).
 
 ## À quoi sert le ZIP ?
 
@@ -16,9 +18,9 @@ Pour installer durablement la PWA, il faut publier ses fichiers à une **adresse
 
 Cette méthode demande un compte GitHub à la personne qui **publie le code**. En revanche, VigieAuto ne demande pas de compte à ses utilisateurs et leurs données restent dans leur navigateur. Vérifiez les conditions et limites en vigueur du service choisi.
 
-1. Sur un ordinateur, téléchargez le ZIP puis extrayez-le. Ouvrez le dossier `VigieAuto` obtenu. Il contient notamment `index.html`, `sw.js`, `manifest.webmanifest` et les dossiers `css`, `js`, `data`, `assets` et `icons`.
+1. Sur un ordinateur, téléchargez et extrayez le ZIP. Ouvrez `VigieAuto`, puis **`A-METTRE-SUR-GITHUB`**. Gardez aussi le ZIP complet en lieu sûr : les sources, tests et documents sont en dehors de ce dossier prêt à publier.
 2. Si vous utilisez GitHub Pages pour la candidate, vérifiez d’abord que le site obtenu aura un **domaine différent** de l’installation familiale : deux dépôts `nom.github.io/...` du même compte partagent la même origine. Sinon, utilisez un autre hébergement/origine ou un appareil de test. Créez ensuite le dépôt public ; n’y déposez jamais vos sauvegardes JSON ni vos documents personnels.
-3. Dans le dépôt, choisissez l’ajout de fichiers, puis téléversez **le contenu du dossier `VigieAuto`**, en préservant les dossiers et noms des fichiers. Vérifiez que `index.html` apparaît à la racine du dépôt, au même niveau que `sw.js` et les dossiers `js` et `css`. Validez l’envoi (« Commit changes »).
+3. Dans le dépôt, choisissez l’ajout de fichiers, puis téléversez **le contenu de `A-METTRE-SUR-GITHUB`**, sans son dossier parent et en préservant les sous-dossiers et noms des fichiers. Vérifiez que `index.html` apparaît à la racine du dépôt, au même niveau que `sw.js` et les dossiers `js` et `css`. Validez l’envoi (« Commit changes »). Ne supprimez rien d’un dépôt existant sans avoir d’abord vérifié vos sauvegardes et son rôle.
 4. Dans les paramètres du dépôt, ouvrez **Pages**. Sélectionnez une publication depuis la branche `main` et le dossier `/ (root)`, puis enregistrez. Attendez la fin de la publication : GitHub affiche alors une adresse HTTPS.
 5. Sur le téléphone Android, ouvrez cette adresse HTTPS dans **Chrome**. Dans son menu **⋮**, choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil », selon le libellé proposé, puis confirmez.
 6. Ouvrez l’application installée une première fois avec Internet. Ensuite, activez temporairement le mode avion et vérifiez que l’accueil et vos données sont encore accessibles. Désactivez le mode avion après le test.
@@ -38,15 +40,15 @@ Les libellés exacts et le délai de publication peuvent évoluer. Android et iO
 
 Dans **Réglages → Exporter mes données**, téléchargez régulièrement le fichier JSON, puis conservez-en une copie sur un autre support sûr. La sauvegarde inclut des informations personnelles et n’est pas chiffrée par VigieAuto. Aucune sauvegarde automatique sur Google Drive n’est incluse actuellement.
 
-## Essayer la candidate 1.5.2-beta.12 — sauvegarde préalable indispensable
+## Essayer la candidate 1.5.2-beta.13 — sauvegarde préalable indispensable
 
-**Nouveau :** après création d’une dépense, ajoutez si besoin un justificatif photo depuis sa ligne. La PWA conserve le fichier et ses métadonnées éventuelles ; l’export JSON n’est pas chiffré. Les justificatifs peuvent rendre la sauvegarde volumineuse. Voir `docs/JUSTIFICATIFS-BETA29.md`.
+Après création d’une dépense, ajoutez si besoin un justificatif photo depuis sa ligne. La PWA conserve le fichier et ses métadonnées éventuelles ; l’export JSON n’est pas chiffré. Les justificatifs peuvent rendre la sauvegarde volumineuse. Voir `docs/JUSTIFICATIFS-BETA29.md`.
 
 La version familiale 1.5.1 reste la référence. La candidate n’a pas été testée sur iPhone réel. Pour cet essai, ne modifiez pas le site familial et ne partagez pas sa base ; voir `docs/PRECISION-SAUVEGARDES.md`.
 
 1. Dans l’application déjà installée sur **chaque appareil concerné**, ouvrez **Réglages → Exporter mes données**. Conservez le JSON original hors du téléphone, dans un lieu sûr. Il est personnel et non chiffré ; ne le publiez pas.
-2. Extrayez le ZIP candidat dans un dossier parent distinct du projet Android. Il contient un dossier `VigieAuto` : publiez **son contenu** sur une origine HTTPS de test différente de l’origine familiale, ou utilisez un appareil distinct de test. Un autre sous-dossier sur le même domaine ne suffit pas à isoler IndexedDB.
-3. Ouvrez l’adresse de test en ligne, puis vérifiez **Réglages → version 1.5.2-beta.12**. Sur iPhone, Safari propose **Partager → Sur l’écran d’accueil** ; le stockage de l’application installée peut être distinct de celui de l’onglet Safari.
+2. Extrayez le ZIP candidat dans un dossier parent distinct du projet Android. Ouvrez `VigieAuto/A-METTRE-SUR-GITHUB` et publiez **son contenu** sur une origine HTTPS de test différente de l’origine familiale, ou utilisez un appareil distinct de test. Un autre sous-dossier sur le même domaine ne suffit pas à isoler IndexedDB.
+3. Ouvrez l’adresse de test en ligne, puis vérifiez **Réglages → version 1.5.2-beta.13**. Sur iPhone, Safari propose **Partager → Sur l’écran d’accueil** ; le stockage de l’application installée peut être distinct de celui de l’onglet Safari.
 4. Commencez de préférence avec des données fictives. Pour essayer une copie réelle, utilisez une **copie** de la sauvegarde originale et **Réglages → Importer une sauvegarde** : l’import confirmé remplace les données de cette installation de test. Vérifiez véhicules, carnet, documents et export ; conservez l’original séparément.
 5. Après la première mise en cache, testez l’accès en mode avion, puis désactivez-le. Un essai en sécurité du GPS, à l’arrêt et facultatif, demande une autorisation explicite ; aucune position n’est enregistrée. La mesure peut être interrompue et l’écran éteint n’est pas garanti.
 
@@ -58,4 +60,4 @@ Le suivi GPS fonctionne seulement de façon opportuniste lorsque l’application
 
 ## Devises et échange Android
 
-La candidate beta.12 permet de choisir la devise de chaque dépense, plein/recharge et intervention ; anciens montants en euros, totaux séparés et aucune conversion. Sans affectation : v3 ; dépenses seules : v4 ; plein ou entretien affecté : v5. Android beta.37 accepte ces formats ; beta.35 refuse v5. Gardez l’original et ne modifiez jamais le numéro du format. [Guide](docs/DEVISES-ANDROID-BETA36.md).
+La candidate beta.13 permet de choisir la devise de chaque dépense, plein/recharge et intervention ; anciens montants en euros, totaux séparés et aucune conversion. Sans affectation : v3 ; dépenses seules : v4 ; plein ou entretien affecté : v5. Android beta.37 accepte ces formats ; beta.35 refuse v5. Gardez l’original et ne modifiez jamais le numéro du format. [Guide](docs/DEVISES-ANDROID-BETA36.md).
