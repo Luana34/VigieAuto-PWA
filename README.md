@@ -1,18 +1,21 @@
 # VigieAuto — carnet de bord automobile
 
-**PWA beta.11 :** la case « Plein complet » est plus grande, son texte en gras et toute la ligne est cliquable. Elle reste cochée par défaut : décochez-la pour un plein partiel. Les pleins enregistrés ne sont pas modifiés. [Détails](docs/PLEIN-COMPLET-PWA-BETA11.md).
+**PWA beta.12 :** des aides ⓘ expliquent le plein complet ou partiel, le calcul de consommation et le VIN. Le bouton d’aide ne change pas la case. [Guide](docs/AIDES-PLEINS-VIN.md).
 
-VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.11, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
+**Depuis beta.11 :** la case « Plein complet » est plus grande et en gras ; son libellé reste cliquable en dehors du bouton d’aide. Elle reste cochée par défaut : décochez-la pour un plein partiel. Les pleins enregistrés ne sont pas modifiés automatiquement. [Détails](docs/PLEIN-COMPLET-PWA-BETA11.md).
+
+VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.12, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
 
 **Candidate de test, non validée sur iPhone réel.** La version familiale 1.5.1 reste disponible. Cette candidate protège les nombres précis des extensions JSON, refuse avant remplacement les valeurs fonctionnelles impossibles à utiliser sans arrondi, et conserve les extensions du thème et des points CQ édités. Elle ne reconstitue pas les chiffres déjà perdus. La candidate ajoute le carnet enrichi ; l’IndexedDB passe de 2, 3, 4 ou 5 à 6 : les anciennes PWA ne peuvent pas rouvrir directement la base mise à niveau. Sauvegardez chaque appareil avant tout essai ; voir [Précision des sauvegardes](docs/PRECISION-SAUVEGARDES.md).
 
 Pour savoir quoi faire du ZIP et installer la PWA sur Android, consultez [INSTALLER.md](INSTALLER.md).
 
-**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.42 et PWA beta.11 prennent en charge ces formats. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
+**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.43 et PWA beta.12 prennent en charge ces formats. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
 
 ### Documents de suivi du projet
 
 - [Bilan du projet](BILAN-PROJET.md)
+- [Aides Pleins et VIN : utilisation et limites](docs/AIDES-PLEINS-VIN.md)
 - [Case « Plein complet » : utilisation et tests](docs/PLEIN-COMPLET-PWA-BETA11.md)
 
 - [Totaux Android beta.37 et limites d’échange](docs/TOTAUX-ANDROID-BETA37.md)

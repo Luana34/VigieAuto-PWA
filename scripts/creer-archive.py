@@ -19,7 +19,7 @@ PROJECT = Path(__file__).resolve().parent.parent
 WORKSPACE = PROJECT.parent
 ROOT_NAME = "VigieAuto"
 ALLOWED_FILES = {
-    "README.md", "INSTALLER.md", "index.html", "manifest.webmanifest",
+    "README.md", "INSTALLER.md", "BILAN-PROJET.md", "index.html", "manifest.webmanifest",
     "sw.js", "package.json", "package-lock.json",
 }
 ALLOWED_DIRS = {"assets", "css", "data", "docs", "icons", "js", "scripts", "tests"}
@@ -103,6 +103,8 @@ def main() -> None:
     index = (PROJECT / "index.html").read_text(encoding="utf-8")
     if 'id="category-picker"' not in index or f"?v=vigie-{version}" not in index:
         raise RuntimeError("Sélecteur de catégories ou version des icônes absent de index.html.")
+    if 'id="info-dialog"' not in index:
+        raise RuntimeError("Dialogue d’aide absent de index.html.")
     manifest_source = json.loads((PROJECT / "manifest.webmanifest").read_text(encoding="utf-8"))
     icons = manifest_source.get("icons", [])
     if not icons or any(not icon.get("src", "").endswith(f"?v=vigie-{version}") for icon in icons):
@@ -133,7 +135,10 @@ def main() -> None:
             names = set(z.namelist())
             required = {
                 f"{ROOT_NAME}/index.html", f"{ROOT_NAME}/sw.js", f"{ROOT_NAME}/package.json",
-                f"{ROOT_NAME}/package-lock.json", f"{ROOT_NAME}/manifest.webmanifest",
+                f"{ROOT_NAME}/package-lock.json", f"{ROOT_NAME}/manifest.webmanifest", f"{ROOT_NAME}/BILAN-PROJET.md",
+                f"{ROOT_NAME}/docs/AIDES-PLEINS-VIN.md", f"{ROOT_NAME}/tests/aides-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta12.cjs",
+                f"{ROOT_NAME}/tests/plein-complet-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta11.cjs",
+                f"{ROOT_NAME}/docs/PLEIN-COMPLET-PWA-BETA11.md",
                 f"{ROOT_NAME}/js/app.js", f"{ROOT_NAME}/js/db.js", f"{ROOT_NAME}/js/gps.js", f"{ROOT_NAME}/js/precise-json.js",
                 f"{ROOT_NAME}/docs/FONDS-SOMBRES-BETA39.md", f"{ROOT_NAME}/tests/themes.test.js", f"{ROOT_NAME}/tests/themes-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta10.cjs",
                 f"{ROOT_NAME}/tests/mise-a-jour-beta9.cjs", f"{ROOT_NAME}/tests/fixtures/pwa-v5-operations.json",

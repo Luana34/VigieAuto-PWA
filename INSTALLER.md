@@ -1,6 +1,6 @@
 # Installer la PWA VigieAuto sur Android ou iPhone
 
-**Candidate beta.11 :** la case « Plein complet » est plus visible, mais reste cochée par défaut. Décocher pour un plein partiel. La mise à jour ne corrige pas automatiquement les entrées existantes. [Détails et limites](docs/PLEIN-COMPLET-PWA-BETA11.md).
+**Candidate beta.12 :** des boutons ⓘ expliquent les pleins, les recharges et le VIN. La case « Plein complet » reste cochée par défaut : décochez-la pour un plein partiel. La mise à jour ne corrige pas automatiquement les entrées existantes. [Détails et limites](docs/AIDES-PLEINS-VIN.md).
 
 ## À quoi sert le ZIP ?
 
@@ -38,7 +38,7 @@ Les libellés exacts et le délai de publication peuvent évoluer. Android et iO
 
 Dans **Réglages → Exporter mes données**, téléchargez régulièrement le fichier JSON, puis conservez-en une copie sur un autre support sûr. La sauvegarde inclut des informations personnelles et n’est pas chiffrée par VigieAuto. Aucune sauvegarde automatique sur Google Drive n’est incluse actuellement.
 
-## Essayer la candidate 1.5.2-beta.11 — sauvegarde préalable indispensable
+## Essayer la candidate 1.5.2-beta.12 — sauvegarde préalable indispensable
 
 **Nouveau :** après création d’une dépense, ajoutez si besoin un justificatif photo depuis sa ligne. La PWA conserve le fichier et ses métadonnées éventuelles ; l’export JSON n’est pas chiffré. Les justificatifs peuvent rendre la sauvegarde volumineuse. Voir `docs/JUSTIFICATIFS-BETA29.md`.
 
@@ -46,7 +46,7 @@ La version familiale 1.5.1 reste la référence. La candidate n’a pas été te
 
 1. Dans l’application déjà installée sur **chaque appareil concerné**, ouvrez **Réglages → Exporter mes données**. Conservez le JSON original hors du téléphone, dans un lieu sûr. Il est personnel et non chiffré ; ne le publiez pas.
 2. Extrayez le ZIP candidat dans un dossier parent distinct du projet Android. Il contient un dossier `VigieAuto` : publiez **son contenu** sur une origine HTTPS de test différente de l’origine familiale, ou utilisez un appareil distinct de test. Un autre sous-dossier sur le même domaine ne suffit pas à isoler IndexedDB.
-3. Ouvrez l’adresse de test en ligne, puis vérifiez **Réglages → version 1.5.2-beta.11**. Sur iPhone, Safari propose **Partager → Sur l’écran d’accueil** ; le stockage de l’application installée peut être distinct de celui de l’onglet Safari.
+3. Ouvrez l’adresse de test en ligne, puis vérifiez **Réglages → version 1.5.2-beta.12**. Sur iPhone, Safari propose **Partager → Sur l’écran d’accueil** ; le stockage de l’application installée peut être distinct de celui de l’onglet Safari.
 4. Commencez de préférence avec des données fictives. Pour essayer une copie réelle, utilisez une **copie** de la sauvegarde originale et **Réglages → Importer une sauvegarde** : l’import confirmé remplace les données de cette installation de test. Vérifiez véhicules, carnet, documents et export ; conservez l’original séparément.
 5. Après la première mise en cache, testez l’accès en mode avion, puis désactivez-le. Un essai en sécurité du GPS, à l’arrêt et facultatif, demande une autorisation explicite ; aucune position n’est enregistrée. La mesure peut être interrompue et l’écran éteint n’est pas garanti.
 
@@ -58,4 +58,4 @@ Le suivi GPS fonctionne seulement de façon opportuniste lorsque l’application
 
 ## Devises et échange Android
 
-La candidate beta.11 permet de choisir la devise de chaque dépense, plein/recharge et intervention ; anciens montants en euros, totaux séparés et aucune conversion. Sans affectation : v3 ; dépenses seules : v4 ; plein ou entretien affecté : v5. Android beta.37 accepte ces formats ; beta.35 refuse v5. Gardez l’original et ne modifiez jamais le numéro du format. [Guide](docs/DEVISES-ANDROID-BETA36.md).
+La candidate beta.12 permet de choisir la devise de chaque dépense, plein/recharge et intervention ; anciens montants en euros, totaux séparés et aucune conversion. Sans affectation : v3 ; dépenses seules : v4 ; plein ou entretien affecté : v5. Android beta.37 accepte ces formats ; beta.35 refuse v5. Gardez l’original et ne modifiez jamais le numéro du format. [Guide](docs/DEVISES-ANDROID-BETA36.md).

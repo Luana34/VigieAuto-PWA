@@ -9,8 +9,8 @@ VigieAuto est un carnet automobile en français, gratuit, sans publicité, abonn
 
 Il existe deux applications distinctes :
 
-- **Android natif : 0.4.0-beta.42** — projet Kotlin/Compose avec base Room ; Android 8.0 et supérieur. C’est encore une préversion, pas la version 0.4.0 stable.
-- **PWA : 1.5.2-beta.11** — candidate Web installable, notamment destinée à la famille sur iPhone. La version familiale **1.5.1** est conservée séparément ; la candidate doit encore être validée sur iPhone.
+- **Android natif : 0.4.0-beta.43** — projet Kotlin/Compose avec base Room ; Android 8.0 et supérieur. C’est encore une préversion, pas la version 0.4.0 stable.
+- **PWA : 1.5.2-beta.12** — candidate Web installable, notamment destinée à la famille sur iPhone. La version familiale **1.5.1** est conservée séparément ; la candidate doit encore être validée sur iPhone.
 
 Les appareils ne se synchronisent pas entre eux : les données peuvent être échangées **manuellement par fichier JSON**.
 
@@ -39,6 +39,7 @@ Les appareils ne se synchronisent pas entre eux : les données peuvent être éc
 
 - Enregistrer les pleins complets ou partiels, ainsi que les recharges. La consommation est calculée entre pleins complets cohérents, en incluant les partiels intermédiaires et en séparant les litres des kWh.
 - Depuis PWA beta.11, la case **Plein complet** est plus grande et en gras ; elle reste cochée par défaut pour une nouvelle entrée. La décocher pour un ravitaillement partiel. Cette mise à jour ne corrige pas automatiquement les entrées déjà enregistrées.
+- Sur Android beta.43 et PWA beta.12, les boutons ⓘ expliquent les pleins et recharges, le calcul de consommation et le VIN. L’ouverture de l’aide ne change pas le brouillon ou la case. [Guide](docs/AIDES-PLEINS-VIN.md).
 - Gérer les dépenses par véhicule : catégorie, montant, tri, modification et justificatif photo facultatif.
 - Conserver la **devise de chaque dépense, plein ou entretien**. Les anciennes opérations restent en euros ; les totaux sont séparés par devise, sans conversion automatique.
 - Sur Android, afficher des totaux séparés sur les écrans Dépenses, Pleins et Entretien. Le coût énergétique au kilomètre est masqué lorsque les devises concernées sont mélangées.
@@ -133,11 +134,18 @@ NFC facultatif, partage sélectif ou QR, mode tablette, fonctions de flotte et a
 
 ## Vérifications de la dernière livraison
 
-Pour **Android beta.42 / PWA beta.11**, sous Linux :
+Pour **Android beta.43 / PWA beta.12**, voir les résultats et les limites du lot dans [le guide](docs/AIDES-PLEINS-VIN.md).
+
+- **Android :** 82 tests JVM ciblés réussis ; suite complète non relancée. APK debug et 69 scénarios instrumentés compilés mais non exécutés ; lint 0 erreur, 24 avertissements et 5 indications.
+- **PWA :** 64 tests Node et 22 tests d’archivage réussis ; aides et mise à jour réelle beta.11 → beta.12 avec données fictives vérifiées sous Chromium et WebKit Linux, y compris hors ligne.
+- Aucun test de ce lot sur téléphone, émulateur, Windows, GitHub ou Safari iOS ; aucune performance mesurée. Aucun ancien test n’a été retiré.
+
+
+**Livraisons précédentes, sous Linux :**
 
 - PWA beta.11 : **64 tests Node et 21 tests d’archiveur réussis** ; formulaire, quatre thèmes et vraie mise à jour beta.10 → beta.11 avec données fictives et export hors ligne vérifiés sous Chromium et WebKit Linux. Les parcours d’interface, trajets, GPS simulé et migration depuis la PWA 1.5.1 ont aussi réussi sous Chromium. Aucun téléphone ni Safari iOS n’a été testé dans ce lot ; WebKit Linux ne valide pas Safari iPhone.
 
-- Suite JVM Linux : **745 réussis, 8 ignorés** faute des anciennes fixtures de retour PWA, aucun échec ; APK debug et **69 scénarios instrumentés compilés mais non exécutés** ; lint : **0 erreur, 24 avertissements, 5 indications**. Aucun essai sur téléphone, émulateur, Windows ou GitHub ; aucune mesure de performance. Aucun avertissement CloseGuard reconnu dans ces rapports (détection non exhaustive).
+- Android beta.42 : suite JVM Linux **745 réussis, 8 ignorés** faute des anciennes fixtures de retour PWA, aucun échec ; APK debug et **69 scénarios instrumentés compilés mais non exécutés** ; lint : **0 erreur, 24 avertissements, 5 indications**. Aucun essai sur téléphone, émulateur, Windows ou GitHub ; aucune mesure de performance. Aucun avertissement CloseGuard reconnu dans ces rapports (détection non exhaustive).
 
 **Livraison Android beta.41 précédente (historique) :**
 
@@ -161,8 +169,8 @@ Les priorités peuvent être ajustées selon tes demandes, tout en préservant l
 
 Les trois ZIP de projet conservés à la date de ce bilan sont :
 
-- `VigieAuto-Android-v0.4.0-beta.42.zip` — source Android.
-- `VigieAuto-v1.5.2-beta.11.zip` — PWA candidate.
+- `VigieAuto-Android-v0.4.0-beta.43.zip` — source Android.
+- `VigieAuto-v1.5.2-beta.12.zip` — PWA candidate.
 - `VigieAuto-v1.5.1.zip` — PWA familiale conservée.
 
 Les deux ZIP Android et PWA ont une racine nommée `VigieAuto` : les extraire dans **deux dossiers parents différents**. Ils contiennent aussi l’historique détaillé, le cahier des charges, les feuilles de route, le récapitulatif des fonctions et la checklist de performance.
