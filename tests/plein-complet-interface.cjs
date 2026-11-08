@@ -29,7 +29,7 @@ const submit = async p => { await p.locator('#modal button[type=submit]').click(
 const close = async p => { await p.locator('#modal .modal-header [data-action=close-modal]').click(); await p.locator('#modal').waitFor({state:'hidden'}); };
 const addFill = async p => { await p.locator('.mobile-floating-add').click(); await p.locator('#modal [data-action=add-fill]').click(); };
 const fills = p => p.evaluate(() => new Promise((resolve, reject) => {
-  const open = indexedDB.open('cq-auto-local', 6);
+  const open = indexedDB.open('cq-auto-local', 7);
   open.onerror = () => reject(open.error);
   open.onsuccess = () => {
     const db = open.result, tx = db.transaction('fills', 'readonly'), req = tx.objectStore('fills').getAll();

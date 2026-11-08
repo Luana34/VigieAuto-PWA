@@ -2163,3 +2163,34 @@ form[data-form="fill"] .fill-full-choice .checkbox-line { padding-right: 62px; }
 
 [data-other-currency][hidden],
 [data-profile-other-currency][hidden] { display: none; }
+
+/* Notes du véhicule : aperçu accessible, sans interprétation de HTML saisi. */
+.btn.vehicle-notes-button { min-height: 44px; }
+.note-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.note-tools .btn { min-height: 44px; min-width: 90px; }
+.note-status { color: var(--muted, #6e8274); font-size: 12px; line-height: 1.5; }
+.note-preview { min-height: 72px; max-height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 12px; border: 1px solid var(--line, #dfe9e1); border-radius: 10px; background: var(--surface, #fff); color: var(--ink, #274333); font-size: 14px; line-height: 1.55; }
+.note-warning { border: 1px solid var(--line, #dfe9e1); border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.5; }
+.note-warning .btn { margin-top: 10px; min-height: 44px; white-space: normal; }
+
+/* Historique kilométrique : le texte d’avertissement reste lisible sans dépendre
+   uniquement de la couleur, y compris dans les thèmes sombres. */
+.btn.vehicle-history-button { min-height: 44px; }
+.odometer-history-intro, .odometer-history-count {
+  color: var(--muted, var(--ink));
+  line-height: 1.55;
+  margin: 0 0 13px;
+}
+.odometer-history-list { list-style: none; margin: 14px 0; padding: 0; display: grid; gap: 9px; }
+.odometer-history-item {
+  display: flex; align-items: flex-start; gap: 12px; min-width: 0;
+  padding: 13px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--surface); color: var(--ink); overflow-wrap: anywhere;
+}
+.odometer-history-item .list-main { display: grid; gap: 7px; }
+.odometer-history-item p { margin: 0; line-height: 1.5; }
+.odometer-history-item .btn { justify-self: start; min-height: 44px; }
+.odometer-warning {
+  padding: 11px 13px; margin: 8px 0; border-left: 4px solid #e88725;
+  border-radius: 5px; background: var(--surface); color: var(--ink); line-height: 1.5;
+}

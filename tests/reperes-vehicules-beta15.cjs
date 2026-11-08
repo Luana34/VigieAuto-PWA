@@ -20,7 +20,7 @@ async function serve() {
 }
 const go=async(p,route,label)=>{await p.evaluate(v=>location.hash=v,route);await p.waitForFunction(v=>document.title===`${v} — VigieAuto`,label);};
 const garage=async p=>go(p,'garage','Mes véhicules');
-const records=p=>p.evaluate(async()=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT);const value=await db.readAll();db.db.close();return value;});
+const records=p=>p.evaluate(async()=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");const value=await db.readAll();db.db.close();return value;});
 const markerButton=(p,id)=>p.locator(`[data-action="vehicle-marker"][data-id="${id}"]`);
 const editButton=(p,id)=>p.locator(`[data-action="edit-vehicle"][data-id="${id}"]`);
 const select=p=>p.locator('#modal [name="vehicleMarker"]');
@@ -82,7 +82,7 @@ async function changeMarker(p,id,value){await garage(p);await markerButton(p,id)
 
   // Une future extension inconnue reste lisible par les autres champs et ne peut pas être écrasée.
   await p.evaluate(async(id)=>{
-    const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT),data=await db.readAll(),v=data.vehicles.find(x=>x.id===id);
+    const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1"),data=await db.readAll(),v=data.vehicles.find(x=>x.id===id);
     v.vigieVehicleMarker={version:2,color:'<svg onload=alert(1)>',future:{garder:[1,2]}};v.futureVehicule={garder:true};
     await db.apply([{store:'vehicles',type:'put',value:v}]);db.db.close();
   },first);
@@ -92,7 +92,7 @@ async function changeMarker(p,id,value){await garage(p);await markerButton(p,id)
   await editButton(p,first).click();await p.locator('#modal [name=notes]').fill('Note locale fictive');await submit(p);
   all=await records(p);assert.deepEqual(byId(all,first).vigieVehicleMarker,{version:2,color:'<svg onload=alert(1)>',future:{garder:[1,2]}});assert.deepEqual(byId(all,first).futureVehicule,{garder:true});
   // Restaurer une valeur connue uniquement pour l'essai fictif de concurrence.
-  await p.evaluate(async(id)=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT),data=await db.readAll(),v=data.vehicles.find(x=>x.id===id);v.vigieVehicleMarker={version:1,color:'bleu',futur:{ok:true}};await db.apply([{store:'vehicles',type:'put',value:v}]);db.db.close();},first);
+  await p.evaluate(async(id)=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1"),data=await db.readAll(),v=data.vehicles.find(x=>x.id===id);v.vigieVehicleMarker={version:1,color:'bleu',futur:{ok:true}};await db.apply([{store:'vehicles',type:'put',value:v}]);db.db.close();},first);
   await p.reload({waitUntil:'networkidle'});await garage(p);
   const q=await ctx.newPage();q.on('dialog',d=>d.accept());q.on('pageerror',e=>errors.push(e.message));await q.goto(url,{waitUntil:'networkidle'});await garage(q);
   await editButton(p,first).click();await changeMarker(q,first,'vert');const afterQ=await records(q);

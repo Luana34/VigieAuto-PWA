@@ -100,7 +100,7 @@ async function serve(dir){const s=http.createServer((req,res)=>{if(s.simulateDis
   // Deux onglets : une affectation changée entre ouverture et enregistrement ne doit pas être écrasée.
   await row(p,'Dépense suisse').locator('[data-action=edit-expense]').click();
   const other=await ctx.newPage();await other.goto(current.url,{waitUntil:'networkidle'});
-  await other.evaluate(async(id)=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT);
+  await other.evaluate(async(id)=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");
     const all=await d.readAll(), a=all.currencyAssignments.find(x=>x.id===id);await d.apply([{store:'currencyAssignments',type:'put',value:{...a,currency:'GBP'}}]);d.db.close();},swiss.id);
   await field(p,'notes','Tentative obsolète');await p.locator('#modal button[type=submit]').click();
   await p.locator('#modal .form-error.visible').waitFor();assert.match(await p.locator('#modal .form-error').innerText(),/changées|changé/);
@@ -125,7 +125,7 @@ async function serve(dir){const s=http.createServer((req,res)=>{if(s.simulateDis
   multi.data.expenses.push({...multi.data.expenses.find(x=>x.id==='historique'),id:otherExpense,vehicleId:otherVehicle,title:'Autre véhicule'});
   multi.data.currencyAssignments.push({id:`expenses:${otherExpense}`,recordId:otherExpense,collection:'expenses',currency:'CAD'});
   await upload(p,multi,'v4-deux-vehicules.json');await waitToast(p,'importée');
-  const remaining=await p.evaluate(async({deleted,active})=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT);
+  const remaining=await p.evaluate(async({deleted,active})=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");
     await d.deleteVehicleCascade(deleted,{activeId:active,wasActive:true});const result=await d.readAll();d.db.close();return result;},{deleted:v,active:otherVehicle});
   assert.deepEqual(remaining.vehicles.map(x=>x.id),[otherVehicle]);assert.deepEqual(remaining.currencyAssignments.map(x=>x.id),[`expenses:${otherExpense}`]);
   await p.reload({waitUntil:'networkidle'});await go(p,'depenses');assert.match(await row(p,'Autre véhicule').innerText(),/20,00\s*CAD/);

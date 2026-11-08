@@ -1,0 +1,17 @@
+/* Init temporaire pour ajouter un seul test fictif sans modifier les sources
+ * Android beta.47. Variables : VIGIE_COMPTEUR_TEST_DIR (copie isolée du .kt),
+ * VIGIE_COMPTEUR_INPUT et VIGIE_COMPTEUR_OUTPUT (fichiers fictifs). */
+gradle.projectsEvaluated {
+    def dir = System.getenv('VIGIE_COMPTEUR_TEST_DIR')
+    def input = System.getenv('VIGIE_COMPTEUR_INPUT')
+    def output = System.getenv('VIGIE_COMPTEUR_OUTPUT')
+    if (!dir || !input || !output) throw new GradleException('Configurer VIGIE_COMPTEUR_TEST_DIR, VIGIE_COMPTEUR_INPUT et VIGIE_COMPTEUR_OUTPUT.')
+    def app = gradle.rootProject.project(':app')
+    app.android.sourceSets.getByName('test').java.srcDir(dir)
+    app.tasks.withType(Test).configureEach {
+        systemProperty 'vigie.bridge.odometerInput', input
+        systemProperty 'vigie.bridge.odometerOutput', output
+        def jars = System.getenv('VIGIE_ROBOLECTRIC_DIR')
+        if (jars) { systemProperty 'robolectric.offline', 'true'; systemProperty 'robolectric.dependency.dir', jars }
+    }
+}

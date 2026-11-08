@@ -9,7 +9,7 @@ const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=u
 async function serve(){const s=http.createServer((req,res)=>{if(s.offline){req.socket.destroy();return;}let f=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(f!==root&&!f.startsWith(root+path.sep))return res.writeHead(403).end();if(fs.existsSync(f)&&fs.statSync(f).isDirectory())f=path.join(f,'index.html');if(!fs.existsSync(f)||!fs.statSync(f).isFile())return res.writeHead(404).end();res.writeHead(200,{'content-type':mime[path.extname(f)]||'application/octet-stream','cache-control':'no-store'});fs.createReadStream(f).pipe(res);});await new Promise(r=>s.listen(0,'127.0.0.1',r));return{s,url:`http://127.0.0.1:${s.address().port}/`};}
 const go=async(p,r,label)=>{await p.evaluate(x=>location.hash=x,r);await p.waitForFunction(x=>document.title===`${x} — VigieAuto`,label);};
 const garage=p=>go(p,'garage','Mes véhicules');
-const records=p=>p.evaluate(async()=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT);const result=await db.readAll();db.db.close();return result;});
+const records=p=>p.evaluate(async()=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");const result=await db.readAll();db.db.close();return result;});
 const button=(p,id)=>p.locator(`[data-action="vehicle-profile"][data-id="${id}"]`);
 const field=(p,n)=>p.locator(`#modal [name="${n}"]`);
 const readCar=(data,id)=>data.vehicles.find(v=>v.id===id);
@@ -77,7 +77,7 @@ async function addCar(p,brand,model,km){await garage(p);await p.locator('[data-a
   await p.setViewportSize({width:390,height:844});
 
   // Format futur non interprété, conservé et sans HTML exécutable.
-  await p.evaluate(async id=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT),d=await db.readAll(),v=d.vehicles.find(x=>x.id===id);v.vigieVehicleProfile={version:2,bodyColor:'<img src=x onerror=alert(1)>',future:{garder:true}};await db.apply([{store:'vehicles',type:'put',value:v}]);db.db.close();},first);
+  await p.evaluate(async id=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1"),d=await db.readAll(),v=d.vehicles.find(x=>x.id===id);v.vigieVehicleProfile={version:2,bodyColor:'<img src=x onerror=alert(1)>',future:{garder:true}};await db.apply([{store:'vehicles',type:'put',value:v}]);db.db.close();},first);
   await p.reload({waitUntil:'networkidle'});await garage(p);await button(p,first).click();assert.equal(await p.locator('#modal button[type=submit]').count(),0);assert.match(await p.locator('#modal').innerText(),/conservées sans modification/i);assert.equal(await p.locator('#modal img[onerror]').count(),0);await close(p);
   await p.locator(`[data-action="edit-vehicle"][data-id="${first}"]`).click();await field(p,'notes').fill('Note fictive');await submit(p);
   after=await records(p);assert.deepEqual(readCar(after,first).vigieVehicleProfile,{version:2,bodyColor:'<img src=x onerror=alert(1)>',future:{garder:true}});

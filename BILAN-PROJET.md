@@ -1,7 +1,7 @@
 # VigieAuto — bilan du projet
 
-**Mise à jour : 7 novembre 2026**  
-Ce document rassemble l’essentiel de ce qui a été réalisé, ce qu’il reste à faire et les validations encore nécessaires. Il décrit l’état du projet à cette date, sans estimer de pourcentage ni de délai.
+**État : PWA beta.18 / Android beta.47**  
+Ce document rassemble l’essentiel de ce qui a été réalisé, ce qu’il reste à faire et les validations encore nécessaires. Il décrit l’état actuel du projet, sans estimer de pourcentage ni de délai.
 
 ## En bref
 
@@ -9,8 +9,8 @@ VigieAuto est un carnet automobile en français, gratuit, sans publicité, abonn
 
 Il existe deux applications distinctes :
 
-- **Android natif : 0.4.0-beta.45** — projet Kotlin/Compose avec base Room ; Android 8.0 et supérieur. C’est encore une préversion, pas la version 0.4.0 stable.
-- **PWA : 1.5.2-beta.16** — candidate Web installable, notamment destinée à la famille sur iPhone. La version familiale **1.5.1** est conservée séparément ; la candidate doit encore être validée sur iPhone.
+- **Android natif : 0.4.0-beta.47** — projet Kotlin/Compose avec base Room ; Android 8.0 et supérieur. C’est encore une préversion, pas la version 0.4.0 stable.
+- **PWA : 1.5.2-beta.18** — candidate Web installable, notamment destinée à la famille sur iPhone. La version familiale **1.5.1** est conservée séparément ; la candidate doit encore être validée sur iPhone.
 
 Pour GitHub Pages, publier seulement le contenu du dossier `A-METTRE-SUR-GITHUB` du ZIP PWA. Garder le ZIP source complet sur ordinateur : les tests et documents ne sont pas nécessaires au site, mais servent à la maintenance. Le projet Android complet reste dans son ZIP distinct.
 
@@ -28,7 +28,9 @@ Les appareils ne se synchronisent pas entre eux : les données peuvent être éc
 - Chercher une marque et un modèle dans un catalogue local, mais aussi saisir librement et mémoriser ses propres choix. L’année, l’énergie et les détails du véhicule restent souples ; le kilométrage est obligatoire à la création.
 - Sur Android beta.44 et depuis PWA beta.14, rechercher une marque ou un modèle même avec certaines petites fautes ; les choix mémorisés remontent à qualité égale, sans correction automatique. [Guide Android](docs/RECHERCHE-CATALOGUE-BETA44.md) · [Guide PWA](docs/RECHERCHE-CATALOGUE-PWA-BETA14.md).
 - Depuis PWA beta.15, attribuer un **repère de couleur facultatif** à chaque véhicule pour les distinguer, sans lien avec la couleur de la carrosserie. Depuis Android beta.45, il est aussi affiché et modifiable sur Android. [Guide](docs/REPERES-VEHICULES-PWA-BETA15.md).
-- Depuis PWA beta.16, « Infos véhicule » permet de saisir facultativement couleur réelle, compagnie/numéro/échéance d’assurance et date/prix d’achat avec devise explicite. Aucune conversion, dépense ou rappel automatique ; l’interface Android et les notes enrichies restent à faire. [Guide](docs/FICHE-VEHICULE-PWA-BETA16.md).
+- Depuis PWA beta.16 puis Android beta.46, les informations complémentaires permettent de saisir facultativement couleur réelle, compagnie/numéro/échéance d’assurance et date/prix d’achat avec devise explicite. Aucune conversion, dépense ou rappel automatique. [Guide Android](docs/FICHE-VEHICULE-ANDROID-BETA46.md) · [Guide PWA](docs/FICHE-VEHICULE-PWA-BETA16.md).
+- Depuis PWA beta.17 et Android beta.47, **Notes** permet de saisir du texte et de mettre une sélection en gras ou italique avec aperçu. Les formats inconnus ou périmés sont protégés ; un véhicule non actif peut être modifié sans changer la sélection. [Guide Android](docs/NOTES-VEHICULE-ANDROID-BETA47.md) · [Guide PWA](docs/NOTES-VEHICULE-PWA-BETA17.md).
+- PWA beta.18 : consulter l’historique hybride du compteur ; les relevés proviennent de leurs rubriques, les corrections manuelles ont date, motif et confirmation. Il peut être incomplet et n’est pas certifié ; Android beta.47 ne le propose pas encore. [Guide](docs/HISTORIQUE-COMPTEUR-PWA-BETA18.md).
 - Modifier la fiche du véhicule actif et corriger son compteur sans modifier automatiquement les anciennes entrées. Depuis beta.42, choisir le véhicule en haut de l’accueil dans une liste avec miniatures demandées à la vue.
 - Ajouter une photo depuis la galerie ou, sur Android beta.41, la prendre avec l’application photo du téléphone ; remplacement et retrait confirmés, sans Undo. Sur Android beta.40, supprimer le véhicule actif après décompte, export préalable proposé et seconde confirmation ; les données liées peuvent être restaurées avec l’Undo. La PWA possède son propre parcours de suppression.
 
@@ -86,9 +88,9 @@ La phase 1 reste donc ouverte. On peut continuer les fonctions sans attendre ces
 
 ### Phase 2 — Véhicules complets : en cours
 
-**Réalisé :** multivéhicule, catalogue et saisie libre, modification de la fiche, correction du compteur, photo depuis la galerie ou l’appareil photo, suppression sécurisée du véhicule actif avec Undo (beta.40), sélecteur avec aperçus et choix conservé (beta.42), recherche approximative et priorité aux suggestions mémorisées sur Android (beta.44) et sur la PWA (beta.14), puis repère facultatif sur PWA (beta.15) et Android (beta.45). La fiche complémentaire PWA beta.16 commence seulement la phase 2.4.
+**Réalisé :** multivéhicule, catalogue et saisie libre, modification de la fiche, correction du compteur, photo depuis la galerie ou l’appareil photo, suppression sécurisée du véhicule actif avec Undo (beta.40), sélecteur avec aperçus et choix conservé (beta.42), recherche approximative et priorité aux suggestions mémorisées sur Android (beta.44) et sur la PWA (beta.14), puis repère facultatif sur PWA (beta.15) et Android (beta.45). La fiche complémentaire PWA beta.16 puis Android beta.46 et les notes enrichies PWA beta.17 puis Android beta.47 réalisent une partie seulement de la phase 2.4.
 
-**Reste à faire :** étudier les avatars et la vue combinée éventuelle ; porter les nouveaux champs sur Android et concevoir les notes enrichies sans altérer les notes existantes. L’historique détaillé des corrections du compteur reste à étudier avant de coder. Les essais de la liste et de la suppression sur émulateur et téléphone restent à faire ; la phase 2.3 n’est pas terminée.
+**Reste à faire :** étudier les avatars et la vue combinée éventuelle ; vérifier l’ergonomie des notes après essais réels. Porter sur Android l’historique hybride déjà disponible en candidate PWA et vérifier les échanges, sans promettre un journal complet. Les essais de la liste et de la suppression sur émulateur et téléphone restent à faire ; la phase 2.3 n’est pas terminée.
 
 ### Phase 3 — Carnet complet : en cours
 
@@ -134,10 +136,18 @@ NFC facultatif, partage sélectif ou QR, mode tablette, fonctions de flotte et a
 - Les fichiers JSON ne sont pas chiffrés par VigieAuto. Ils peuvent contenir des informations personnelles et des documents.
 - Les préversions récentes importent les formats JSON v1 à v5 et exportent en v3, v4 ou v5 selon les affectations de devises. Les anciennes versions peuvent refuser un format récent.
 - La PWA familiale 1.5.1 peut arrondir certains très grands nombres dans des sauvegardes. La candidate protège les nombres précis dans les scénarios testés, mais ne peut pas reconstituer des chiffres déjà perdus.
-- Une base PWA passée à IndexedDB 6 ne peut pas être rouverte directement par une ancienne version. Ne pas effacer les données du navigateur pour forcer une mise à jour.
+- Une base PWA passée à IndexedDB 7 ne peut pas être rouverte directement par une ancienne version. Ne pas effacer les données du navigateur pour forcer une mise à jour.
 - Une photo ajoutée dans la PWA peut conserver ses métadonnées, dont une éventuelle position GPS. Android ne recopie pas les métadonnées EXIF dans les nouvelles photos de véhicule ou de justificatif qu’il convertit ; une copie brute temporaire ou celle d’une application photo externe peut toutefois les contenir.
 
 ## Vérifications de la dernière livraison
+
+**Android beta.47 :** 116 tests JVM ciblés réussis sous Linux sur 15 classes, sans échec ni ignoré ; suite JVM complète non relancée. APK debug assemblé ; 70 tests instrumentés compilés mais non exécutés. Lint : 0 erreur, 24 avertissements et 5 indications. Échange fictif PWA → Android/Room → PWA vérifié avec Chromium et WebKit Linux. Aucun téléphone Android, émulateur, Windows réel ou Safari iPhone validé ; aucune mesure de performance. [Guide](docs/NOTES-VEHICULE-ANDROID-BETA47.md).
+
+**Android beta.46, historique :** 141 tests JVM ciblés réussis sous Linux, dont le parcours d’accueil avec recréation de l’écran ; le scénario d’accueil au nom raccourci a été revérifié séparément. Suite complète non relancée. APK debug assemblé ; 69 tests instrumentés compilés mais non exécutés ; lint 0 erreur, 24 avertissements, 5 indications. Échange fictif PWA → Android/Room → PWA vérifié sous Chromium et WebKit Linux, sans appareil réel. [Guide](docs/FICHE-VEHICULE-ANDROID-BETA46.md).
+
+**PWA beta.18 — historique hybride :** 127 tests Node, 32 tests d’archive et 14 tests de publication réussis sous Linux ; correction, conflit, rollback, sources modifiées/supprimées, migration beta.17 → beta.18 et hors ligne vérifiés sous Chromium et WebKit Linux avec données fictives. Un aller-retour fictif PWA → Android beta.47/Room → PWA a conservé les corrections et un format futur ; l’ancien Android ne crée pas une correction quand il change le compteur. Un test Room ciblé a réussi après un premier lancement Gradle ayant perdu son daemon ; cause non établie. Le retour a été essayé avec les deux moteurs. Pas d’essai Safari iPhone, téléphone Android ou mesure de performance. [Guide](docs/HISTORIQUE-COMPTEUR-PWA-BETA18.md).
+
+**PWA beta.17 — notes, sous-lot partiel :** 111 tests Node, 31 tests d’archive et 14 tests de publication réussis sous Linux. Anciennes notes, sélections tactiles simulées, conflits, formats inconnus, export/import et hors-ligne testés sous Chromium et WebKit Linux ; vraie mise à jour beta.16 → beta.17 avec données fictives. Un test utilise le code métier Kotlin Android beta.46 puis vérifie le retour PWA : il ne traverse ni Room ni interface Android. Aucune validation iPhone/Safari, téléphone Android ou performance. [Guide](docs/NOTES-VEHICULE-PWA-BETA17.md).
 
 **PWA beta.16 — sous-lot partiel :** 94 tests Node, 30 tests d’archive et 14 tests de publication réussis. Fiche, confirmations, concurrence, formats inconnus, quatre thèmes, export et hors-ligne vérifiés sous Chromium et WebKit Linux ; vraie mise à jour beta.15 → beta.16 avec données fictives. Un aller-retour fictif PWA beta.16 → dépôt Android beta.45/Room → PWA a conservé la fiche, une note modifiée par le dépôt Android et les nombres précis après édition et Undo ; le retour PWA a été vérifié sous Chromium et WebKit Linux. Ce test ne valide pas une interface ni un appareil Android réels. Les parcours exigeant les anciens ZIP beta.1, beta.6 et beta.7 manquants ne sont pas tous rejoués ; aucun test n’est retiré. Pas d’essai sur iPhone/Safari ou lecteur d’écran réel ; performances non mesurées. [Guide](docs/FICHE-VEHICULE-PWA-BETA16.md).
 
@@ -155,7 +165,7 @@ NFC facultatif, partage sélectif ou QR, mode tablette, fonctions de flotte et a
 
 **PWA beta.12, historique :** 64 tests Node et 22 tests d’archivage réussis ; aides et mise à jour réelle beta.11 → beta.12 vérifiées sous Chromium et WebKit Linux, y compris hors ligne.
 
-Aucun téléphone, émulateur, PC Windows réel ou GitHub n’a été validé pour beta.45 ; Safari iOS reste à valider et aucune performance n’est mesurée.
+Aucun téléphone, émulateur, PC Windows réel ou GitHub n’a été validé pour beta.47 ; Safari iOS reste à valider et aucune performance n’est mesurée.
 
 **Android beta.43, historique :** 82 tests JVM ciblés réussis ; suite complète non relancée. APK debug et 69 scénarios instrumentés compilés mais non exécutés ; lint 0 erreur, 24 avertissements et 5 indications. [Guide](docs/AIDES-PLEINS-VIN.md).
 
@@ -177,7 +187,7 @@ Les objectifs restent : démarrage à froid **< 1 s**, à chaud **< 300 ms**, ou
 
 ## Ordre de travail retenu
 
-1. Continuer les véhicules et le carnet Android, sans attendre les essais sur téléphone.
+1. Porter sur Android l’historique hybride du compteur de la candidate PWA, puis avancer sur le carnet sans attendre les essais sur téléphone.
 2. Compléter les statistiques, puis développer le GPS Android et l’assistance Bluetooth avec confirmation.
 3. Valider le socle sur appareils et la candidate PWA sur iPhone ; clarifier le cadrage des stations avant cette phase.
 
@@ -187,8 +197,8 @@ Les priorités peuvent être ajustées selon tes demandes, tout en préservant l
 
 Les trois ZIP de projet conservés à la date de ce bilan sont :
 
-- `VigieAuto-Android-v0.4.0-beta.45.zip` — source Android.
-- `VigieAuto-v1.5.2-beta.16.zip` — PWA candidate avec dossier `A-METTRE-SUR-GITHUB`.
+- `VigieAuto-Android-v0.4.0-beta.47.zip` — source Android.
+- `VigieAuto-v1.5.2-beta.18.zip` — PWA candidate avec dossier `A-METTRE-SUR-GITHUB`.
 - `VigieAuto-v1.5.1.zip` — PWA familiale conservée.
 
 Les deux ZIP Android et PWA ont une racine nommée `VigieAuto` : les extraire dans **deux dossiers parents différents**. Ils contiennent aussi l’historique détaillé, le cahier des charges, les feuilles de route, le récapitulatif des fonctions et la checklist de performance.

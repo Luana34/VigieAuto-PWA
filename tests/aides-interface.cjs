@@ -27,7 +27,7 @@ const closeForm = async p => { await p.locator('#modal .modal-header [data-actio
 const waitHelpClosed = async p => { await p.locator('#info-dialog').waitFor({state:'hidden'}); await p.waitForFunction(()=>!history.state?.vigieInfo); };
 const open = async (p,topic) => { const button=p.locator(`[data-action=open-info][data-topic="${topic}"]`); await button.click(); await p.locator('#info-dialog').waitFor({state:'visible'}); return button; };
 const stored = (p,store) => p.evaluate(name=>new Promise((resolve,reject)=>{
-  const open=indexedDB.open('cq-auto-local',6);open.onerror=()=>reject(open.error);
+  const open=indexedDB.open('cq-auto-local',7);open.onerror=()=>reject(open.error);
   open.onsuccess=()=>{const db=open.result,tx=db.transaction(name,'readonly'),req=tx.objectStore(name).getAll();
     tx.oncomplete=()=>{db.close();resolve(req.result)};tx.onabort=()=>{db.close();reject(tx.error)};};
 }),store);

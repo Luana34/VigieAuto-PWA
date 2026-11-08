@@ -1,5 +1,5 @@
 /* VigieAuto : cache applicatif uniquement. Les données restent dans IndexedDB. */
-const CACHE = "cq-auto-app-v1.5.2-beta.16";
+const CACHE = "cq-auto-app-v1.5.2-beta.18";
 // Préfixe conservé pour nettoyer les anciens caches CQ Auto sur la même origine.
 const PREFIX = "cq-auto-app-";
 const FILES = [
@@ -16,6 +16,8 @@ const FILES = [
   "./js/db.js",
   "./js/vehicle-marker.js",
   "./js/vehicle-profile.js",
+  "./js/vehicle-notes.js",
+  "./js/odometer-history.js",
   "./js/gps.js",
   "./js/catalogue.js",
   "./data/brands_models_fr.json",
@@ -24,10 +26,10 @@ const FILES = [
   "./js/currency.js",
   "./assets/garage.jpg",
   "./assets/logo-vigieauto.svg",
-  "./icons/icon-192.png?v=vigie-1.5.2-beta.16",
-  "./icons/icon-512.png?v=vigie-1.5.2-beta.16",
-  "./icons/maskable-512.png?v=vigie-1.5.2-beta.16",
-  "./icons/apple-touch-icon.png?v=vigie-1.5.2-beta.16",
+  "./icons/icon-192.png?v=vigie-1.5.2-beta.18",
+  "./icons/icon-512.png?v=vigie-1.5.2-beta.18",
+  "./icons/maskable-512.png?v=vigie-1.5.2-beta.18",
+  "./icons/apple-touch-icon.png?v=vigie-1.5.2-beta.18",
 ];
 self.addEventListener("install", (event) => {
   event.waitUntil(

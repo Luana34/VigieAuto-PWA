@@ -25,7 +25,7 @@ const submit=async p=>{await form(p).locator('button[type=submit]').click();awai
 const close=async p=>{await p.locator('#modal .modal-header [data-action=close-modal]').click();await p.locator('#modal').waitFor({state:'hidden'});};
 const garage=async p=>{await p.evaluate(()=>location.hash='garage');await p.waitForFunction(()=>document.title==='Mes véhicules — VigieAuto');};
 const add=async p=>{await garage(p);await p.locator('[data-action=add-vehicle]').first().click();};
-const records=p=>p.evaluate(async()=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT);const value=await db.readAll();db.db.close();return value;});
+const records=p=>p.evaluate(async()=>{const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");const value=await db.readAll();db.db.close();return value;});
 function contrast(foreground,background) {
  const luminance=value=>{
   const channels=value.match(/\d+(?:\.\d+)?/g).slice(0,3).map(Number).map(n=>n/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);
@@ -83,7 +83,7 @@ async function mustBeVisibleAndTouchable(locator) {
   // enregistrement en conservant le compteur et les propriétés futures.
   saved=await records(p);const editId=saved.vehicles.find(v=>v.brand==='Renault'&&v.model==='Clio').id;
   await p.evaluate(async(id)=>{
-    const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT),all=await db.readAll();
+    const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1"),all=await db.readAll();
     const vehicle=all.vehicles.find(v=>v.id===id);vehicle.futureVehicule={garder:true};
     await db.apply([{store:'vehicles',type:'put',value:vehicle}]);db.db.close();
   },editId);
@@ -114,7 +114,7 @@ async function mustBeVisibleAndTouchable(locator) {
 
   // Une recherche seule ne touche jamais la base ni les champs inconnus d'une sauvegarde.
   await p.evaluate(async()=>{
-    const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT),all=await db.readAll();
+    const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1"),all=await db.readAll();
     const s=all.settings.find(x=>x.id==='vehicleSuggestions');s.future={garder:true};s.models[0].futureModel='intact';
     await db.apply([{store:'settings',type:'put',value:s}]);db.db.close();
   });
@@ -154,7 +154,7 @@ async function mustBeVisibleAndTouchable(locator) {
 
   // Une longue mémoire ne s'affiche pas en entier, mais reste intacte et filtrable.
   await p.evaluate(async()=>{
-    const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT),all=await db.readAll();
+    const {LocalDatabase,DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1"),all=await db.readAll();
     const s=all.settings.find(x=>x.id==='vehicleSuggestions');
     s.brands.push(...Array.from({length:1000},(_,i)=>`Fictive ${String(i).padStart(4,'0')}`));
     await db.apply([{store:'settings',type:'put',value:s}]);db.db.close();

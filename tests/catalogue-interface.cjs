@@ -25,7 +25,7 @@ const options=(p,id)=>p.locator(`#${id} [role=option]`).evaluateAll(nodes=>nodes
 const submit=async p=>{await p.locator('#modal button[type=submit]').click();await p.locator('#modal').waitFor({state:'hidden'});};
 const garage=async p=>{await p.evaluate(()=>location.hash='garage');await p.waitForFunction(()=>document.title==='Mes véhicules — VigieAuto');};
 const add=async p=>{await garage(p);await p.locator('[data-action=add-vehicle]').first().click();};
-const records=p=>p.evaluate(async()=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT);const data=await db.readAll();db.db.close();return data;});
+const records=p=>p.evaluate(async()=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");const data=await db.readAll();db.db.close();return data;});
 (async()=>{
  const {server,url}=await serve();let browser;
  try {
@@ -80,6 +80,7 @@ const records=p=>p.evaluate(async()=>{const {LocalDatabase, DB_CONTRACT}=await i
   assert.ok(saved.models.some(x=>x.model==='Premier'));assert.ok(saved.models.some(x=>x.model==='Second'));
   const beforeBadImport=await records(p), incompatible=structuredClone(beforeBadImport);
   delete incompatible.currencyAssignments; // la collection devise n’existe pas dans le format v3
+  delete incompatible.odometerCorrections; // table locale, jamais collection racine JSON
   incompatible.settings.find(x=>x.id==='vehicleSuggestions').version=2;
   await p.locator('.mobile-nav [data-route=parametres]').click();
   await p.locator('#import-file').setInputFiles({name:'incompatible.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({app:'VigieAuto',formatVersion:3,exportedAt:new Date().toISOString(),data:incompatible}))});
@@ -88,7 +89,7 @@ const records=p=>p.evaluate(async()=>{const {LocalDatabase, DB_CONTRACT}=await i
   await add(p);await fill(p,'brand','Autre marque…');await fill(p,'model','Autre modèle…');await fill(p,'odometer','3');await submit(p);
   assert.ok((await records(p)).vehicles.some(x=>x.brand==='Autre marque…'&&x.model==='Autre modèle…'),'aucun nom non vide n’est réservé');
   const activeKept=await p.evaluate(async()=>{
-    const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT),data=await db.readAll();
+    const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js'),db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1"),data=await db.readAll();
     const [first,second]=data.vehicles,current=data.settings.find(x=>x.id==='activeVehicle');
     await db.apply([{store:'settings',type:'put',value:{...current,extraFuture:{ok:true}}}]);
     await db.chooseVehicle(first.id);await db.deleteVehicleCascade(first.id,{wasActive:true,activeId:second.id});

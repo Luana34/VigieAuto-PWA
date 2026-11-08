@@ -106,7 +106,7 @@ const opts={viewport:{width:390,height:844},locale:'fr-FR',timezoneId:'Europe/Pa
   await upload(p,realV5);await waitToast(p,'importée');const other=await ctx.newPage();other.on('dialog',d=>d.accept());await other.goto(current.url,{waitUntil:'networkidle'});
   for(const [route,kind,id] of [['pleins','fill',full.id],['entretien','service',svc.id]]){
     await go(p,route);await row(p,kind,id).locator(`[data-action=edit-${kind}]`).click();
-    await other.evaluate(async({kind,id})=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT),all=await db.readAll();const collection=kind==='fill'?'fills':'services',a=all.currencyAssignments.find(x=>x.id===`${collection}:${id}`);await db.apply([{store:'currencyAssignments',type:'put',value:{...a,currency:'GBP'}}]);db.db.close();},{kind,id});
+    await other.evaluate(async({kind,id})=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const db=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1"),all=await db.readAll();const collection=kind==='fill'?'fills':'services',a=all.currencyAssignments.find(x=>x.id===`${collection}:${id}`);await db.apply([{store:'currencyAssignments',type:'put',value:{...a,currency:'GBP'}}]);db.db.close();},{kind,id});
     await field(p,'notes','Ne doit pas écraser');await p.locator('#modal button[type=submit]').click();await p.locator('#modal .form-error.visible').waitFor();assert.match(await p.locator('#modal .form-error').innerText(),/changées|changé/);
     await p.locator('#modal [data-action=close-modal]').first().click();await p.reload({waitUntil:'networkidle'});await go(p,route);assert.match(await row(p,kind,id).innerText(),/GBP/);
   }
@@ -114,7 +114,7 @@ const opts={viewport:{width:390,height:844},locale:'fr-FR',timezoneId:'Europe/Pa
   // Cascade véhicule : ne conserve que les affectations d'un second véhicule.
   const multi=structuredClone(snapshot),v2='vehicule-2';multi.data.vehicles.push({...multi.data.vehicles[0],id:v2,model:'Autre voiture'});
   for(const [collection,currency] of [['fills','CAD'],['services','GBP'],['expenses','SEK']]){const source=multi.data[collection][0],id=`other-${collection}`;multi.data[collection].push({...source,id,vehicleId:v2});multi.data.currencyAssignments.push({id:`${collection}:${id}`,collection,recordId:id,currency});}
-  await upload(p,multi);await waitToast(p,'importée');const remaining=await p.evaluate(async({v,v2})=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT);await d.deleteVehicleCascade(v,{activeId:v2,wasActive:true});const result=await d.readAll();d.db.close();return result;},{v,v2});
+  await upload(p,multi);await waitToast(p,'importée');const remaining=await p.evaluate(async({v,v2})=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");await d.deleteVehicleCascade(v,{activeId:v2,wasActive:true});const result=await d.readAll();d.db.close();return result;},{v,v2});
   assert.deepEqual(remaining.vehicles.map(x=>x.id),[v2]);assert.deepEqual(remaining.currencyAssignments.map(x=>x.id).sort(),['expenses:other-expenses','fills:other-fills','services:other-services']);
   await p.reload({waitUntil:'networkidle'});await go(p,'pleins');assert.match(await row(p,'fill','other-fills').innerText(),/CAD/);
   // Hors ligne : nouveau plein et export v5.

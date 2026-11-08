@@ -18,7 +18,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webm
 const fill=(p,n,v)=>p.locator(`#modal [name="${n}"]`).fill(String(v));
 const submit=async p=>{await p.locator('#modal button[type=submit]').click();await p.locator('#modal').waitFor({state:'hidden'});};
 const go=async (p,route,label)=>{await p.evaluate(r=>{location.hash=r},route);await p.waitForFunction(l=>document.title===`${l} — VigieAuto`,label);};
-const db=p=>p.evaluate(async()=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT);const rows=await d.readAll();d.db.close();return rows;});
+const db=p=>p.evaluate(async()=>{const {LocalDatabase, DB_CONTRACT}=await import('./js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");const rows=await d.readAll();d.db.close();return rows;});
 async function serve(directory) {
   const s=http.createServer((req,res)=>{
     if(s.simulateDisconnect){req.socket.destroy();return;}

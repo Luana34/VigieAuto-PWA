@@ -113,6 +113,10 @@ def main() -> None:
         raise RuntimeError("Le module des repères de véhicule manque au cache hors ligne.")
     if '"./js/vehicle-profile.js"' not in sw:
         raise RuntimeError("Le module des informations véhicule manque au cache hors ligne.")
+    if '"./js/vehicle-notes.js"' not in sw:
+        raise RuntimeError("Le module des notes véhicule manque au cache hors ligne.")
+    if '"./js/odometer-history.js"' not in sw:
+        raise RuntimeError("Le module de l’historique kilométrique manque au cache hors ligne.")
     index = (PROJECT / "index.html").read_text(encoding="utf-8")
     if 'id="category-picker"' not in index or f"?v=vigie-{version}" not in index:
         raise RuntimeError("Sélecteur de catégories ou version des icônes absent de index.html.")
@@ -154,6 +158,12 @@ def main() -> None:
                 f"{ROOT_NAME}/package-lock.json", f"{ROOT_NAME}/manifest.webmanifest", f"{ROOT_NAME}/BILAN-PROJET.md", f"{ROOT_NAME}/.gitignore",
                 f"{ROOT_NAME}/scripts/publication.py", f"{ROOT_NAME}/docs/QUOI-PUBLIER-GITHUB.md",
                 f"{ROOT_NAME}/tests/publication.test.py", f"{ROOT_NAME}/tests/publication-interface.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta13.cjs",
+                f"{ROOT_NAME}/docs/HISTORIQUE-COMPTEUR-PWA-BETA18.md", f"{ROOT_NAME}/js/odometer-history.js", f"{ROOT_NAME}/tests/odometer-history.test.js",
+                f"{ROOT_NAME}/tests/compteur-interface-beta18.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta18.cjs",
+                f"{ROOT_NAME}/tests/android/OdometerBridge47Test.kt", f"{ROOT_NAME}/tests/android/pont-compteur-beta47.init.gradle", f"{ROOT_NAME}/tests/pont-compteur-retour.cjs",
+                f"{ROOT_NAME}/docs/NOTES-VEHICULE-PWA-BETA17.md", f"{ROOT_NAME}/js/vehicle-notes.js", f"{ROOT_NAME}/tests/vehicle-notes.test.js",
+                f"{ROOT_NAME}/tests/notes-vehicule-beta17.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta17.cjs", f"{ROOT_NAME}/tests/pont-notes-retour.cjs",
+                f"{ROOT_NAME}/tests/android/VehicleNotesBridge17.kt", f"{ROOT_NAME}/tests/android/VehicleNotesTestSupport.kt",
                 f"{ROOT_NAME}/docs/FICHE-VEHICULE-PWA-BETA16.md", f"{ROOT_NAME}/js/vehicle-profile.js", f"{ROOT_NAME}/tests/vehicle-profile.test.js",
                 f"{ROOT_NAME}/tests/fiche-vehicule-beta16.cjs", f"{ROOT_NAME}/tests/mise-a-jour-beta16.cjs",
                 f"{ROOT_NAME}/tests/pont-fiche-retour.cjs", f"{ROOT_NAME}/tests/android/VehicleProfileBridge16Test.kt",

@@ -1,6 +1,10 @@
 # VigieAuto — carnet de bord automobile
 
-**PWA beta.16 — candidate partielle :** « Mes véhicules → Infos véhicule » ajoute facultativement couleur réelle, assurance et achat avec devise explicite. Pas de conversion, de rappel ni de dépense automatique. Notes enrichies et écran Android correspondants restent à faire. [Utilisation et limites](docs/FICHE-VEHICULE-PWA-BETA16.md).
+**PWA beta.18 — historique kilométrique :** dans **Mes véhicules → Historique km**, consultez les relevés des sources et les corrections manuelles ; une baisse suspecte est signalée en orange. Pour corriger : crayon, nouveau kilométrage, date et motif, puis confirmation. L’historique peut être incomplet ; Android beta.47 ne l’affiche pas encore. [Mode d’emploi](docs/HISTORIQUE-COMPTEUR-PWA-BETA18.md).
+
+**PWA beta.17 — notes du véhicule :** dans **Mes véhicules → Notes**, saisissez du texte et appliquez du gras ou de l’italique à une sélection. Android beta.47 propose aussi le gras et l’italique ; les anciennes structures ou mises en forme devenues périmées sont protégées. Sauvegardez chaque appareil avant un essai. [Mode d’emploi et limites](docs/NOTES-VEHICULE-PWA-BETA17.md).
+
+**Depuis PWA beta.16 et Android beta.46 :** « Infos véhicule » ajoute facultativement couleur réelle, assurance et achat avec devise explicite, sans conversion, rappel ni dépense automatique. [Utilisation et limites](docs/FICHE-VEHICULE-PWA-BETA16.md).
 
 
 **Depuis PWA beta.15 et Android beta.45 :** un repère de couleur facultatif permet de distinguer les véhicules ; il ne décrit pas la carrosserie. [Utilisation et limites](docs/REPERES-VEHICULES-PWA-BETA15.md).
@@ -13,17 +17,19 @@
 
 **Depuis beta.11 :** la case « Plein complet » est plus grande et en gras ; son libellé reste cliquable en dehors du bouton d’aide. Elle reste cochée par défaut : décochez-la pour un plein partiel. Les pleins enregistrés ne sont pas modifiés automatiquement. [Détails](docs/PLEIN-COMPLET-PWA-BETA11.md).
 
-VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.16, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
+VigieAuto est la suite de CQ Auto : une application web installable (PWA), version candidate 1.5.2-beta.18, en français, sans publicité ni compte utilisateur. Les informations saisies sont enregistrées localement dans le navigateur de l’appareil. Le projet utilise HTML, CSS, JavaScript et IndexedDB, sans bibliothèque ni serveur applicatif à l’exécution.
 
-**Candidate de test, non validée sur iPhone réel.** La version familiale 1.5.1 reste disponible. Cette candidate protège les nombres précis des extensions JSON, refuse avant remplacement les valeurs fonctionnelles impossibles à utiliser sans arrondi, et conserve les extensions du thème et des points CQ édités. Elle ne reconstitue pas les chiffres déjà perdus. La candidate ajoute le carnet enrichi ; l’IndexedDB passe de 2, 3, 4 ou 5 à 6 : les anciennes PWA ne peuvent pas rouvrir directement la base mise à niveau. Sauvegardez chaque appareil avant tout essai ; voir [Précision des sauvegardes](docs/PRECISION-SAUVEGARDES.md).
+**Candidate de test, non validée sur iPhone réel.** La version familiale 1.5.1 reste disponible. Cette candidate protège les nombres précis des extensions JSON, refuse avant remplacement les valeurs fonctionnelles impossibles à utiliser sans arrondi, et conserve les extensions du thème et des points CQ édités. Elle ne reconstitue pas les chiffres déjà perdus. La candidate ajoute le carnet enrichi ; l’IndexedDB passe à 7 : les anciennes PWA ne peuvent pas rouvrir directement la base mise à niveau. Sauvegardez chaque appareil avant tout essai ; voir [Précision des sauvegardes](docs/PRECISION-SAUVEGARDES.md).
 
 Pour savoir quoi faire du ZIP et installer la PWA sur Android, consultez [INSTALLER.md](INSTALLER.md).
 
-**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.45 et PWA beta.16 prennent en charge ces formats. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
+**Devises :** dépenses, pleins/recharges et interventions conservent chacun leur devise ; anciens montants en EUR, sans taux ni conversion. Sauvegarde v3 sans affectation, v4 pour dépenses seules, v5 si plein ou intervention affecté ; Android beta.47 et PWA beta.18 prennent en charge ces formats. Android beta.35 refuse v5. [Détails](docs/DEVISES-ANDROID-BETA36.md).
 
 ### Documents de suivi du projet
 
 - [Bilan du projet](BILAN-PROJET.md)
+- [Historique kilométrique PWA beta.18](docs/HISTORIQUE-COMPTEUR-PWA-BETA18.md)
+- [Notes du véhicule PWA beta.17 : utilisation et limites](docs/NOTES-VEHICULE-PWA-BETA17.md)
 - [Informations véhicule PWA beta.16](docs/FICHE-VEHICULE-PWA-BETA16.md)
 - [Repères de véhicules PWA beta.15](docs/REPERES-VEHICULES-PWA-BETA15.md)
 - [Aides Pleins et VIN : utilisation et limites](docs/AIDES-PLEINS-VIN.md)
@@ -133,7 +139,7 @@ Les fichiers sont statiques ; aucun serveur applicatif n’est nécessaire. Un h
 
 Pour tester sans toucher à la base familiale, choisissez un appareil de test ou une **origine différente** (protocole, domaine ou port). Un autre chemin sur le même domaine — par exemple deux dépôts du même compte GitHub Pages — peut partager IndexedDB. Un changement de domaine, de port, de navigateur ou d’appareil peut entraîner un stockage différent. **Exportez avant le changement, puis importez la sauvegarde dans la nouvelle installation.** L’aperçu fourni pendant le développement n’est pas un hébergement pérenne.
 
-**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Une base plus ancienne migre vers IndexedDB 6 (la beta.8 est déjà en 6) ; fermez les autres onglets, puis laissez la PWA se mettre en cache en ligne. L’ancienne version ne peut plus rouvrir directement cette base. Les formats compatibles v1 à v5 restent importables. L’export est en v3 sans affectation, v4 pour les dépenses seules, et v5 si un plein ou entretien est affecté. Android beta.37 accepte v5, beta.35 le refuse. Vérifiez Réglages → version 1.5.2-beta.16 et ne supprimez pas les données du navigateur pour forcer une mise à jour. [Détails](docs/DEVISES-OPERATIONS-BETA8.md).
+**Après validation de la candidate uniquement**, une mise à jour de l’installation existante sur la même adresse exige d’abord une sauvegarde externe vérifiée. Ne faites pas cet essai sur l’unique installation familiale. Une base plus ancienne migre vers IndexedDB 7 ; fermez les autres onglets, puis laissez la PWA se mettre en cache en ligne. L’ancienne version ne peut plus rouvrir directement cette base. Les formats compatibles v1 à v5 restent importables. L’export est en v3 sans affectation, v4 pour les dépenses seules, et v5 si un plein ou entretien est affecté. Android beta.37 accepte v5, beta.35 le refuse. Vérifiez Réglages → version 1.5.2-beta.18 et ne supprimez pas les données du navigateur pour forcer une mise à jour. [Détails](docs/DEVISES-OPERATIONS-BETA8.md).
 
 ### Installer sur téléphone
 
@@ -169,6 +175,12 @@ npm run test:publication
 npm run test:recherche-catalogue
 npm run test:reperes-vehicules
 npm run test:fiche-vehicule
+npm run test:notes-vehicule
+npm run test:compteur
+# Mise à jour beta.17 -> beta.18 : fournir le vrai ZIP beta.17 via VIGIE_PREVIOUS_PWA si nécessaire.
+npm run test:mise-a-jour-beta18
+# Mise à jour beta.16 -> beta.17 : fournir le vrai ZIP beta.16.
+npm run test:mise-a-jour-beta17
 # Mise à jour réelle beta.15 -> beta.16 : vrai ZIP beta.15 requis.
 npm run test:mise-a-jour-beta16
 # Mise à jour réelle beta.14 -> beta.15 : fournir le vrai ZIP beta.14
@@ -187,12 +199,15 @@ npm run test:migration -- /chemin/VigieAuto-v1.5.1.zip
 
 Sur certains systèmes Linux, des bibliothèques système supplémentaires peuvent être nécessaires pour Chromium. Ces dépendances ne sont pas nécessaires à l’utilisation normale de l’application.
 
+Le pont compteur est un **test de développement sur données fictives uniquement** : `VIGIE_ODOMETER_BRIDGE_OUT` permet au test `test:compteur` de créer son entrée ; copiez ensuite uniquement `tests/android/OdometerBridge47Test.kt` dans un dossier de test temporaire et chargez `tests/android/pont-compteur-beta47.init.gradle` depuis le projet Android beta.47. Configurez `VIGIE_COMPTEUR_TEST_DIR`, `VIGIE_COMPTEUR_INPUT` et `VIGIE_COMPTEUR_OUTPUT` avec des chemins absolus, puis exécutez la classe ciblée `com.vigieauto.app.OdometerBridge47Test`. Si les dépendances Robolectric sont déjà disponibles localement, `VIGIE_ROBOLECTRIC_DIR` active leur utilisation hors ligne. Le retour se vérifie par `npm run test:pont-compteur-retour -- /chemin/retour-fictif.json`, avec les deux moteurs. Ne fournissez jamais une sauvegarde personnelle à ce scénario.
+
 - `css/themes.css` : palettes, mode sombre et adaptation de l’interface.
 - `js/calc.js` : dates, consommation, échéances et dépenses.
 - `js/maintenance.js` : familles d’entretien, recherche, montants détaillés en centimes, extensions facultatives, sous-types de carburant et recherche Google Maps.
 - `js/gps.js` : estimation et filtres GPS en mémoire, sans persistance des points.
 - `data/brands_models_fr.json` et `js/catalogue.js` : référentiel partagé hors ligne, recherche et mémoire des suggestions.
 - `js/db.js` : accès IndexedDB, migration CQ Auto → VigieAuto et transactions.
+- `js/odometer-history.js` : corrections manuelles, conversion pour le JSON et chronologie calculée à partir des sources.
 - `js/vehicle-marker.js` : repère facultatif par véhicule, inspection prudente et préservation des extensions inconnues.
 - `js/vehicle-profile.js` : informations complémentaires facultatives, prix exact et devise explicite, contrôle prudent des formats.
 - `js/logo.js` et `assets/logo-vigieauto.svg` : vectorisation du logo fourni, adaptée au thème ; les icônes PNG dérivent de l’image fournie (`assets/logo-original.png`).

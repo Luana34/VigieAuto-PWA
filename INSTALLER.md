@@ -1,6 +1,10 @@
 # Installer la PWA VigieAuto sur Android ou iPhone
 
-**Candidate beta.16 :** ouvrez **Mes véhicules → Infos véhicule** pour les informations facultatives de carrosserie, assurance et achat. La mise en forme des notes et l’écran Android correspondant restent à développer. [Guide et précautions](docs/FICHE-VEHICULE-PWA-BETA16.md).
+**Candidate beta.18 :** l’historique kilométrique est dans **Mes véhicules → Historique km**. Une correction manuelle exige confirmation, date et motif. Android beta.47 ne le propose pas encore. Sauvegardez séparément chaque appareil avant de tester. [Guide](docs/HISTORIQUE-COMPTEUR-PWA-BETA18.md).
+
+**Candidate beta.17 :** **Mes véhicules → Notes** ouvre les notes avec gras, italique et aperçu. Android beta.47 permet aussi le gras et l’italique ; les styles périmés sont protégés. Gardez une sauvegarde externe de chaque appareil ; l’import remplace toutes les données du destinataire. [Utilisation et limites](docs/NOTES-VEHICULE-PWA-BETA17.md).
+
+**Depuis beta.16 :** ouvrez **Mes véhicules → Infos véhicule** pour les informations facultatives de carrosserie, assurance et achat ; ces champs existent aussi sur Android beta.46. [Guide et précautions](docs/FICHE-VEHICULE-PWA-BETA16.md).
 
 
 **Candidate beta.15 :** choisissez un repère de couleur facultatif dans **Mes véhicules** pour distinguer vos véhicules. Ce n’est pas la couleur réelle de la carrosserie. [Utilisation et précautions](docs/REPERES-VEHICULES-PWA-BETA15.md).
@@ -47,7 +51,7 @@ Les libellés exacts et le délai de publication peuvent évoluer. Android et iO
 
 Dans **Réglages → Exporter mes données**, téléchargez régulièrement le fichier JSON, puis conservez-en une copie sur un autre support sûr. La sauvegarde inclut des informations personnelles et n’est pas chiffrée par VigieAuto. Aucune sauvegarde automatique sur Google Drive n’est incluse actuellement.
 
-## Essayer la candidate 1.5.2-beta.16 — sauvegarde préalable indispensable
+## Essayer la candidate 1.5.2-beta.18 — sauvegarde préalable indispensable
 
 Après création d’une dépense, ajoutez si besoin un justificatif photo depuis sa ligne. La PWA conserve le fichier et ses métadonnées éventuelles ; l’export JSON n’est pas chiffré. Les justificatifs peuvent rendre la sauvegarde volumineuse. Voir `docs/JUSTIFICATIFS-BETA29.md`.
 
@@ -55,7 +59,7 @@ La version familiale 1.5.1 reste la référence. La candidate n’a pas été te
 
 1. Dans l’application déjà installée sur **chaque appareil concerné**, ouvrez **Réglages → Exporter mes données**. Conservez le JSON original hors du téléphone, dans un lieu sûr. Il est personnel et non chiffré ; ne le publiez pas.
 2. Extrayez le ZIP candidat dans un dossier parent distinct du projet Android. Ouvrez `VigieAuto/A-METTRE-SUR-GITHUB` et publiez **son contenu** sur une origine HTTPS de test différente de l’origine familiale, ou utilisez un appareil distinct de test. Un autre sous-dossier sur le même domaine ne suffit pas à isoler IndexedDB.
-3. Ouvrez l’adresse de test en ligne, puis vérifiez **Réglages → version 1.5.2-beta.16**. Sur iPhone, Safari propose **Partager → Sur l’écran d’accueil** ; le stockage de l’application installée peut être distinct de celui de l’onglet Safari.
+3. Ouvrez l’adresse de test en ligne, puis vérifiez **Réglages → version 1.5.2-beta.18**. Sur iPhone, Safari propose **Partager → Sur l’écran d’accueil** ; le stockage de l’application installée peut être distinct de celui de l’onglet Safari.
 4. Commencez de préférence avec des données fictives. Pour essayer une copie réelle, utilisez une **copie** de la sauvegarde originale et **Réglages → Importer une sauvegarde** : l’import confirmé remplace les données de cette installation de test. Vérifiez véhicules, carnet, documents et export ; conservez l’original séparément.
 5. Après la première mise en cache, testez l’accès en mode avion, puis désactivez-le. Un essai en sécurité du GPS, à l’arrêt et facultatif, demande une autorisation explicite ; aucune position n’est enregistrée. La mesure peut être interrompue et l’écran éteint n’est pas garanti.
 
@@ -67,4 +71,4 @@ Le suivi GPS fonctionne seulement de façon opportuniste lorsque l’application
 
 ## Devises et échange Android
 
-La candidate beta.16 permet de choisir la devise de chaque dépense, plein/recharge et intervention ; anciens montants en euros, totaux séparés et aucune conversion. Sans affectation : v3 ; dépenses seules : v4 ; plein ou entretien affecté : v5. Android beta.37 accepte ces formats ; beta.35 refuse v5. Gardez l’original et ne modifiez jamais le numéro du format. [Guide](docs/DEVISES-ANDROID-BETA36.md).
+La candidate beta.18 permet de choisir la devise de chaque dépense, plein/recharge et intervention ; anciens montants en euros, totaux séparés et aucune conversion. Sans affectation : v3 ; dépenses seules : v4 ; plein ou entretien affecté : v5. Android beta.37 accepte ces formats ; beta.35 refuse v5. Gardez l’original et ne modifiez jamais le numéro du format. [Guide](docs/DEVISES-ANDROID-BETA36.md).
