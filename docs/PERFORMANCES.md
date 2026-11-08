@@ -1,5 +1,17 @@
 # Performance et fluidité — objectifs et méthode
 
+**Checklist PWA beta.18 / Android beta.47 :**
+
+- [x] Historique calculé depuis les sources, corrections seules en table ; première page de 80 lignes avec bouton pour la suite. Aucun appel réseau ni dépendance de production supplémentaire. Un groupe fictif de 105 000 entrées le même jour est parcouru sans débordement de pile : ce n’est pas un benchmark.
+- [x] Pont fictif vers Room beta.47 vérifié en JVM puis retour PWA sous Chromium et WebKit Linux. Un premier lancement Gradle a perdu son daemon ; la relance séparée du test ciblé a réussi. Aucune cause certaine ni gain de durée n’est revendiqué.
+- [ ] Mesurer la durée de construction, le coût mémoire et la fluidité avec de nombreux relevés sur téléphone. La chronologie est construite et triée avant pagination visuelle ; aucune garantie de performance. Tester tactile, lecteur d’écran et Safari iPhone réels.
+- [ ] Les objectifs froid <1 s, chaud <300 ms, écran <100 ms, 60 i/s pour 1 000 éléments, import 10 Mo <3 s, export <2 s, APK release <15 Mo et RAM <100 Mo restent **non mesurés**.
+
+**Checklist historique PWA beta.17 / Android beta.46 :**
+
+- [x] Éditeur local sans dépendance de production ni appel réseau ; longueur et plages bornées, aperçu construit sans HTML utilisateur ; cache hors ligne et contraste de l’aperçu testés sous Chromium et WebKit Linux.
+- [ ] Mesurer temps, mémoire et fluidité sur appareil, notamment avec notes longues et véhicules volumineux. Vérifier le toucher et la sélection avec Safari iPhone et un lecteur d’écran réel ; les navigateurs Linux ne les valident pas. Toutes les cibles chiffrées ci-dessous restent non mesurées.
+
 **Checklist PWA beta.16 / Android beta.45 — 7 novembre 2026 :**
 
 - [x] Fiche facultative locale, sans nouvelle dépendance de production, appel réseau, migration de base, conversion, rappel ou dépense créée. Le montant est conservé en chaîne exacte.

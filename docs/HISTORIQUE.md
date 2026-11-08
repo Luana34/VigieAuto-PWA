@@ -1,5 +1,21 @@
 # Historique du projet VigieAuto
 
+## PWA beta.18 — début de la phase 2.5 : historique hybride
+
+Choix de l’utilisatrice : corrections manuelles dans une table distincte ; chronologie calculée depuis les sources, avec avertissement orange prudent. Confirmation du compteur et de la correction dans une transaction, date et motif, personne facultative, suppression confirmée, formats inconnus protégés. Migration IndexedDB 7 et extension JSON par véhicule. Import remplaçant le carnet, aucune synchronisation et aucun historique certifié. 127 tests Node, 32 tests d’archive et 14 de publication réussis ; tests fictifs Chromium/WebKit Linux, dont migration beta.17 réelle, rollback, conflits et hors ligne. Pont fictif PWA → dépôt Android beta.47/Room → PWA réussi, y compris modification du compteur par l’ancien Android sans création d’une correction et conservation d’un format futur ; retour essayé sur les deux moteurs. Un lancement Gradle initial a perdu son daemon, puis le test Room ciblé a réussi lors d’une relance séparée ; cause non établie. Pas d’iPhone réel, de téléphone Android ni de mesures. Portage Android de l’historique à réaliser. [Guide](HISTORIQUE-COMPTEUR-PWA-BETA18.md).
+
+## Android beta.47 — notes enrichies du véhicule
+
+Gras, italique et aperçu sur les deux plateformes ; protection des structures et des modifications concurrentes. 116 tests JVM ciblés réussis, 70 tests instrumentés compilés mais non exécutés, lint 0 erreur/24 avertissements/5 indications. Pont fictif PWA → Room → PWA testé ; aucun téléphone ni Windows réel validé. [Guide Android](NOTES-VEHICULE-ANDROID-BETA47.md).
+
+## PWA beta.17 — premier éditeur de notes du véhicule
+
+Dans Mes véhicules, texte brut conservé et mise en forme facultative en gras/italique avec aperçu local ; aucune interprétation HTML. Les anciennes notes et les formats inconnus sont protégés, avec confirmation avant remplacement et contrôle transactionnel entre onglets. Une extension versionnée ne contient pas de copie du texte ; une empreinte signale les styles devenus périmés après modification du texte par une autre version. Android beta.46 reste inchangé et n’affiche que le texte brut ; le code métier Kotlin et le retour PWA sont testés séparément, sans prétendre à un pont Room pour ce nouveau format. Tests Linux, fichiers fictifs, pas d’iPhone ni d’Android réel, performances non mesurées. [Détails](NOTES-VEHICULE-PWA-BETA17.md).
+
+## Android beta.46 — fiche complémentaire
+
+Couleur de carrosserie, assurance et achat facultatifs sur Android ; prix exact avec devise explicite sans conversion ou opération créée. 141 JVM ciblés réussis ; 69 scénarios instrumentés compilés mais non exécutés, lint 0 erreur/24 avertissements/5 indications. Pont fictif fiche PWA → Android/Room → PWA réussi sans appareil réel. [Détails](FICHE-VEHICULE-ANDROID-BETA46.md).
+
 ## 7 novembre 2026 — PWA beta.16 : début partiel de la fiche complémentaire
 
 Dans « Infos véhicule », ajout facultatif de la couleur réelle, des informations d’assurance et de la date/prix d’achat avec devise explicite ; pas de conversion, dépense ou rappel. VIN, immatriculation et notes simples déjà présents ; pas de notes enrichies ni de nouvel écran Android. Le repère de couleur reste distinct. Validation des dates et du montant textuel exact, avertissements avant abandon/effacement/changement de devise, protection transactionnelle et conservation prudente des extensions. IndexedDB 6 et formats d’enveloppe JSON inchangés. [Guide](FICHE-VEHICULE-PWA-BETA16.md).

@@ -1,5 +1,7 @@
 # VigieAuto Android — demandes et priorités après 0.4.0-beta.16
 
+**Actualisation PWA beta.18 / Android beta.47 :** la fiche et les notes enrichies sont présentes sur les deux plateformes. La solution hybride du compteur est livrée en candidate PWA ; le portage Android reste à faire. Aucun appareil réel ni cible de performance n’a été validé. [Guide compteur](HISTORIQUE-COMPTEUR-PWA-BETA18.md).
+
 **Actualisation du 7 novembre 2026 — PWA candidate 1.5.2-beta.16 / Android 0.4.0-beta.45 inchangé :** début partiel de la phase 2.4 : dans la PWA, couleur réelle, assurance et achat facultatifs, dans « Infos véhicule », avec devise explicite et sans conversion. VIN, immatriculation et notes simples existaient déjà ; notes enrichies et interface Android restent à réaliser. Le repère, distinct de la carrosserie, existe sur les deux versions. IndexedDB 6, Room 17 et enveloppes JSON conservés ; extensions et conflits protégés dans les cas testés. Aucune opération ni rappel automatique. Essais logiciels fictifs sous Chromium/WebKit Linux ; Safari iPhone et performances restent à valider. Phase 2.3 ouverte, phase 2.5 à étudier avant codage. [Guide](FICHE-VEHICULE-PWA-BETA16.md).
 
 
@@ -142,9 +144,9 @@ Sélecteur visible en haut pour changer rapidement, avatar ou couleur par véhic
 
 **À poursuivre :** portage de ces nouveaux champs sur Android, puis notes enrichies avec mise en forme basique à concevoir sans écraser les notes historiques. Ne pas inventer de valeurs manquantes ; préserver les extensions et vérifier les échanges JSON.
 
-### 2.5 Historique du compteur — étude préalable
+### 2.5 Historique du compteur — hybride, PWA puis Android
 
-Étudier l’historique des corrections de compteur, avec qui, quand et pourquoi lorsque l’information est disponible, avant de coder. L’identité d’un intervenant ne doit pas imposer de compte obligatoire.
+Décision prise : corrections manuelles seulement dans une table séparée, date, ancien/nouveau kilométrage, motif et personne facultative, sans compte. La chronologie lit les relevés dans les sources existantes et alerte en orange sur certaines baisses. PWA beta.18 candidate réalisée ; portage Android, ponts et validations réelles restent à faire. Aucune ancienne correction n’est inventée. [Étude](ETUDE-HISTORIQUE-COMPTEUR.md) · [Guide](HISTORIQUE-COMPTEUR-PWA-BETA18.md).
 
 ## Priorité 3 — Carnet complet Android
 
