@@ -1,6 +1,9 @@
 # Cahier des charges — VigieAuto
 
-**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.15 / Android 0.4.0-beta.44 :** repère facultatif par véhicule dans la PWA, distinct de la couleur réelle du véhicule. Choix explicite, noms visibles et protection transactionnelle contre les conflits ; formats inconnus conservés en lecture seule. IndexedDB 6 et versions JSON v3/v4/v5 conservées. Android ne l’affiche pas encore ; un aller-retour fictif avec Room beta.44, édition et annulation réussit, ainsi que la mise à jour PWA beta.14 → beta.15 sous Chromium et WebKit Linux. Les essais iPhone/Safari, lecteur d’écran réel et performances restent à faire ; le socle et la phase 2.3 restent ouverts. [Détails](REPERES-VEHICULES-PWA-BETA15.md).
+**Actualisation du 7 novembre 2026 — PWA candidate 1.5.2-beta.16 / Android 0.4.0-beta.45 inchangé :** début partiel de la phase 2.4 : dans la PWA, couleur réelle, assurance et achat facultatifs, dans « Infos véhicule », avec devise explicite et sans conversion. VIN, immatriculation et notes simples existaient déjà ; notes enrichies et interface Android restent à réaliser. Le repère, distinct de la carrosserie, existe sur les deux versions. IndexedDB 6, Room 17 et enveloppes JSON conservés ; extensions et conflits protégés dans les cas testés. Aucune opération ni rappel automatique. Essais logiciels fictifs sous Chromium/WebKit Linux ; Safari iPhone et performances restent à valider. Phase 2.3 ouverte, phase 2.5 à étudier avant codage. [Guide](FICHE-VEHICULE-PWA-BETA16.md).
+
+
+**Historique du 7 novembre 2026 — PWA 1.5.2-beta.15 / Android 0.4.0-beta.44 :** repère facultatif par véhicule dans la PWA, distinct de la couleur réelle du véhicule. Choix explicite, noms visibles et protection transactionnelle contre les conflits ; formats inconnus conservés en lecture seule. IndexedDB 6 et versions JSON v3/v4/v5 conservées. Android ne l’affiche pas encore ; un aller-retour fictif avec Room beta.44, édition et annulation réussit, ainsi que la mise à jour PWA beta.14 → beta.15 sous Chromium et WebKit Linux. Les essais iPhone/Safari, lecteur d’écran réel et performances restent à faire ; le socle et la phase 2.3 restent ouverts. [Détails](REPERES-VEHICULES-PWA-BETA15.md).
 
 **Historique du 7 novembre 2026 — PWA 1.5.2-beta.14 / Android 0.4.0-beta.44 :** recherche locale approchante des marques et modèles dans la PWA, avec priorité aux choix mémorisés à qualité égale. Les propositions sont affichées par l’application et sélectionnées explicitement ; saisie libre et association modèle/marque conservées. Données, IndexedDB, JSON et référentiel inchangés. Essais logiciels sous Chromium et WebKit Linux ; Safari iPhone, VoiceOver et performances réelles restent à valider. La phase 2.3 reste ouverte. [Détails](RECHERCHE-CATALOGUE-PWA-BETA14.md).
 
@@ -46,7 +49,7 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**État du produit : PWA familiale 1.5.1, candidate 1.5.2-beta.15 et Android 0.4.0-beta.44 · Mise à jour : 7 novembre 2026**
+**État du produit : PWA familiale 1.5.1, candidate 1.5.2-beta.16 et Android 0.4.0-beta.45 · Mise à jour : 7 novembre 2026**
 
 Ce document distingue les besoins exprimés de ce qui fonctionne réellement. Il évolue avec les décisions de l’utilisateur ; une idée, une étude ou une demande ne doit pas être marquée « réalisée » avant son développement et ses vérifications.
 

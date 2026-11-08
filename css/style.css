@@ -1143,7 +1143,7 @@ h3 {
 .vehicle-marker[data-marker-color="violet"] .vehicle-marker-dot { background: #a779d0; }
 .vehicle-marker[data-marker-color="rose"] .vehicle-marker-dot { background: #e1769d; }
 .garage-hero .vehicle-marker { align-self: flex-start; position: relative; z-index: 1; margin-bottom: 10px; }
-.btn.vehicle-marker-button, form[data-form="vehicle-marker"] select { min-height: 44px; }
+.btn.vehicle-marker-button, .btn.vehicle-profile-button, form[data-form="vehicle-marker"] select { min-height: 44px; }
 .tile-actions {
   display: flex;
   align-items: center;
@@ -2161,4 +2161,5 @@ form[data-form="fill"] .fill-full-choice .checkbox-line { padding-right: 62px; }
 .currency-breakdown small { grid-column: 1 / -1; overflow-wrap: anywhere; color: var(--text-muted, #78877e); }
 .currency-breakdown b { min-width: 0; overflow-wrap: anywhere; }
 
-[data-other-currency][hidden] { display: none; }
+[data-other-currency][hidden],
+[data-profile-other-currency][hidden] { display: none; }

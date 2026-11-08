@@ -1,6 +1,9 @@
 # Feuille de route — VigieAuto
 
-**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.15 / Android 0.4.0-beta.44 :** repère facultatif par véhicule dans la PWA, distinct de la couleur réelle du véhicule. Choix explicite, noms visibles et protection transactionnelle contre les conflits ; formats inconnus conservés en lecture seule. IndexedDB 6 et versions JSON v3/v4/v5 conservées. Android ne l’affiche pas encore ; un aller-retour fictif avec Room beta.44, édition et annulation réussit, ainsi que la mise à jour PWA beta.14 → beta.15 sous Chromium et WebKit Linux. Les essais iPhone/Safari, lecteur d’écran réel et performances restent à faire ; le socle et la phase 2.3 restent ouverts. [Détails](REPERES-VEHICULES-PWA-BETA15.md).
+**Actualisation du 7 novembre 2026 — PWA candidate 1.5.2-beta.16 / Android 0.4.0-beta.45 inchangé :** début partiel de la phase 2.4 : dans la PWA, couleur réelle, assurance et achat facultatifs, dans « Infos véhicule », avec devise explicite et sans conversion. VIN, immatriculation et notes simples existaient déjà ; notes enrichies et interface Android restent à réaliser. Le repère, distinct de la carrosserie, existe sur les deux versions. IndexedDB 6, Room 17 et enveloppes JSON conservés ; extensions et conflits protégés dans les cas testés. Aucune opération ni rappel automatique. Essais logiciels fictifs sous Chromium/WebKit Linux ; Safari iPhone et performances restent à valider. Phase 2.3 ouverte, phase 2.5 à étudier avant codage. [Guide](FICHE-VEHICULE-PWA-BETA16.md).
+
+
+**Historique du 7 novembre 2026 — PWA 1.5.2-beta.15 / Android 0.4.0-beta.44 :** repère facultatif par véhicule dans la PWA, distinct de la couleur réelle du véhicule. Choix explicite, noms visibles et protection transactionnelle contre les conflits ; formats inconnus conservés en lecture seule. IndexedDB 6 et versions JSON v3/v4/v5 conservées. Android ne l’affiche pas encore ; un aller-retour fictif avec Room beta.44, édition et annulation réussit, ainsi que la mise à jour PWA beta.14 → beta.15 sous Chromium et WebKit Linux. Les essais iPhone/Safari, lecteur d’écran réel et performances restent à faire ; le socle et la phase 2.3 restent ouverts. [Détails](REPERES-VEHICULES-PWA-BETA15.md).
 
 **Historique du 7 novembre 2026 — PWA 1.5.2-beta.14 / Android 0.4.0-beta.44 :** recherche locale approchante des marques et modèles dans la PWA, avec priorité aux choix mémorisés à qualité égale. Les propositions sont affichées par l’application et sélectionnées explicitement ; saisie libre et association modèle/marque conservées. Données, IndexedDB, JSON et référentiel inchangés. Essais logiciels sous Chromium et WebKit Linux ; Safari iPhone, VoiceOver et performances réelles restent à valider. La phase 2.3 reste ouverte. [Détails](RECHERCHE-CATALOGUE-PWA-BETA14.md).
 
@@ -46,7 +49,7 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Mise à jour : 7 novembre 2026 · PWA familiale : 1.5.1 ; candidate : 1.5.2-beta.15 · Android : 0.4.0-beta.44**
+**Mise à jour : 7 novembre 2026 · PWA familiale : 1.5.1 ; candidate : 1.5.2-beta.16 · Android : 0.4.0-beta.45**
 
 Cette feuille de route distingue ce qui est terminé, ce qui est souhaité et les décisions à prendre. Les choix explicitement décidés sont indiqués ; les autres priorités futures restent **à confirmer**, sans date ni engagement de livraison. Le détail des exigences est dans `CAHIER-DES-CHARGES.md` et l’historique des décisions dans `HISTORIQUE.md`.
 
@@ -81,6 +84,8 @@ Le détail des demandes, des données, du GPS et des outils envisagés est dans 
 **Décision documentaire du 2 novembre 2026 — phase 3 :** prévoir des rappels semi-automatiques par mémorisation des intervalles saisis, par véhicule et type d’entretien, avec confirmation explicite et sans base constructeur ni création silencieuse. Ce n’est pas implémenté. Les rappels actuels utilisent une récurrence en jours/km ; les mois calendaires restent à développer. Voir [la section 3.5 du plan](PLAN-PRIORITES-APRES-BETA16.md#35-enrichissement-des-écrans-existants).
 
 ### Phase 5 bis — Stations & Prix carburants
+
+**Cadrage à clarifier avant développement :** la fiche plus récente demande des saisies personnelles locales sans source en ligne, alors que la fiche historique ci-dessous mentionne des prix officiels. Aucun arbitrage n’est supposé dans ce lot.
 
 Module indépendant **à faire**, après le socle 0.4.0 stable : carte et derniers prix officiels disponibles, localisation ponctuelle facultative et cache local pour un hors-ligne partiel. Aucun code n’est produit. Le tableau des phases, le lien avec le GPS natif et les précautions de confidentialité figurent dans `FEUILLE-DE-ROUTE-ANDROID.md` ; la fiche complète est dans [`module-stations-carburants.md`](module-stations-carburants.md).
 
@@ -195,7 +200,13 @@ L’adresse publique copiée a renvoyé 404 depuis notre accès. Cela ne permet 
 5. Versionner chaque branche indépendamment : pour la PWA, `package.json`, `package-lock.json`, `sw.js` et `APP_VERSION` ; pour Android, Gradle `versionName`/`versionCode`, schémas Room et migrations. Actualiser la documentation puis tester avant l’archivage. Les deux projets ont un script `scripts/creer-archive.py` avec `--dry-run`.
 6. Ranger le workspace : conserver **les deux sources complètes** et, normalement, **trois ZIP de versions de projet**. Tant que la PWA candidate attend ses essais réels, garder la nouvelle version Android, la PWA familiale stable et la candidate ; sans candidate, garder si possible un repli Android stable pendant la bêta. Les ZIP inconnus, corrompus ou les doublons contradictoires sont conservés et signalés même si cela dépasse trois fichiers ; les sauvegardes personnelles ne sont pas supprimées.
 
-## Archives conservées après la livraison PWA beta.15
+## Archives conservées après la livraison PWA beta.16
+
+1. `VigieAuto-Android-v0.4.0-beta.45.zip` — projet Android complet.
+2. `VigieAuto-v1.5.2-beta.16.zip` — candidate PWA partielle avec dossier de publication ; validation sur iPhone à faire.
+3. `VigieAuto-v1.5.1.zip` — PWA familiale stable inchangée.
+
+### Historique : archives après la livraison PWA beta.15
 
 1. `VigieAuto-Android-v0.4.0-beta.44.zip` — projet Android complet.
 2. `VigieAuto-v1.5.2-beta.15.zip` — PWA candidate avec dossier de publication ; validation sur iPhone à faire.

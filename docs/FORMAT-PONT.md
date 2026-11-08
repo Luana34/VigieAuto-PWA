@@ -1,6 +1,9 @@
-# Pont de sauvegarde PWA beta.9 / Android beta.38 : compatibilité par format
+# Pont de sauvegarde PWA / Android : compatibilité par format
 
-**Contrat actuel :** v3 sans affectation ; v4 pour devises de dépenses seules ; v5 dès qu’un plein/recharge ou entretien porte une affectation. PWA beta.9 et Android beta.38 lisent et écrivent ces formats ; Android beta.35 et PWA beta.7 refusent v5. Ne changez pas le numéro et ne supprimez pas les affectations pour contourner un refus. [Guide](DEVISES-ANDROID-BETA36.md).
+**PWA beta.16 / Android beta.45 :** extension facultative `vehicles[].vigieVehicleProfile` v1 pour carrosserie, assurance et achat. Le prix est une chaîne décimale exacte avec devise explicite, sans affectation d’opération ni nouveau numéro d’enveloppe. Android beta.45 n’affiche pas ces champs. Un aller-retour fictif PWA beta.16 → dépôt Android beta.45/Room → PWA a conservé la fiche, une note modifiée par le dépôt Android et les nombres précis après édition et Undo ; le retour PWA a été vérifié sous Chromium et WebKit Linux. Ce test ne valide pas une interface ni un appareil Android réels. L’import remplace toujours le carnet destinataire ; une sauvegarde externe reste nécessaire. [Guide](FICHE-VEHICULE-PWA-BETA16.md).
+
+
+**Contrat actuel :** v3 sans affectation ; v4 pour devises de dépenses seules ; v5 dès qu’un plein/recharge ou entretien porte une affectation. PWA beta.16 et Android beta.45 lisent et écrivent ces formats ; Android beta.35 et PWA beta.7 refusent v5. Ne changez pas le numéro et ne supprimez pas les affectations pour contourner un refus. [Guide](DEVISES-ANDROID-BETA36.md).
 
 **Historique beta.7/beta.32 :** une sauvegarde PWA beta.7 avec affectation de devise est en **format 4** et n’est pas importable sur Android beta.32. Sans affectation, la PWA exporte encore en v3. Ne pas convertir le numéro de format ni supprimer les affectations pour contourner le refus. [Contrat et limites](DEVISES-PWA-BETA7.md).
 

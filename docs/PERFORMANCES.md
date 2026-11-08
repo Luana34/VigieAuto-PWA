@@ -1,5 +1,11 @@
 # Performance et fluidité — objectifs et méthode
 
+**Checklist PWA beta.16 / Android beta.45 — 7 novembre 2026 :**
+
+- [x] Fiche facultative locale, sans nouvelle dépendance de production, appel réseau, migration de base, conversion, rappel ou dépense créée. Le montant est conservé en chaîne exacte.
+- [ ] Mesurer sur téléphone le temps d’ouverture et d’enregistrement d’une fiche avec véhicule volumineux ; le contrôle de concurrence lit l’objet complet. Aucune mesure de durée, mémoire ou fluidité n’est revendiquée. Les cibles de démarrage, 60 i/s, import/export, APK release et RAM restent non mesurées.
+
+
 **Checklist PWA beta.15 / Android beta.44 — 7 novembre 2026 :**
 
 - [x] Repère local, bouton de 44 px minimum vérifié sous Chromium et WebKit Linux ; pas de nouvelle dépendance de production ni de requête réseau. La sélection protège l’écriture du véhicule contre les modifications concurrentes.

@@ -1,5 +1,20 @@
 # Historique du projet VigieAuto
 
+## 7 novembre 2026 — PWA beta.16 : début partiel de la fiche complémentaire
+
+Dans « Infos véhicule », ajout facultatif de la couleur réelle, des informations d’assurance et de la date/prix d’achat avec devise explicite ; pas de conversion, dépense ou rappel. VIN, immatriculation et notes simples déjà présents ; pas de notes enrichies ni de nouvel écran Android. Le repère de couleur reste distinct. Validation des dates et du montant textuel exact, avertissements avant abandon/effacement/changement de devise, protection transactionnelle et conservation prudente des extensions. IndexedDB 6 et formats d’enveloppe JSON inchangés. [Guide](FICHE-VEHICULE-PWA-BETA16.md).
+
+94 tests Node, 30 tests d’archive et 14 tests de publication réussis. Les nouveaux parcours, la migration réelle beta.15 → beta.16 et le hors-ligne sont vérifiés sous Chromium et WebKit Linux avec jeux fictifs. Un aller-retour fictif PWA beta.16 → dépôt Android beta.45/Room → PWA a conservé la fiche, une note modifiée par le dépôt Android et les nombres précis après édition et Undo ; le retour PWA a été vérifié sous Chromium et WebKit Linux. Ce test ne valide pas une interface ni un appareil Android réels. Les archives historiques beta.1, beta.6 et beta.7 ne sont pas fournies pour les branches d’échange qui les exigent ; les tests correspondants restent conservés. Aucun appareil, Safari iOS ou lecteur d’écran réel validé ; aucune performance mesurée. Le socle, 2.3 et 2.4 restent ouverts ; 2.5 doit être étudiée avant codage.
+
+## 7 novembre 2026 — Android beta.45 : repères et diagnostic de tests Windows
+
+Poursuite de la phase 2.3 : repères facultatifs compatibles avec la PWA beta.15, choix explicite, nom et pastille ; sauvegarde manuelle, sans migration Room. Les extensions et formats futurs restent conservés. Les échanges ne fusionnent jamais les carnets.
+
+Le rapport Windows beta.44 transmis comporte 777 tests, 7 échecs et 8 ignorés. Cinq erreurs signalent FileProvider, deux l’ouverture SQLite sur disque. Une adaptation des séparateurs, limitée aux tests, et des dossiers de test courts sont proposées sans retirer de scénario ; la réussite sur le PC utilisateur reste à vérifier. [Guide](REPERES-VEHICULES-ANDROID-BETA45.md).
+
+Vérifications : 110 tests JVM ciblés réussis sous Linux ; 10 scénarios caméra/Room rejoués avec adaptateur forcé, puis 10 réussis en JVM Windows 17 sous Wine (pas un vrai Windows). Un aller-retour fictif PWA → Android/Room → PWA a réussi sous Chromium et WebKit Linux. APK debug assemblé ; 69 tests instrumentés compilés mais non exécutés. Lint 0 erreur, 24 avertissements, 5 indications ; scripts 34 archive, 32 CI, 7 workflow, 22 R8. Suite JVM complète et appareils réels non testés ; cibles de performance non mesurées.
+
+
 ## 7 novembre 2026 — PWA beta.15 : repère de couleur par véhicule
 
 À la demande de poursuivre la phase 2.3 sans attendre les essais sur téléphone, ajout dans la PWA d’un repère facultatif, choisi séparément de la fiche et de la couleur de carrosserie. Six couleurs et l’absence de repère sont proposées ; l’annulation ne change rien. Des noms accompagnent les pastilles sur le garage et l’accueil. Le véhicule ciblé est mis à jour avec contrôle transactionnel de son instantané ; la modification générale est désormais protégée contre le même risque. Les formats et champs inconnus sont préservés, les valeurs inconnues non modifiables. IndexedDB 6 et formats JSON v3/v4/v5 conservés ; Android beta.44 inchangé et sans affichage du repère. [Détails](REPERES-VEHICULES-PWA-BETA15.md).

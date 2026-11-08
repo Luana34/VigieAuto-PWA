@@ -1,6 +1,9 @@
 # VigieAuto Android — demandes et priorités après 0.4.0-beta.16
 
-**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.14 / Android 0.4.0-beta.44 :** recherche locale approchante des marques et modèles dans la PWA, avec priorité aux choix mémorisés à qualité égale. Les propositions sont affichées par l’application et sélectionnées explicitement ; saisie libre et association modèle/marque conservées. Données, IndexedDB, JSON et référentiel inchangés. Essais logiciels sous Chromium et WebKit Linux ; Safari iPhone, VoiceOver et performances réelles restent à valider. La phase 2.3 reste ouverte. [Détails](RECHERCHE-CATALOGUE-PWA-BETA14.md).
+**Actualisation du 7 novembre 2026 — PWA candidate 1.5.2-beta.16 / Android 0.4.0-beta.45 inchangé :** début partiel de la phase 2.4 : dans la PWA, couleur réelle, assurance et achat facultatifs, dans « Infos véhicule », avec devise explicite et sans conversion. VIN, immatriculation et notes simples existaient déjà ; notes enrichies et interface Android restent à réaliser. Le repère, distinct de la carrosserie, existe sur les deux versions. IndexedDB 6, Room 17 et enveloppes JSON conservés ; extensions et conflits protégés dans les cas testés. Aucune opération ni rappel automatique. Essais logiciels fictifs sous Chromium/WebKit Linux ; Safari iPhone et performances restent à valider. Phase 2.3 ouverte, phase 2.5 à étudier avant codage. [Guide](FICHE-VEHICULE-PWA-BETA16.md).
+
+
+**Historique du 7 novembre 2026 — PWA 1.5.2-beta.14 / Android 0.4.0-beta.44 :** recherche locale approchante des marques et modèles dans la PWA, avec priorité aux choix mémorisés à qualité égale. Les propositions sont affichées par l’application et sélectionnées explicitement ; saisie libre et association modèle/marque conservées. Données, IndexedDB, JSON et référentiel inchangés. Essais logiciels sous Chromium et WebKit Linux ; Safari iPhone, VoiceOver et performances réelles restent à valider. La phase 2.3 reste ouverte. [Détails](RECHERCHE-CATALOGUE-PWA-BETA14.md).
 
 **Historique du 7 novembre 2026 — PWA 1.5.2-beta.13 / Android 0.4.0-beta.44 :** le ZIP source PWA conserve tous les tests et documents et fournit un dossier `A-METTRE-SUR-GITHUB` avec seulement les fichiers nécessaires au site. Le numéro, le cache et les références d’icônes changent ; les fonctionnalités, données et calculs restent identiques à beta.12. Aucune publication automatique. Essais de la copie publique et de la mise à jour beta.12 → beta.13 sous Chromium et WebKit Linux ; Safari iPhone et performances réelles non validés. [Guide](QUOI-PUBLIER-GITHUB.md).
 
@@ -129,13 +132,15 @@ En beta.26 : choix depuis galerie/fichiers, redimensionnement et affichage du v�
 
 ### 2.3 Multivéhicule et catalogue
 
-**Beta.42 — partie réalisée :** sélecteur en haut de l’accueil, liste paresseuse et miniatures bornées ; véhicule actif indiqué et choix conservé. Lecture vérifiée pour les identifiants longs. [Guide](LISTE-VEHICULES.md). **Beta.44 Android et beta.14 PWA — autre partie réalisée :** recherche approximative et priorité aux suggestions mémorisées à qualité égale, sans choix automatique. [Guide Android](RECHERCHE-CATALOGUE-BETA44.md) · [Guide PWA](RECHERCHE-CATALOGUE-PWA-BETA14.md). **À poursuivre :** avatars/couleurs et éventuelle vue combinée à étudier ; essais et mesures sur appareil.
+**Beta.42 — partie réalisée :** sélecteur en haut de l’accueil, liste paresseuse et miniatures bornées ; véhicule actif indiqué et choix conservé. Lecture vérifiée pour les identifiants longs. [Guide](LISTE-VEHICULES.md). **Beta.44 Android et beta.14 PWA — autre partie réalisée :** recherche approximative et priorité aux suggestions mémorisées à qualité égale, sans choix automatique. [Guide Android](RECHERCHE-CATALOGUE-BETA44.md) · [Guide PWA](RECHERCHE-CATALOGUE-PWA-BETA14.md). **Beta.15 PWA et beta.45 Android — repère facultatif réalisé :** distinct de la couleur de carrosserie. **À poursuivre :** avatar et éventuelle vue combinée à étudier ; essais et mesures sur appareil.
 
 Sélecteur visible en haut pour changer rapidement, avatar ou couleur par véhicule, dernier véhicule rouvert au lancement, vue combinée facultative. La sélection et le dernier véhicule existent déjà partiellement ; vérifier leur ergonomie. Recherche approximative (exemple « cio » → Clio), priorité aux choix déjà utilisés et mémorisation locale. Toujours permettre « Autre marque… » et « Autre modèle… », saisie libre, modèles personnels liés à leur marque et fonctionnement hors ligne ; ne pas imposer de génération.
 
 ### 2.4 Champs complémentaires
 
-Couleur ; compagnie d’assurance, numéro et échéance ; date et prix d’achat ; notes libres enrichies avec mise en forme basique. VIN, immatriculation et notes sont déjà éditables sur Android : vérifier les champs existants, la migration et les échanges JSON/PWA avant tout ajout. Ne pas inventer de valeurs manquantes.
+**PWA beta.16 — partie réalisée :** couleur réelle, compagnie/numéro/échéance d’assurance et date/prix d’achat avec devise explicite, facultatifs et sans création automatique. VIN, immatriculation et notes simples existaient déjà sur les deux versions. [Guide](FICHE-VEHICULE-PWA-BETA16.md).
+
+**À poursuivre :** portage de ces nouveaux champs sur Android, puis notes enrichies avec mise en forme basique à concevoir sans écraser les notes historiques. Ne pas inventer de valeurs manquantes ; préserver les extensions et vérifier les échanges JSON.
 
 ### 2.5 Historique du compteur — étude préalable
 

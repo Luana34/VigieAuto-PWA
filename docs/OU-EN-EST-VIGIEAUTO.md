@@ -1,6 +1,9 @@
 # Où en est VigieAuto ?
 
-**Actualisation du 7 novembre 2026 — PWA 1.5.2-beta.15 / Android 0.4.0-beta.44 :** repère facultatif par véhicule dans la PWA, distinct de la couleur réelle du véhicule. Choix explicite, noms visibles et protection transactionnelle contre les conflits ; formats inconnus conservés en lecture seule. IndexedDB 6 et versions JSON v3/v4/v5 conservées. Android ne l’affiche pas encore ; un aller-retour fictif avec Room beta.44, édition et annulation réussit, ainsi que la mise à jour PWA beta.14 → beta.15 sous Chromium et WebKit Linux. Les essais iPhone/Safari, lecteur d’écran réel et performances restent à faire ; le socle et la phase 2.3 restent ouverts. [Détails](REPERES-VEHICULES-PWA-BETA15.md).
+**Actualisation du 7 novembre 2026 — PWA candidate 1.5.2-beta.16 / Android 0.4.0-beta.45 inchangé :** début partiel de la phase 2.4 : dans la PWA, couleur réelle, assurance et achat facultatifs, dans « Infos véhicule », avec devise explicite et sans conversion. VIN, immatriculation et notes simples existaient déjà ; notes enrichies et interface Android restent à réaliser. Le repère, distinct de la carrosserie, existe sur les deux versions. IndexedDB 6, Room 17 et enveloppes JSON conservés ; extensions et conflits protégés dans les cas testés. Aucune opération ni rappel automatique. Essais logiciels fictifs sous Chromium/WebKit Linux ; Safari iPhone et performances restent à valider. Phase 2.3 ouverte, phase 2.5 à étudier avant codage. [Guide](FICHE-VEHICULE-PWA-BETA16.md).
+
+
+**Historique du 7 novembre 2026 — PWA 1.5.2-beta.15 / Android 0.4.0-beta.44 :** repère facultatif par véhicule dans la PWA, distinct de la couleur réelle du véhicule. Choix explicite, noms visibles et protection transactionnelle contre les conflits ; formats inconnus conservés en lecture seule. IndexedDB 6 et versions JSON v3/v4/v5 conservées. Android ne l’affiche pas encore ; un aller-retour fictif avec Room beta.44, édition et annulation réussit, ainsi que la mise à jour PWA beta.14 → beta.15 sous Chromium et WebKit Linux. Les essais iPhone/Safari, lecteur d’écran réel et performances restent à faire ; le socle et la phase 2.3 restent ouverts. [Détails](REPERES-VEHICULES-PWA-BETA15.md).
 
 **Historique du 7 novembre 2026 — PWA 1.5.2-beta.14 / Android 0.4.0-beta.44 :** recherche locale approchante des marques et modèles dans la PWA, avec priorité aux choix mémorisés à qualité égale. Les propositions sont affichées par l’application et sélectionnées explicitement ; saisie libre et association modèle/marque conservées. Données, IndexedDB, JSON et référentiel inchangés. Essais logiciels sous Chromium et WebKit Linux ; Safari iPhone, VoiceOver et performances réelles restent à valider. La phase 2.3 reste ouverte. [Détails](RECHERCHE-CATALOGUE-PWA-BETA14.md).
 
@@ -48,11 +51,11 @@
 
 **Contrôles Android beta.27 :** suite JVM Linux 581 tests, **573 réussis et 8 ignorés** faute des anciennes fixtures, aucun échec ; 84 classes. Le nouveau parcours fictif Room → candidate PWA → Room → PWA a réussi séparément sous Chromium et WebKit Linux ; 7 tests Compose du formulaire ont réussi séparément. Aucun essai sur téléphone, émulateur, iPhone, Windows ou GitHub ni aucune mesure réelle de performances. Voir [CARNET-ANDROID-BETA27.md](CARNET-ANDROID-BETA27.md).
 
-**Point au 7 novembre 2026 · Android 0.4.0-beta.44 · PWA familiale 1.5.1 / candidate 1.5.2-beta.15**
+**Point au 7 novembre 2026 · Android 0.4.0-beta.45 · PWA familiale 1.5.1 / candidate 1.5.2-beta.16**
 
 ## La réponse courte
 
-VigieAuto existe en deux applications distinctes : Android natif et PWA familiale, notamment sur iPhone. Elles fonctionnent localement et échangent manuellement des sauvegardes JSON v3/v4/v5 entre Android beta.44 et la PWA beta.15 ; pas de synchronisation. Les anciennes versions peuvent refuser les formats récents. L’application reste gratuite, sans publicité, abonnement ni compte obligatoire.
+VigieAuto existe en deux applications distinctes : Android natif et PWA familiale, notamment sur iPhone. Elles fonctionnent localement et échangent manuellement des sauvegardes JSON v3/v4/v5 entre Android beta.45 et la PWA beta.16 ; pas de synchronisation. Les anciennes versions peuvent refuser les formats récents. L’application reste gratuite, sans publicité, abonnement ni compte obligatoire.
 
 Nous avançons maintenant sur les **fonctions principales sans attendre les essais sur téléphone**. Le socle Android reste toutefois en cours de validation : la version 0.4.0 n’est pas déclarée stable et aucun pourcentage ni délai n’est mesuré.
 
@@ -70,11 +73,11 @@ Les rappels sont visibles dans l’application et utilisent des jours et/ou kilo
 
 ## Ce que la PWA apporte
 
-Depuis beta.15, chaque véhicule peut recevoir un repère de couleur facultatif, distinct de la carrosserie ; Android beta.44 ne l’affiche pas encore. [Guide](REPERES-VEHICULES-PWA-BETA15.md).
+Depuis PWA beta.15 et Android beta.45, chaque véhicule peut recevoir un repère de couleur facultatif, distinct de la carrosserie. Depuis PWA beta.16, une fiche séparée permet de saisir la couleur réelle, l’assurance et l’achat ; ces nouveaux champs n’ont pas encore d’écran Android. [Guide](REPERES-VEHICULES-PWA-BETA15.md).
 
 La PWA familiale 1.5.1 dispose déjà notamment des contrôles qualité, dépenses, symptômes, documents et statistiques. Son GPS est facultatif et dépend de la page visible ; un suivi continu écran éteint n’est pas garanti. L’installation et le stockage restent liés à l’adresse du site.
 
-La **candidate 1.5.2-beta.15** conserve les devises des dépenses, pleins et entretiens ; les exports v5 sont compatibles avec Android beta.44. Android affiche les totaux par devise et la consommation entre pleins complets ; le tableau de bord complet reste à développer. Aucun lien automatique plein/dépense. L’utilisatrice indique avoir essayé beta.1 sur Android sans perte constatée ; cela ne valide pas beta.15 ni l’iPhone. Sauvegardez séparément chaque appareil ; la PWA 1.5.1 peut arrondir certains grands nombres. [Détails](DEVISES-ANDROID-BETA36.md).
+La **candidate 1.5.2-beta.16** conserve les devises des dépenses, pleins et entretiens ; les exports v5 sont compatibles avec Android beta.45. Android affiche les totaux par devise et la consommation entre pleins complets ; le tableau de bord complet reste à développer. Aucun lien automatique plein/dépense. L’utilisatrice indique avoir essayé beta.1 sur Android sans perte constatée ; cela ne valide pas beta.16 ni l’iPhone. Sauvegardez séparément chaque appareil ; la PWA 1.5.1 peut arrondir certains grands nombres. [Détails](DEVISES-ANDROID-BETA36.md).
 
 ## Vérifications de beta.26
 
