@@ -1,6 +1,8 @@
 // Stockage local. Les écritures groupées ne sont confirmées qu'à la fin de la transaction.
 import { SUGGESTION_SETTING_ID, rememberVehicle } from "./catalogue.js";
 import { CURRENCY_STORE, CURRENCY_COLLECTIONS, currencyAssignmentId, indexCurrencyAssignments } from "./currency.js";
+import { CORRECTION_STORE, splitWireVehicle, mergeWireRecords } from "./odometer-history.js";
+// Collections du format d’échange : aucune nouvelle collection racine JSON.
 export const STORES = [
   "vehicles",
   "services",
@@ -15,15 +17,15 @@ export const STORES = [
   "settings",
   "currencyAssignments",
 ];
+// Les corrections sont une table locale indépendante. Le pont les emballe dans
+// une extension du véhicule, pas dans une nouvelle collection racine inconnue.
+export const LOCAL_STORES = [...STORES, CORRECTION_STORE];
 const DB_NAME = "cq-auto-local";
-// Conserver ce nom : c’est la même base que CQ Auto sur la même origine.
-// Version 6 : la collection de devises peut aussi référencer pleins et interventions.
-// Une ancienne PWA ne doit pas rouvrir cette base et afficher une devise étrangère en euros.
-// Version 6 bloque les anciennes PWA : elles pourraient afficher un plein étranger en euros.
-const DB_VERSION = 6;
-// Contrat explicite d'ouverture : empêche une ancienne interface, servie par
-// son ancien cache pendant une mise à jour, d'utiliser ce nouveau module DB.
-export const DB_CONTRACT = "vigieauto-operations-devises-v6";
+// Version 7 : migrations transactionnelles des corrections vers leur table.
+// Une ancienne interface ne doit pas ouvrir cette base ni effacer cette table.
+const DB_VERSION = 7;
+export const DB_CONTRACT = "vigieauto-compteur-v7";
+const REQUIRED_CAPABILITY = "corrections-compteur-v1";
 
 /** Comparaison structurelle des enregistrements JSON et des marqueurs numériques
  * Uint8Array ; si l'objet courant a changé, l'édition est refusée avant écriture. */
@@ -44,21 +46,43 @@ export class LocalDatabase {
   constructor() {
     this.db = null;
   }
-  async open(expectedContract) {
-    if (expectedContract !== DB_CONTRACT)
+  async open(expectedContract, capability) {
+    // Un ancien app.js importait lui-même DB_CONTRACT : un second argument
+    // explicite est nécessaire pour refuser un ancien écran avec le nouveau DB.
+    if (expectedContract !== DB_CONTRACT || capability !== REQUIRED_CAPABILITY)
       throw new Error("Mise à jour en cours : fermez les anciens onglets VigieAuto et rechargez cette version.");
     if (!("indexedDB" in window))
       throw new Error("IndexedDB est indisponible dans ce navigateur.");
     this.db = await new Promise((resolve, reject) => {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = () => {
-        const db = req.result;
-        for (const name of STORES) {
+      req.onupgradeneeded = event => {
+        const db = req.result, transaction = req.transaction;
+        for (const name of LOCAL_STORES) {
           if (!db.objectStoreNames.contains(name)) {
             const store = db.createObjectStore(name, { keyPath: "id" });
             if (!["vehicles", "templates", "settings", "currencyAssignments"].includes(name))
               store.createIndex("vehicleId", "vehicleId", { unique: false });
           }
+        }
+        // Une ancienne version peut déjà contenir une extension reconnue.
+        // Déplacer ses lignes, sans les dupliquer, dans la même transaction de
+        // migration ; tout format inconnu reste dans le véhicule sans écriture.
+        if (event.oldVersion > 0 && event.oldVersion < 7) {
+          const vehicleStore = transaction.objectStore("vehicles");
+          const corrections = transaction.objectStore(CORRECTION_STORE);
+          const cursorRequest = vehicleStore.openCursor();
+          cursorRequest.onsuccess = () => {
+            const cursor = cursorRequest.result;
+            if (!cursor) return;
+            try {
+              const split = splitWireVehicle(cursor.value);
+              if (split.rows.length) {
+                for (const row of split.rows) corrections.add(row);
+                cursor.update(split.vehicle);
+              }
+              cursor.continue();
+            } catch (error) { transaction.abort(); }
+          };
         }
       };
       req.onsuccess = () => resolve(req.result);
@@ -75,8 +99,8 @@ export class LocalDatabase {
   async readAll() {
     return new Promise((resolve, reject) => {
       const result = {};
-      const tx = this.db.transaction(STORES, "readonly");
-      for (const name of STORES) {
+      const tx = this.db.transaction(LOCAL_STORES, "readonly");
+      for (const name of LOCAL_STORES) {
         const request = tx.objectStore(name).getAll();
         request.onsuccess = () => {
           result[name] = request.result;
@@ -93,7 +117,7 @@ export class LocalDatabase {
       let tx;
       try {
         const stores = [...new Set(operations.map((op) => op.store))];
-        if (stores.some((name) => !STORES.includes(name)))
+        if (stores.some((name) => !LOCAL_STORES.includes(name)))
           throw new Error("Collection inconnue.");
         tx = this.db.transaction(stores, "readwrite");
         for (const op of operations) {
@@ -121,7 +145,7 @@ export class LocalDatabase {
       let tx, reason;
       try {
         const stores = [...new Set([...operations.map((op) => op.store), ...guards.map((guard) => guard.store)])];
-        if (stores.some((name) => !STORES.includes(name))) throw new Error('Collection inconnue.');
+        if (stores.some((name) => !LOCAL_STORES.includes(name))) throw new Error('Collection inconnue.');
         tx = this.db.transaction(stores, 'readwrite');
         const write = () => {
           try {
@@ -173,13 +197,14 @@ export class LocalDatabase {
       tx.onabort = () => reject(reason || tx.error || new Error('Transaction annulée.'));
     });
   }
-  async saveVehicleWithSuggestions(vehicle, expected) {
-    // Exiger une image à l'ouverture : une ancienne interface mélangée à ce
-    // module ne doit pas contourner la protection en omettant l'argument.
-    if (expected === undefined) throw new Error("Mise à jour en cours : fermez les anciens onglets et rechargez VigieAuto.");
+  async saveVehicleWithSuggestions(vehicle, expected, historyChange = null) {
+    if (expected === undefined) throw new Error("Mise à jour en cours : fermez les anciens onglets VigieAuto et rechargez cette version.");
+    if (expected && expected.odometer !== vehicle.odometer && !historyChange)
+      throw new Error("La correction du compteur doit aussi être enregistrée dans son historique.");
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(["vehicles", "settings"], "readwrite");
+      const tx = this.db.transaction(["vehicles", "settings", CORRECTION_STORE], "readwrite");
       const settings = tx.objectStore("settings"), vehicles = tx.objectStore("vehicles");
+      const corrections = tx.objectStore(CORRECTION_STORE);
       let reason, updatedSuggestions, updatedActive;
       const vehicleRequest = vehicles.get(vehicle.id);
       vehicleRequest.onsuccess = () => {
@@ -187,8 +212,7 @@ export class LocalDatabase {
           reason = new Error("Ce véhicule a changé ou a été supprimé dans une autre fenêtre. Fermez le formulaire, rechargez VigieAuto et réessayez.");
           tx.abort(); return;
         }
-        // Lire et fusionner les suggestions actuelles dans la même transaction :
-        // deux nouveaux véhicules ne peuvent pas perdre leurs suggestions.
+        // Les trois écritures et le contrôle de concurrence partagent la transaction.
         const suggestionRequest = settings.get(SUGGESTION_SETTING_ID);
         suggestionRequest.onsuccess = () => {
           try {
@@ -202,6 +226,22 @@ export class LocalDatabase {
           updatedActive = { ...(activeRequest.result || {}), id: "activeVehicle", value: vehicle.id };
           settings.put(updatedActive);
         };
+        if (historyChange) {
+          const rowsRequest = corrections.index("vehicleId").getAll(IDBKeyRange.only(vehicle.id));
+          rowsRequest.onsuccess = () => {
+            try {
+              const sort = rows => [...rows].sort((a,b) => a.id.localeCompare(b.id));
+              if (!Array.isArray(historyChange.expectedRows) || !sameStoredValue(sort(rowsRequest.result), sort(historyChange.expectedRows)))
+                throw new Error("L’historique a changé dans une autre fenêtre. Rouvrez le formulaire.");
+              const row = historyChange.row;
+              if (!expected || !row || row.vehicleId !== vehicle.id || row.entry?.before !== expected.odometer || row.entry?.after !== vehicle.odometer)
+                throw new Error("La correction ne correspond plus au compteur ; rien n’a été enregistré.");
+              // Vérifie le rattachement, les IDs, l’ordre et la structure avant l’ajout.
+              mergeWireRecords({ vehicles: [vehicle], [CORRECTION_STORE]: [...rowsRequest.result, row] });
+              corrections.add(row);
+            } catch (error) { reason = error; tx.abort(); }
+          };
+        }
       };
       tx.oncomplete = () => resolve({ suggestions: updatedSuggestions, active: updatedActive });
       tx.onerror = () => reject(reason || tx.error || new Error("Enregistrement du véhicule impossible."));
@@ -321,7 +361,7 @@ export class LocalDatabase {
   async deleteVehicleCascade(id, { activeId = null, wasActive = false } = {}) {
     // L'index véhicule est lu dans la même transaction que sa suppression :
     // une donnée créée dans un autre onglet ne reste pas orpheline.
-    const related = ["services", "fills", "trips", "expenses", "reminders", "symptoms", "checks", "documents"];
+    const related = ["services", "fills", "trips", "expenses", "reminders", "symptoms", "checks", "documents", CORRECTION_STORE];
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction(["vehicles", "settings", "currencyAssignments", ...related], "readwrite");
       tx.objectStore("vehicles").delete(id);
@@ -347,7 +387,8 @@ export class LocalDatabase {
   }
   async replaceAll(records) {
     const operations = [];
-    for (const name of STORES) {
+    for (const name of LOCAL_STORES) {
+      if (!Array.isArray(records[name])) throw new Error("Sauvegarde incomplète ; aucune donnée remplacée.");
       operations.push({ store: name, type: "clear" });
       for (const value of records[name])
         operations.push({ store: name, type: "put", value });

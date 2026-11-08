@@ -31,7 +31,7 @@ async function upload(p, data, expected) {
   await p.locator('#import-file').setInputFiles({name:'test.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(data))});
   await p.waitForFunction(word=>document.querySelector('#toast')?.textContent.includes(word),expected);
 }
-async function db(p) {return p.evaluate(async()=>{const {LocalDatabase, DB_CONTRACT}=await import('/js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT);const x=await d.readAll();d.db.close();return x;});}
+async function db(p) {return p.evaluate(async()=>{const {LocalDatabase, DB_CONTRACT}=await import('/js/db.js');const d=await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");const x=await d.readAll();d.db.close();return x;});}
 (async()=>{
   const {server,base}=await serve(), browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   try {

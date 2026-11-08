@@ -1,4 +1,6 @@
-import { LocalDatabase, STORES, DB_CONTRACT } from "./db.js";
+import { LocalDatabase, STORES, LOCAL_STORES, DB_CONTRACT } from "./db.js";
+import { CORRECTION_STORE, ODOMETER_HISTORY_KEY, CORRECTION_TEXT_LIMIT, inspectOdometerHistory,
+  splitWireRecords, mergeWireRecords, prepareManualCorrection, buildOdometerTimeline } from "./odometer-history.js";
 import { CURRENCY_STORE, CURRENCY_CHOICES, MAX_CURRENCIES, validCurrencyCode, currencyAssignmentId, indexCurrencyAssignments,
   validateCurrencyAssignments, currencyOf, spendingByCurrency, expenseTotalsByCurrency } from "./currency.js";
 import { parseBackupJson, stringifyBackupJson, survivesUserNumber, addNumbersForUse } from "./precise-json.js";
@@ -12,6 +14,7 @@ import {
 import { consumeGpsFix } from "./gps.js";
 import { VEHICLE_MARKER_COLORS, inspectVehicleMarker, withVehicleMarker } from "./vehicle-marker.js";
 import { PROFILE_FIELDS, PROFILE_TEXT_LIMIT, inspectVehicleProfile, withVehicleProfile } from "./vehicle-profile.js";
+import { VEHICLE_NOTES_KEY, VEHICLE_NOTES_LIMIT, inspectVehicleNotes, withVehicleNotes, toggleNoteMark, rebaseNoteMarks } from "./vehicle-notes.js";
 import { inspectExpenseReceipt, receiptPreviewUrl, withExpenseReceipt, validateReceiptFile, requireReceiptRecordSize } from "./expense-receipt.js";
 import {
   SUGGESTION_SETTING_ID, AUTRE_MARQUE, AUTRE_MODELE, FUEL_CHOICES,
@@ -42,7 +45,7 @@ import {
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.16";
+const APP_VERSION = "1.5.2-beta.18";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -136,6 +139,7 @@ const modal = $("#modal");
 // Instantanés pris à l'ouverture : même une lecture de fichier asynchrone ne
 // peut écraser une modification effectuée depuis un autre onglet.
 let expenseDraft = null, receiptDraft = null, fillDraft = null, vehicleDraft = null, markerDraft = null, profileDraft = null;
+let notesDraft = null, notesOpening = 0;
 let symptomDraft = null, checkDraft = null;
 const VALID_THEMES = new Set(["sauge", "cyan", "auto"]);
 const darkScheme = window.matchMedia?.("(prefers-color-scheme: dark)") || null;
@@ -930,7 +934,7 @@ function tripsView() {
 }
 function garageView() {
   return `${pageHeading("Mes véhicules", "Tous vos compagnons de route au même endroit.", addButton("Ajouter un véhicule", "add-vehicle"))}
-  ${state.records.vehicles.length ? `<div class="vehicle-grid">${state.records.vehicles.map((v) => `<div class="card vehicle-tile"><div class="vehicle-tile-top">${square("car")}<div class="list-main"><h3>${esc(nameOf(v))}</h3><div class="list-meta">${esc(v.version || fuelLabel(v))} ${v.year ? `· ${esc(v.year)}` : ""} ${v.plate ? `· ${esc(v.plate)}` : ""}</div><div class="list-meta"><b>${number(v.odometer)} km</b></div>${vehicleMarkerBadge(v)}</div>${v.id === state.activeId ? '<span class="tag">Actif</span>' : ""}</div><div class="tile-actions">${v.id !== state.activeId ? `<button class="btn small" data-action="select-vehicle" data-id="${esc(v.id)}">Choisir ce véhicule</button>` : '<span class="card-intro">Véhicule sélectionné</span>'}<button class="btn secondary small vehicle-marker-button" data-action="vehicle-marker" data-id="${esc(v.id)}" aria-label="Repère de couleur pour ${esc(nameOf(v))}">Repère de couleur</button><button class="btn secondary small vehicle-profile-button" data-action="vehicle-profile" data-id="${esc(v.id)}" aria-label="Informations complémentaires pour ${esc(nameOf(v))}">Infos véhicule</button><span class="spacer"></span><button class="icon-button" data-action="edit-vehicle" data-id="${esc(v.id)}" aria-label="Modifier ${esc(nameOf(v))}">${I("edit")}</button><button class="icon-button" data-action="delete-vehicle" data-id="${esc(v.id)}" aria-label="Supprimer ${esc(nameOf(v))}">${I("trash")}</button></div></div>`).join("")}</div>` : `<div class="card">${empty("car", "Votre garage est vide", "Ajoutez votre premier véhicule pour commencer.", "add-vehicle", "Ajouter un véhicule")}</div>`}`;
+  ${state.records.vehicles.length ? `<div class="vehicle-grid">${state.records.vehicles.map((v) => `<div class="card vehicle-tile"><div class="vehicle-tile-top">${square("car")}<div class="list-main"><h3>${esc(nameOf(v))}</h3><div class="list-meta">${esc(v.version || fuelLabel(v))} ${v.year ? `· ${esc(v.year)}` : ""} ${v.plate ? `· ${esc(v.plate)}` : ""}</div><div class="list-meta"><b>${number(v.odometer)} km</b></div>${vehicleMarkerBadge(v)}</div>${v.id === state.activeId ? '<span class="tag">Actif</span>' : ""}</div><div class="tile-actions">${v.id !== state.activeId ? `<button class="btn small" data-action="select-vehicle" data-id="${esc(v.id)}">Choisir ce véhicule</button>` : '<span class="card-intro">Véhicule sélectionné</span>'}<button class="btn secondary small vehicle-marker-button" data-action="vehicle-marker" data-id="${esc(v.id)}" aria-label="Repère de couleur pour ${esc(nameOf(v))}">Repère de couleur</button><button class="btn secondary small vehicle-profile-button" data-action="vehicle-profile" data-id="${esc(v.id)}" aria-label="Informations complémentaires pour ${esc(nameOf(v))}">Infos véhicule</button><button class="btn secondary small vehicle-notes-button" data-action="vehicle-notes" data-id="${esc(v.id)}" aria-label="Notes pour ${esc(nameOf(v))}">Notes</button><button class="btn secondary small vehicle-history-button" data-action="vehicle-odometer-history" data-id="${esc(v.id)}" aria-label="Historique kilométrique pour ${esc(nameOf(v))}">Historique km</button><span class="spacer"></span><button class="icon-button" data-action="edit-vehicle" data-id="${esc(v.id)}" aria-label="Modifier ${esc(nameOf(v))}">${I("edit")}</button><button class="icon-button" data-action="delete-vehicle" data-id="${esc(v.id)}" aria-label="Supprimer ${esc(nameOf(v))}">${I("trash")}</button></div></div>`).join("")}</div>` : `<div class="card">${empty("car", "Votre garage est vide", "Ajoutez votre premier véhicule pour commencer.", "add-vehicle", "Ajouter un véhicule")}</div>`}`;
 }
 function categoryFilter(name, values, selected) {
   return `<select data-filter="${name}" aria-label="Filtrer par catégorie"><option value="all">Toutes les catégories</option>${Object.entries(
@@ -1162,7 +1166,7 @@ function field(name, label, value = "", options = {}) {
   return `<div class="field ${full ? "full-width" : ""}">${heading}<input id="f-${name}" name="${name}" type="${type}" ${type !== "file" ? `value="${esc(value)}"` : ""} ${required ? "required" : ""} ${placeholder ? `placeholder="${esc(placeholder)}"` : ""} ${min !== undefined ? `min="${esc(min)}"` : ""} ${max !== undefined ? `max="${esc(max)}"` : ""} ${step !== undefined ? `step="${esc(step)}"` : ""} ${accept ? `accept="${esc(accept)}"` : ""} ${extra}>${help ? `<small>${help}</small>` : ""}</div>`;
 }
 function area(name, label, value = "", options = {}) {
-  return `<div class="field ${options.full === false ? "" : "full-width"}"><label for="f-${name}">${label}${options.required ? " *" : ""}</label><textarea id="f-${name}" name="${name}" ${options.required ? "required" : ""} ${options.placeholder ? `placeholder="${esc(options.placeholder)}"` : ""}>${esc(value)}</textarea>${options.help ? `<small>${options.help}</small>` : ""}</div>`;
+  return `<div class="field ${options.full === false ? "" : "full-width"}"><label for="f-${name}">${label}${options.required ? " *" : ""}</label><textarea id="f-${name}" name="${name}" ${options.required ? "required" : ""} ${options.readonly ? "readonly" : ""} ${options.placeholder ? `placeholder="${esc(options.placeholder)}"` : ""}>${esc(value)}</textarea>${options.help ? `<small>${options.help}</small>` : ""}</div>`;
 }
 function selectField(name, label, value, choices, options = {}) {
   return `<div class="field ${options.full ? "full-width" : ""}"><label for="f-${name}">${label}${options.required ? " *" : ""}</label><select id="f-${name}" name="${name}" ${options.required ? "required" : ""}>${Object.entries(
@@ -1273,6 +1277,99 @@ function formModal({
 function contentModal(title, subtitle, body) {
   modal.innerHTML = `<div class="modal-shell"><div class="modal-header"><div><h2 id="dialog-title">${title}</h2><p>${subtitle}</p></div><button class="icon-button" data-action="close-modal" aria-label="Fermer">${I("close")}</button></div><div class="modal-body">${body}</div><div class="modal-footer"><button class="btn secondary" data-action="close-modal">Fermer</button></div></div>`;
   if (!modal.open) modal.showModal();
+}
+// Le compteur historique n’arrondit pas les décimales pour l’affichage.
+function mileageText(value) {
+  const [mantissa, exponent] = String(value).split(/e/i);
+  const [integer, fraction] = mantissa.split('.');
+  return integer.replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f') +
+    (fraction ? `,${fraction}` : '') + (exponent !== undefined ? `e${exponent}` : '');
+}
+let odometerHistoryView = null;
+async function openOdometerHistory(id, { refresh = true, limit = 80 } = {}) {
+  if (!state.demo && refresh) {
+    const fresh = await state.db.readAll();
+    state.records = fresh;
+    if (!fresh.vehicles.some(v => v.id === state.activeId)) {
+      const saved = fresh.settings.find(x => x.id === 'activeVehicle')?.value;
+      state.activeId = fresh.vehicles.find(v => v.id === saved)?.id || fresh.vehicles[0]?.id || null;
+    }
+  }
+  const vehicle = recordById('vehicles', id);
+  if (!vehicle) throw new Error('Ce véhicule n’existe plus. Rechargez VigieAuto.');
+  const history = buildOdometerTimeline(state.records, id);
+  odometerHistoryView = { id, limit };
+  const icons = { fill:'fuel', service:'wrench', check:'check', symptom:'symptom', expense:'receipt', correction:'edit' };
+  const rows = history.entries.slice(0, limit).map(x => {
+    const details = [x.detail, x.kind === 'correction' ? `Avant : ${mileageText(x.before)} km` : '',
+      x.reason ? `Motif : ${x.reason}` : '', x.actor ? `Personne : ${x.actor}` : ''].filter(Boolean);
+    const warning = x.anomaly ? '<p class="odometer-warning" role="status">⚠️ Relevé inférieur à ceux d’une date précédente. Vérifiez la date ou le kilométrage.</p>' : '';
+    const correction = x.kind === 'correction'
+      ? `<button type="button" class="btn secondary small" data-action="delete-odometer-correction" data-id="${esc(x.id)}" data-vehicle-id="${esc(id)}">Supprimer cette correction</button>` : '';
+    return `<li class="odometer-history-item">${square(icons[x.kind] || 'speed')}<div class="list-main"><strong>${esc(mileageText(x.km))} km · ${esc(x.title)}</strong><p>${esc(shortDate(x.date))}${details.length ? ` · ${details.map(esc).join(' · ')}` : ''}</p>${warning}${correction}</div></li>`;
+  }).join('');
+  const unavailable = history.historyState === 'unsupported' || history.unsplit
+    ? '<p class="odometer-warning" role="status">Les corrections de ce véhicule viennent d’un format non reconnu. Elles restent conservées, mais ne peuvent pas être affichées ou modifiées ici.</p>' : '';
+  const omitted = history.omitted ? `<p class="odometer-warning" role="status">${history.omitted} relevé(s) ne peuvent pas être affichés avec certitude. Les données restent conservées dans leur rubrique.</p>` : '';
+  const list = rows ? `<ol class="odometer-history-list">${rows}</ol>` : '<p>Aucun relevé disponible pour ce véhicule.</p>';
+  const more = history.entries.length > limit
+    ? `<button type="button" class="btn secondary" data-action="more-odometer-history">Afficher plus de relevés</button>` : '';
+  contentModal('Historique kilométrique', esc(nameOf(vehicle)),
+    `<p class="odometer-history-intro">Relevés disponibles dans les pleins, entretiens, contrôles, symptômes et dépenses ; les corrections manuelles sont conservées séparément.</p>
+     <p class="odometer-history-intro">Si un élément est modifié ou supprimé, son relevé suit sa rubrique. Les données antérieures ou modifiées par une ancienne version peuvent manquer : cet historique n’est pas certifié.</p>
+     ${unavailable}${omitted}${list}<p class="odometer-history-count">${Math.min(limit,history.entries.length)} sur ${history.entries.length} relevé(s) affichés. L’ordre des relevés d’une même date est indicatif.</p>${more}`);
+}
+async function deleteOdometerCorrection(vehicleId, id) {
+  const vehicle = recordById('vehicles', vehicleId);
+  const row = state.records[CORRECTION_STORE]?.find(x => x.id === id && x.vehicleId === vehicleId);
+  if (!vehicle || !row) throw new Error('Cette correction ou ce véhicule n’existe plus.');
+  if (!confirm('Supprimer définitivement cette ligne de correction et toutes ses informations ? Le compteur actuel et les autres relevés ne changeront pas. Une sauvegarde précédente peut encore la contenir.')) return;
+  await applyJournalChecked([del(CORRECTION_STORE, id)], [
+    { store:'vehicles', id:vehicleId, expected:structuredClone(vehicle) },
+    { store:CORRECTION_STORE, id, expected:structuredClone(row) },
+  ]);
+  await openOdometerHistory(vehicleId, { refresh:false, limit:odometerHistoryView?.limit || 80 });
+  toast('Correction supprimée ; le compteur actuel est inchangé.');
+}
+let pendingVehicleCorrection = null;
+function beginVehicleCorrection(vehicle, expected) {
+  const info = inspectOdometerHistory(expected);
+  if (info.state === 'unsupported' || (info.state === 'valid' && info.history.entries.length))
+    throw new Error('L’historique n’est pas reconnu ici. Le compteur ne peut pas être corrigé sans risquer ces données.');
+  const fragment = document.createDocumentFragment();
+  while (modal.firstChild) fragment.appendChild(modal.firstChild);
+  pendingVehicleCorrection = { vehicle, expected, fragment,
+    expectedRows:structuredClone((state.records[CORRECTION_STORE] || []).filter(row => row.vehicleId === vehicle.id)) };
+  const down = vehicle.odometer < expected.odometer;
+  formModal({ title:'Confirmer la correction du compteur', subtitle:esc(nameOf(vehicle)), form:'odometer-correction', id:vehicle.id,
+    submit:'Confirmer et enregistrer', body:`<div class="form-grid">
+      <p class="form-help full-width">Ancien compteur : <strong>${esc(mileageText(expected.odometer))} km</strong><br>Nouveau compteur : <strong>${esc(mileageText(vehicle.odometer))} km</strong></p>
+      ${down ? '<p class="odometer-warning full-width" role="status">⚠️ Le compteur va diminuer. Vérifiez bien les deux valeurs.</p>' : ''}
+      <p class="form-help full-width">Rien n’est modifié tant que vous ne confirmez pas. La correction et le compteur seront enregistrés ensemble.</p>
+      ${field('correctionDate','Date de la correction',today(),{type:'date',required:true})}
+      ${field('correctionReason','Motif', '',{required:true,full:true,placeholder:'Ex. erreur de saisie',extra:`maxlength="${CORRECTION_TEXT_LIMIT}"`})}
+      ${field('correctionActor','Qui ? (facultatif)', '',{full:true,placeholder:'Prénom ou repère libre',extra:`maxlength="${CORRECTION_TEXT_LIMIT}"`})}
+    </div>` });
+}
+function restoreVehicleCorrectionDraft() {
+  if (!pendingVehicleCorrection) return;
+  const fragment = pendingVehicleCorrection.fragment;
+  pendingVehicleCorrection = null;
+  modal.replaceChildren(fragment);
+  modal.querySelector('[name="odometer"]')?.focus();
+}
+async function commitVehicle(vehicle, expected, historyChange = null) {
+  let suggestions, active;
+  if (state.demo) {
+    suggestions = rememberVehicle(currentSuggestions(), vehicle.brand, vehicle.model);
+    active = { ...(state.records.settings.find(item => item.id === 'activeVehicle') || {}), id:'activeVehicle', value:vehicle.id };
+  } else {
+    ({ suggestions, active } = await state.db.saveVehicleWithSuggestions(vehicle, expected, historyChange));
+  }
+  const operations = [put('vehicles', vehicle), put('settings', active), put('settings', suggestions)];
+  if (historyChange?.row) operations.push(put(CORRECTION_STORE, historyChange.row));
+  applyToMemory(operations);
+  state.activeId = vehicle.id;
 }
 function quickMenu() {
   const items = [
@@ -1448,13 +1545,19 @@ function vehicleForm(id = "") {
     ${field("version", "Finition / motorisation", x.version, { placeholder: "1.5 dCi 68" })}${field("year", "Année", x.year, { type: "number", min: 0, step: 1, placeholder: "2008" })}
     ${field("plate", "Immatriculation", x.plate, { placeholder: "AB-123-CD" })}${selectField("fuel", "Énergie", choice, fuelOptions)}
     <div id="fuel-custom-field" class="full-width" ${choice === "autre" ? "" : "hidden"}>${field("fuelCustom", "Autre énergie", x.fuel === "autre" ? x.fuelDetail : "", { placeholder: "Saisissez votre énergie" })}</div>
-    ${field("odometer", "Kilométrage actuel (km)", x.odometer ?? "", { type: "number", min: 0, step: 1, required: true, help: "Obligatoire ; vous pourrez le mettre à jour plus tard." })}${field("vin", "Numéro de série (VIN)", x.vin, { placeholder: "Facultatif", infoTopic: "vin", infoLabel: "En savoir plus sur le VIN" })}
+    ${field("odometer", "Kilométrage actuel (km)", x.odometer ?? "", { type: "number", min: 0, step: "any", required: true, help: "Obligatoire. Une correction manuelle demande confirmation et motif." })}${field("vin", "Numéro de série (VIN)", x.vin, { placeholder: "Facultatif", infoTopic: "vin", infoLabel: "En savoir plus sur le VIN" })}
     ${field("photo", "Photo du véhicule", "", { type: "file", accept: "image/jpeg,image/png,image/webp,image/gif", full: true, help: "Facultatif · image jusqu’à 5 Mo, stockée uniquement sur cet appareil." })}
-    ${validPhoto(x.photo) ? checkbox("removePhoto", "Supprimer la photo actuelle.") : ""}${area("notes", "Notes", x.notes, { placeholder: "Informations utiles…" })}
+    ${validPhoto(x.photo) ? checkbox("removePhoto", "Supprimer la photo actuelle.") : ""}${area("notes", "Notes", x.notes, { placeholder: "Informations utiles…", readonly: edit && Object.hasOwn(x, VEHICLE_NOTES_KEY), help: edit && Object.hasOwn(x, VEHICLE_NOTES_KEY) ? "Pour protéger leur mise en forme, modifiez ces notes avec le bouton Notes du garage." : "Après création, le bouton Notes du garage permet aussi d’ajouter du gras et de l’italique." })}
     <p class="form-help">Vos marques et modèles sont mémorisés après l’enregistrement et inclus dans la sauvegarde JSON.</p>
   </div>`,
   });
-  updateVehicleOptions(modal.querySelector('form[data-form="vehicle"]'));
+  const vehicleFormElement = modal.querySelector('form[data-form="vehicle"]');
+  // Le HTML supprime parfois le premier saut de ligne dans <textarea> ;
+  // l’assignation explicite et l’état initial évitent toute retouche silencieuse.
+  vehicleFormElement.elements.notes.value = typeof x.notes === "string" ? x.notes : "";
+  vehicleDraft.initialNotesInput = vehicleFormElement.elements.notes.value;
+  updateVehicleOptions(vehicleFormElement);
+  vehicleDraft.initialFormSignature = vehicleFormSignature(vehicleFormElement);
 }
 function vehicleMarkerForm(id) {
   const vehicle = recordById("vehicles", id);
@@ -1470,6 +1573,127 @@ function vehicleMarkerForm(id) {
     body: `<div class="form-grid">${vehicleMarkerField(vehicle)}</div>`,
   });
 }
+// L'éditeur garde le texte commun aux anciennes versions : les styles sont des
+// plages séparées et vérifiées. Aucun HTML issu des notes n'est interprété.
+function noteMarksEqual(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+function notesHaveUnsavedChanges() {
+  const form = modal.querySelector('form[data-form="vehicle-notes"]');
+  if (!notesDraft || !form) return false;
+  return notesDraft.reset || form.elements.noteText.value !== notesDraft.initialText || !noteMarksEqual(notesDraft.marks, notesDraft.initialMarks);
+}
+function noteStatus(message) {
+  const status = modal.querySelector('[data-note-status]');
+  if (status) status.textContent = message;
+}
+function notePreview(form) {
+  const target = form.querySelector('[data-note-preview]'), text = form.elements.noteText.value;
+  target.replaceChildren();
+  form.querySelector('[data-note-count]').textContent = `${text.length} / ${VEHICLE_NOTES_LIMIT} caractères`;
+  if (text.length > VEHICLE_NOTES_LIMIT || text !== notesDraft.lastText) {
+    target.textContent = "Aperçu indisponible : corrigez d’abord le texte avant d’enregistrer.";
+    return;
+  }
+  if (!text) { target.textContent = "Votre aperçu apparaîtra ici."; return; }
+  const positions = [...new Set([0, text.length, ...notesDraft.marks.flatMap((m) => [m.start, m.end])])].sort((a,b) => a-b);
+  for (let i = 0; i < positions.length - 1; i++) {
+    const start = positions[i], end = positions[i + 1], part = text.slice(start, end);
+    const bold = notesDraft.marks.some((m) => m.style === "bold" && m.start <= start && m.end >= end);
+    const italic = notesDraft.marks.some((m) => m.style === "italic" && m.start <= start && m.end >= end);
+    let node = document.createTextNode(part);
+    if (italic) { const em = document.createElement("em"); em.append(node); node = em; }
+    if (bold) { const strong = document.createElement("strong"); strong.append(node); node = strong; }
+    target.append(node);
+  }
+}
+function rememberNoteSelection() {
+  const form = modal.querySelector('form[data-form="vehicle-notes"]');
+  if (!notesDraft || !form || form.elements.noteText.readOnly) return;
+  const input = form.elements.noteText;
+  notesDraft.selection = { start:input.selectionStart, end:input.selectionEnd, text:input.value };
+}
+function updateNoteDraft(input) {
+  if (!notesDraft) return;
+  const form = input.closest('form[data-form="vehicle-notes"]');
+  if (!form || input.readOnly) return;
+  const before = notesDraft.lastText, previous = notesDraft.marks;
+  try {
+    const next = rebaseNoteMarks(before, input.value, previous);
+    notesDraft.lastText = input.value;
+    notesDraft.marks = next;
+    notesDraft.selection = null;
+    if (before.length > input.value.length && previous.length && !next.length)
+      noteStatus("Le passage mis en forme a été effacé du brouillon. Vérifiez l’aperçu, notamment après une annulation.");
+    else noteStatus("Sélectionnez du texte, puis choisissez Gras ou Italique.");
+  } catch (error) { noteStatus(describeError(error)); }
+  notePreview(form);
+}
+function toggleDraftNoteStyle(style) {
+  const form = modal.querySelector('form[data-form="vehicle-notes"]');
+  if (!notesDraft || !form || form.elements.noteText.readOnly) return;
+  const input = form.elements.noteText, cached = notesDraft.selection;
+  if (input.value !== notesDraft.lastText) { noteStatus("Corrigez d’abord le texte avant de modifier la mise en forme."); return; }
+  const selected = cached?.text === input.value && cached.start < cached.end ? cached : { start:input.selectionStart, end:input.selectionEnd };
+  try {
+    notesDraft.marks = toggleNoteMark(input.value, notesDraft.marks, style, selected.start, selected.end);
+    noteStatus("Mise en forme modifiée dans le brouillon. Vérifiez l’aperçu avant d’enregistrer.");
+    notePreview(form);
+    input.focus({ preventScroll:true });
+    input.setSelectionRange(selected.start, selected.end);
+    rememberNoteSelection();
+  } catch (error) { noteStatus(describeError(error)); }
+}
+function startStaleNoteReset() {
+  const form = modal.querySelector('form[data-form="vehicle-notes"]');
+  if (!notesDraft || !form || notesDraft.state !== "stale" || notesDraft.reset) return;
+  if (!confirm("Reprendre les notes sans l’ancienne mise en forme ? Elle sera retirée uniquement si vous enregistrez. Le texte actuel est conservé.")) return;
+  notesDraft.reset = true;
+  form.elements.noteText.readOnly = false;
+  form.querySelectorAll('[data-action="vehicle-notes-style"], [type="submit"]').forEach((button) => { button.disabled = false; });
+  const warning = form.querySelector('[data-stale-note]');
+  warning.textContent = "Brouillon repris sans l’ancienne mise en forme. Elle reste enregistrée tant que vous ne validez pas.";
+  noteStatus("Vous pouvez modifier le texte ou sélectionner un passage à mettre en forme.");
+}
+async function vehicleNotesForm(id) {
+  const vehicle = recordById("vehicles", id);
+  if (!vehicle) throw new Error("Ce véhicule n’existe plus. Rechargez VigieAuto.");
+  const expected = structuredClone(vehicle), token = ++notesOpening;
+  notesDraft = null;
+  contentModal("Notes du véhicule", esc(nameOf(vehicle)), '<p class="form-help" data-note-wait>Vérification locale des notes…</p>');
+  const wait = modal.querySelector('[data-note-wait]');
+  const info = await inspectVehicleNotes(expected);
+  if (token !== notesOpening || !modal.open || modal.querySelector('[data-note-wait]') !== wait) return;
+  if (info.state === "unsupported" || info.state === "unavailable" || (info.state === "valid" && info.text.includes("\r"))) {
+    const message = info.reason === "length"
+      ? `Ces notes dépassent ${VEHICLE_NOTES_LIMIT} caractères. Elles restent conservées ; cet éditeur ne les tronque pas.`
+      : info.state === "unavailable"
+        ? "La vérification locale est indisponible dans ce navigateur. Les notes et leur mise en forme restent conservées sans modification."
+        : "Ces notes ou leur mise en forme ne sont pas reconnues par cet éditeur. Elles restent conservées sans modification ; utilisez une version compatible.";
+    contentModal("Notes du véhicule", esc(nameOf(vehicle)), `<p>${esc(message)}</p>`);
+    return;
+  }
+  const stale = info.state === "stale", rawText = info.text;
+  notesDraft = { id, expected, state:info.state, rawText, initialText:"", lastText:"", marks:info.marks || [], initialMarks:[], selection:null, reset:false };
+  formModal({
+    title:"Notes du véhicule", subtitle:esc(nameOf(vehicle)), form:"vehicle-notes", id, submit:"Enregistrer les notes",
+    body:`<div class="form-grid">
+      ${stale ? `<div class="note-warning full-width"><p data-stale-note>Le texte a été modifié dans une autre version. L’ancienne mise en forme est conservée, mais ne peut pas être affichée sur ce texte.</p><button class="btn secondary" type="button" data-action="vehicle-notes-reset">Reprendre sans l’ancienne mise en forme</button></div>` : ""}
+      <p class="form-help full-width">Texte local, inclus dans vos sauvegardes non chiffrées. Sélectionnez un passage pour le mettre en gras ou en italique.</p>
+      <div class="field full-width"><label for="f-noteText">Votre note</label><textarea id="f-noteText" name="noteText" rows="7" ${stale ? "readonly" : ""}></textarea><small data-note-count></small></div>
+      <div class="note-tools full-width" role="group" aria-label="Mise en forme"><button type="button" class="btn secondary" data-action="vehicle-notes-style" data-style="bold" ${stale ? "disabled" : ""}><strong>Gras</strong></button><button type="button" class="btn secondary" data-action="vehicle-notes-style" data-style="italic" ${stale ? "disabled" : ""}><em>Italique</em></button></div>
+      <p class="note-status full-width" data-note-status role="status">${stale ? "Choisissez si vous souhaitez reprendre ces notes sans leur ancienne mise en forme." : "Sélectionnez du texte, puis choisissez Gras ou Italique."}</p>
+      <div class="full-width"><span class="field-label">Aperçu</span><div class="note-preview" data-note-preview aria-label="Aperçu de la note"></div></div>
+      <p class="form-help full-width">Sur Android actuel, le texte reste lisible sans la mise en forme. Si vous le modifiez là-bas, VigieAuto vous avertira au retour avant de retirer les anciens styles.</p>
+    </div>`,
+  });
+  const form = modal.querySelector('form[data-form="vehicle-notes"]'), input = form.elements.noteText;
+  input.value = rawText; // préserve le premier saut de ligne ; le navigateur normalise CR/LF dans le champ
+  notesDraft.initialText = input.value;
+  notesDraft.lastText = input.value;
+  notesDraft.initialMarks = structuredClone(notesDraft.marks);
+  if (stale) form.querySelector('[type="submit"]').disabled = true;
+  notePreview(form);
+}
+
 // Informations indépendantes de la fiche principale : pas de changement de
 // véhicule actif ni de réécriture implicite du VIN, des notes ou du compteur.
 function profileCurrencyFields(currency) {
@@ -1494,8 +1718,19 @@ function profileHasUnsavedChanges() {
   const current = profileInputs(form);
   return PROFILE_FIELDS.some((key) => current[key] !== profileDraft.initial[key]);
 }
-function mayDiscardProfileDraft() {
-  return !profileHasUnsavedChanges() || confirm("Abandonner ces informations non enregistrées ? Les modifications de cette fenêtre seront perdues.");
+function vehicleFormSignature(form) {
+  return JSON.stringify([...form.elements].filter(control => control.name).map(control => [control.name, control.type,
+    control.type === 'checkbox' || control.type === 'radio' ? control.checked :
+    control.type === 'file' ? [...control.files].map(file => [file.name, file.size, file.lastModified]) : control.value]));
+}
+function hasUnsavedDraft() {
+  const vehicleFormElement = modal.querySelector('form[data-form="vehicle"]');
+  const vehicleChanged = !!(vehicleFormElement && vehicleDraft?.initialFormSignature &&
+    vehicleFormSignature(vehicleFormElement) !== vehicleDraft.initialFormSignature);
+  return !!pendingVehicleCorrection || profileHasUnsavedChanges() || vehicleChanged || notesHaveUnsavedChanges();
+}
+function mayDiscardDraft() {
+  return !hasUnsavedDraft() || confirm("Abandonner ces informations non enregistrées ? Les modifications de cette fenêtre seront perdues.");
 }
 function vehicleProfileForm(id) {
   const vehicle = recordById("vehicles", id);
@@ -2044,8 +2279,27 @@ async function saveForm(form) {
     x,
     record;
   const v = getVehicle();
-  if (!["vehicle", "vehicle-marker", "vehicle-profile"].includes(type) && !v) throw new Error("Ajoutez d’abord un véhicule.");
-  if (type === "vehicle-profile") {
+  if (!["vehicle", "vehicle-marker", "vehicle-profile", "vehicle-notes", "odometer-correction"].includes(type) && !v) throw new Error("Ajoutez d’abord un véhicule.");
+  if (type === "vehicle-notes") {
+    const draft = notesDraft, input = form.elements.noteText;
+    if (!draft || draft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
+    if (draft.state === "stale" && !draft.reset) throw new Error("Choisissez d’abord si vous souhaitez reprendre sans l’ancienne mise en forme.");
+    if (input.value.length > VEHICLE_NOTES_LIMIT) throw new Error(`Les notes dépassent ${VEHICLE_NOTES_LIMIT} caractères. Rien n’a été enregistré.`);
+    if (input.value !== draft.lastText) throw new Error("Corrigez d’abord le texte avant d’enregistrer ; les données restent inchangées.");
+    const changedText = input.value !== draft.initialText, changedMarks = !noteMarksEqual(draft.marks, draft.initialMarks);
+    if (!changedText && !changedMarks && !draft.reset) { modal.close(); toast("Aucune modification à enregistrer."); return; }
+    // Les textarea normalisent CR/LF. Ne le propager que si l'utilisateur a
+    // effectivement modifié le texte, ou a choisi un style sur ce texte.
+    const useTextarea = changedText || (changedMarks && draft.rawText.includes("\r"));
+    const outputText = useTextarea ? input.value : draft.rawText;
+    const oldDataChanges = (draft.rawText && outputText !== draft.rawText) || (draft.initialMarks.length && changedMarks) || draft.reset;
+    const lineBreakNotice = useTextarea && draft.rawText.includes("\r") ? " Les anciens retours à la ligne seront normalisés." : "";
+    if (oldDataChanges && !confirm(`Enregistrer ces modifications ? Le texte ou l’ancienne mise en forme sera remplacé.${lineBreakNotice} Une sauvegarde précédente peut être nécessaire pour retrouver l’ancienne version.`)) return;
+    record = await withVehicleNotes(draft.expected, { text:outputText, marks:draft.marks }, { resetStale:draft.reset });
+    if (record === draft.expected) { modal.close(); toast("Aucune modification à enregistrer."); return; }
+    // Comparaison et écriture atomiques : pas d'écrasement d'un autre onglet ni recréation après suppression.
+    await applyJournalChecked([put("vehicles", record)], [{ store:"vehicles", id, expected:draft.expected }]);
+  } else if (type === "vehicle-profile") {
     if (!profileDraft || profileDraft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
     const values = profileInputs(form), changed = PROFILE_FIELDS.filter((key) => values[key] !== profileDraft.initial[key]);
     const before = inspectVehicleProfile(profileDraft.expected).fields;
@@ -2083,23 +2337,36 @@ async function saveForm(form) {
       year,
       plate: text(d, "plate").toUpperCase(),
       ...encodeFuel(text(d, "fuel", true), text(d, "fuelCustom")),
-      initialKm: x.id ? (x.initialKm ?? odometer) : odometer,
+      // Ne pas inventer un kilométrage initial pour un ancien véhicule qui
+      // n’en possédait pas : seule une création le fixe explicitement.
+      ...(x.id ? {} : { initialKm:odometer }),
       odometer,
       vin: text(d, "vin"),
-      notes: text(d, "notes"),
       photo,
       createdAt: x.createdAt || now,
       updatedAt: now,
     };
-    if (state.demo) {
-      const suggestions = rememberVehicle(currentSuggestions(), record.brand, record.model);
-      const active = { ...(state.records.settings.find((item) => item.id === "activeVehicle") || {}), id: "activeVehicle", value: record.id };
-      applyToMemory([put("vehicles", record), put("settings", active), put("settings", suggestions)]);
-    } else {
-      const { suggestions, active } = await state.db.saveVehicleWithSuggestions(record, vehicleDraft.expected);
-      applyToMemory([put("vehicles", record), put("settings", active), put("settings", suggestions)]);
+    const noteInput = form.elements.notes.value;
+    if (!x.id) record.notes = noteInput;
+    else if (!Object.hasOwn(x, VEHICLE_NOTES_KEY) && noteInput !== vehicleDraft.initialNotesInput) {
+      if (typeof x.notes === "string" && x.notes && !confirm("Remplacer les notes actuelles ? L’ancienne version ne pourra être retrouvée que dans une sauvegarde précédente.")) return;
+      record.notes = noteInput;
     }
-    state.activeId = record.id;
+    if (x.id && x.odometer !== record.odometer) {
+      beginVehicleCorrection(record, vehicleDraft.expected);
+      return; // Aucune écriture avant la confirmation explicite.
+    }
+    await commitVehicle(record, vehicleDraft.expected);
+  } else if (type === "odometer-correction") {
+    const pending = pendingVehicleCorrection;
+    if (!pending || pending.vehicle.id !== id) throw new Error('Correction périmée ; rouvrez la fiche du véhicule.');
+    const prepared = prepareManualCorrection(pending.expected, { ...pending.vehicle, updatedAt:now }, pending.expectedRows, {
+      id:uid(), date:dateValue(d, 'correctionDate', true), recordedAt:now,
+      reason:text(d, 'correctionReason', true), actor:text(d, 'correctionActor'),
+    });
+    if (!prepared.row) throw new Error('Aucun changement de compteur à enregistrer.');
+    await commitVehicle(prepared.vehicle, pending.expected, { row:prepared.row, expectedRows:pending.expectedRows });
+    pendingVehicleCorrection = null;
   } else if (type === "trip") {
     x = recordById("trips", id) || {};
     if (id && !x.id) throw new Error("Ce trajet n’existe plus.");
@@ -2393,8 +2660,8 @@ async function saveForm(form) {
 async function deleteVehicle(id) {
   const v = recordById("vehicles", id);
   if (!v) return;
-  if (!confirm(`Supprimer ${nameOf(v)} et toutes ses données (trajets, pleins, dépenses, rappels, documents, etc.) ? Cette action est irréversible.`)) return;
-  const stores = ["services", "fills", "trips", "expenses", "reminders", "symptoms", "checks", "documents"];
+  if (!confirm(`Supprimer ${nameOf(v)} et toutes ses données (trajets, pleins, dépenses, rappels, documents et corrections du compteur) ? Cette action est irréversible.`)) return;
+  const stores = ["services", "fills", "trips", "expenses", "reminders", "symptoms", "checks", "documents", CORRECTION_STORE];
   const wasActive = state.activeId === id;
   let next = state.records.vehicles.find((x) => x.id !== id)?.id || null;
   if (state.demo) {
@@ -2488,7 +2755,8 @@ async function exportBackup() {
   }
   // Inclure les points déjà traités, puis lire un instantané cohérent de la base.
   await gps.queue;
-  const data = await state.db.readAll();
+  const localData = await state.db.readAll();
+  const data = mergeWireRecords(localData);
   validateCurrencyAssignments(data[CURRENCY_STORE], data);
   const hasCurrencies = data[CURRENCY_STORE].length > 0;
   const version = data[CURRENCY_STORE].some((x) => x.collection !== "expenses") ? 5 : hasCurrencies ? 4 : 3;
@@ -2742,7 +3010,7 @@ async function importBackup(file) {
   try {
     // Une restauration interrompt forcément la continuité du GPS en cours.
     data.trips = data.trips.map((x) => x.method === "gps" && x.status === "running" ? { ...x, gpsInterrupted: true } : x);
-    await state.db.replaceAll(data);
+    await state.db.replaceAll(splitWireRecords(data));
     state.records = await state.db.readAll();
   } finally { await endGpsMutation(); }
   state.demo = false;
@@ -2780,7 +3048,7 @@ async function resetAll() {
     )
   )
     return;
-  const records = Object.fromEntries(STORES.map((s) => [s, []]));
+  const records = Object.fromEntries(LOCAL_STORES.map((s) => [s, []]));
   records.templates = structuredClone(DEFAULT_TEMPLATES);
   records.settings = [{ id: "defaultsSeeded", value: true }];
   await quiesceGps();
@@ -2807,17 +3075,21 @@ function describeError(error) {
   return error?.message || "Une erreur est survenue. Réessayez.";
 }
 modal.addEventListener("cancel", (event) => {
-  if (modal.dataset.saving === "true" || !mayDiscardProfileDraft()) event.preventDefault();
+  if (modal.dataset.saving === "true") { event.preventDefault(); return; }
+  if (pendingVehicleCorrection && modal.querySelector('form[data-form="odometer-correction"]')) {
+    event.preventDefault(); restoreVehicleCorrectionDraft(); return;
+  }
+  if (!mayDiscardDraft()) event.preventDefault();
 });
 // Le navigateur peut afficher son propre avertissement avant rechargement ou
 // fermeture. Sur mobile, les arrêts forcés ne déclenchent pas tous cet événement.
 window.addEventListener("beforeunload", (event) => {
-  if (!modal.open || !profileHasUnsavedChanges()) return;
+  if (!modal.open || !hasUnsavedDraft()) return;
   event.preventDefault();
   event.returnValue = "";
 });
 modal.addEventListener("close", () => {
-  if (!modal.open) { expenseDraft = null; receiptDraft = null; fillDraft = null; serviceDraft = null; vehicleDraft = null; markerDraft = null; profileDraft = null; symptomDraft = null; checkDraft = null; }
+  if (!modal.open) { notesOpening++; notesDraft = null; expenseDraft = null; receiptDraft = null; fillDraft = null; serviceDraft = null; vehicleDraft = null; markerDraft = null; profileDraft = null; symptomDraft = null; checkDraft = null; pendingVehicleCorrection = null; odometerHistoryView = null; }
   if (!gps.finishTripId) return;
   const id = gps.finishTripId;
   gps.finishTripId = null;
@@ -2882,7 +3154,9 @@ document.addEventListener("click", async (event) => {
         closeInfo();
         break;
       case "close-modal":
-        if (modal.dataset.saving === "true" || !mayDiscardProfileDraft()) break;
+        if (modal.dataset.saving === "true") break;
+        if (pendingVehicleCorrection && modal.querySelector('form[data-form="odometer-correction"]')) { restoreVehicleCorrectionDraft(); break; }
+        if (!mayDiscardDraft()) break;
         if (categoryPicker.open) closeCategoryPicker();
         modal.close();
         break;
@@ -3030,6 +3304,24 @@ document.addEventListener("click", async (event) => {
         break;
       case "vehicle-profile":
         vehicleProfileForm(id);
+        break;
+      case "vehicle-notes":
+        await vehicleNotesForm(id);
+        break;
+      case "vehicle-odometer-history":
+        await openOdometerHistory(id);
+        break;
+      case "more-odometer-history":
+        if (odometerHistoryView) await openOdometerHistory(odometerHistoryView.id, { refresh:false, limit:odometerHistoryView.limit + 80 });
+        break;
+      case "delete-odometer-correction":
+        await deleteOdometerCorrection(target.dataset.vehicleId, id);
+        break;
+      case "vehicle-notes-style":
+        toggleDraftNoteStyle(target.dataset.style);
+        break;
+      case "vehicle-notes-reset":
+        startStaleNoteReset();
         break;
       case "select-vehicle":
         await chooseVehicle(id);
@@ -3212,14 +3504,32 @@ document.addEventListener("submit", async (event) => {
   const button = form.querySelector("[type=submit]"),
     errorBox = form.querySelector(".form-error");
   button.disabled = true;
-  const lockModal = ["expense-receipt", "vehicle", "vehicle-marker", "vehicle-profile", "symptom", "check"].includes(form.dataset.form);
+  const lockModal = ["expense-receipt", "vehicle", "odometer-correction", "vehicle-marker", "vehicle-profile", "vehicle-notes", "symptom", "check"].includes(form.dataset.form);
   if (lockModal) {
     modal.dataset.saving = "true";
     form.querySelectorAll('[data-action="close-modal"]').forEach((control) => { control.disabled = true; });
   }
+  // Pendant l'attente de l'empreinte ou d'IndexedDB, ne pas laisser saisir
+  // une note qui serait ensuite perdue à la fermeture du formulaire.
+  const noteInput = form.dataset.form === "vehicle-notes" ? form.elements.noteText : form.dataset.form === "vehicle" ? form.elements.notes : null;
+  const noteWasReadonly = noteInput?.readOnly;
+  const noteTools = form.dataset.form === "vehicle-notes" ? [...form.querySelectorAll('[data-action="vehicle-notes-style"], [data-action="vehicle-notes-reset"]')] : [];
+  const noteToolsDisabled = noteTools.map((control) => control.disabled);
+  if (noteInput) noteInput.readOnly = true;
+  noteTools.forEach((control) => { control.disabled = true; });
   errorBox.classList.remove("visible");
+  let vehicleControls = [], vehicleDisabled = [];
   try {
-    await saveForm(form);
+    // saveForm capture d’abord FormData de façon synchrone. Ensuite, bloquer
+    // toutes les saisies du véhicule pendant les lectures asynchrones : une
+    // retouche tardive ne doit pas disparaître au moment de la confirmation.
+    const saving = saveForm(form);
+    if (form.dataset.form === "vehicle") {
+      vehicleControls = [...form.querySelectorAll('input, select, textarea, button:not([type="submit"])')];
+      vehicleDisabled = vehicleControls.map(control => control.disabled);
+      vehicleControls.forEach(control => { control.disabled = true; });
+    }
+    await saving;
   } catch (error) {
     console.error(error);
     errorBox.textContent = describeError(error);
@@ -3227,6 +3537,9 @@ document.addEventListener("submit", async (event) => {
     errorBox.scrollIntoView({ block: "nearest" });
   } finally {
     button.disabled = false;
+    vehicleControls.forEach((control, index) => { control.disabled = vehicleDisabled[index]; });
+    if (noteInput) noteInput.readOnly = noteWasReadonly;
+    noteTools.forEach((control, index) => { control.disabled = noteToolsDisabled[index]; });
     if (lockModal) {
       delete modal.dataset.saving;
       form.querySelectorAll('[data-action="close-modal"]').forEach((control) => { control.disabled = false; });
@@ -3237,6 +3550,22 @@ document.addEventListener("submit", async (event) => {
 // tactile, ne pas annuler pointerdown : la liste doit rester défilable.
 document.addEventListener("mousedown", (event) => {
   if (event.target.closest('[data-action="choose-vehicle-suggestion"]')) event.preventDefault();
+});
+// Conserver la sélection au toucher, à la souris et au clavier lors du choix du style.
+document.addEventListener("select", (event) => {
+  if (event.target.matches?.('form[data-form="vehicle-notes"] [name="noteText"]')) rememberNoteSelection();
+}, true);
+document.addEventListener("keyup", (event) => {
+  if (event.target.matches?.('form[data-form="vehicle-notes"] [name="noteText"]')) rememberNoteSelection();
+});
+document.addEventListener("pointerup", (event) => {
+  if (event.target.matches?.('form[data-form="vehicle-notes"] [name="noteText"]')) rememberNoteSelection();
+});
+document.addEventListener("pointerdown", (event) => {
+  if (!event.target.closest('[data-action="vehicle-notes-style"]')) return;
+  const input = modal.querySelector('form[data-form="vehicle-notes"] [name="noteText"]');
+  if (input && input.selectionStart < input.selectionEnd) rememberNoteSelection();
+  event.preventDefault();
 });
 document.addEventListener("pointerdown", (event) => {
   const form = modal.querySelector('form[data-form="vehicle"]');
@@ -3290,6 +3619,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 document.addEventListener("input", (event) => {
+  if (event.target.matches('form[data-form="vehicle-notes"] [name="noteText"]')) { updateNoteDraft(event.target); return; }
   if (event.target.matches("[data-category-query]")) { drawCategoryPickerResults(event.target.value); return; }
   const serviceFormElement = event.target.closest('form[data-form="service"]');
   if (serviceFormElement && serviceDraft) {
@@ -3398,7 +3728,7 @@ async function start() {
       if (catalogue.version !== 1 || !Array.isArray(catalogue.brands) || !Array.isArray(catalogue.fuels)) throw new Error("Référentiel invalide");
       state.catalogue = catalogue;
     } catch (error) { console.warn("Suggestions prédéfinies indisponibles ; la saisie libre reste possible.", error); }
-    state.db = await new LocalDatabase().open(DB_CONTRACT);
+    state.db = await new LocalDatabase().open(DB_CONTRACT, "corrections-compteur-v1");
     let records = await state.db.readAll();
     if (!records.settings.some((x) => x.id === "defaultsSeeded")) {
       const operations = [
@@ -3424,7 +3754,7 @@ async function start() {
     applyTheme();
     if (!records.vehicles.length) {
       state.demo = true;
-      state.records = demoRecords();
+      state.records = { ...demoRecords(), [CORRECTION_STORE]: [] };
       state.activeId = "demo-clio";
     } else {
       state.records = records;
