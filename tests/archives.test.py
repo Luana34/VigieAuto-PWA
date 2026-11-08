@@ -32,6 +32,7 @@ class ArchiveTests(unittest.TestCase):
         paths = [
             "README.md", "INSTALLER.md", "BILAN-PROJET.md", ".gitignore", "index.html", "css/style.css", "css/themes.css", "js/app.js", "js/db.js",
             "docs/QUOI-PUBLIER-GITHUB.md", "tests/publication.test.py", "tests/publication-interface.cjs", "tests/mise-a-jour-beta13.cjs",
+            "docs/FICHE-VEHICULE-PWA-BETA16.md", "js/vehicle-profile.js", "tests/vehicle-profile.test.js", "tests/fiche-vehicule-beta16.cjs", "tests/mise-a-jour-beta16.cjs", "tests/pont-fiche-retour.cjs", "tests/android/VehicleProfileBridge16Test.kt",
             "docs/REPERES-VEHICULES-PWA-BETA15.md", "js/vehicle-marker.js", "tests/vehicle-marker.test.js", "tests/reperes-vehicules-beta15.cjs", "tests/mise-a-jour-beta15.cjs", "tests/pont-reperes-retour.cjs", "tests/android/MarkerBridge15Test.kt",
             "docs/RECHERCHE-CATALOGUE-PWA-BETA14.md", "tests/catalogue-approximatif.test.js", "tests/recherche-catalogue-beta14.cjs", "tests/mise-a-jour-beta14.cjs",
             "docs/AIDES-PLEINS-VIN.md", "tests/aides-interface.cjs", "tests/mise-a-jour-beta12.cjs",
@@ -78,7 +79,7 @@ class ArchiveTests(unittest.TestCase):
             names = set(z.namelist())
             prefix = "VigieAuto/A-METTRE-SUR-GITHUB/"
             public = {name[len(prefix):] for name in names if name.startswith(prefix)}
-            self.assertEqual(public, {"index.html", "manifest.webmanifest", "sw.js", "js/app.js", "js/maintenance.js", "js/expense-receipt.js", "js/vehicle-marker.js", "icons/icon.png"})
+            self.assertEqual(public, {"index.html", "manifest.webmanifest", "sw.js", "js/app.js", "js/maintenance.js", "js/expense-receipt.js", "js/vehicle-marker.js", "js/vehicle-profile.js", "icons/icon.png"})
             for rel in public:
                 self.assertEqual(z.read(prefix + rel), z.read("VigieAuto/" + rel))
             self.assertIn("VigieAuto/tests/publication.test.py", names)
@@ -117,6 +118,16 @@ class ArchiveTests(unittest.TestCase):
         self.assertFalse((self.workspace / "VigieAuto-v2.0.0.zip").exists())
         for name, content in self.old.items():
             self.assertEqual((self.workspace / name).read_bytes(), content)
+
+    def test_missing_beta16_profile_contract_preserves_previous_archives(self):
+        for rel in ("docs/FICHE-VEHICULE-PWA-BETA16.md", "js/vehicle-profile.js", "tests/vehicle-profile.test.js", "tests/fiche-vehicule-beta16.cjs", "tests/mise-a-jour-beta16.cjs", "tests/pont-fiche-retour.cjs", "tests/android/VehicleProfileBridge16Test.kt"):
+            path = self.project / rel
+            content = path.read_bytes(); path.unlink()
+            result = self.run_script("--sans-nettoyage")
+            self.assertNotEqual(0, result.returncode, rel)
+            self.assertFalse((self.workspace / "VigieAuto-v2.0.0.zip").exists())
+            for name, old in self.old.items(): self.assertEqual((self.workspace / name).read_bytes(), old)
+            path.write_bytes(content)
 
     def test_missing_beta15_marker_contract_preserves_previous_archives(self):
         for rel in ("docs/REPERES-VEHICULES-PWA-BETA15.md", "js/vehicle-marker.js", "tests/vehicle-marker.test.js", "tests/reperes-vehicules-beta15.cjs", "tests/mise-a-jour-beta15.cjs", "tests/pont-reperes-retour.cjs", "tests/android/MarkerBridge15Test.kt"):
@@ -196,7 +207,7 @@ class ArchiveTests(unittest.TestCase):
         icon = f"./icons/icon.png?v=vigie-{version}"
         (self.project / "manifest.webmanifest").write_text(json.dumps({"icons": [{"src": icon}]}))
         (self.project / "index.html").write_text(f'<link href="{icon}"><dialog id="category-picker"></dialog><dialog id="info-dialog"></dialog>')
-        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}"; const FILES = ["./", "./index.html", "./manifest.webmanifest", "./js/app.js", "./js/maintenance.js", "./js/expense-receipt.js", "./js/vehicle-marker.js", "{icon}"];')
+        (self.project / "sw.js").write_text(f'const CACHE = "cq-auto-app-v{version}"; const FILES = ["./", "./index.html", "./manifest.webmanifest", "./js/app.js", "./js/maintenance.js", "./js/expense-receipt.js", "./js/vehicle-marker.js", "./js/vehicle-profile.js", "{icon}"];')
 
     def run_script(self, *args):
         return subprocess.run(["python3", str(self.project / "scripts/creer-archive.py"), *args],
@@ -322,6 +333,8 @@ class ArchiveTests(unittest.TestCase):
         mutations = (
             ("sw.js", lambda s: s.replace('"./js/maintenance.js"', '"./js/autre.js"'), "cache"),
             ("sw.js", lambda s: s.replace('"./js/expense-receipt.js"', '"./js/autre.js"'), "cache"),
+            ("sw.js", lambda s: s.replace('"./js/vehicle-marker.js"', '"./js/autre.js"'), "cache"),
+            ("sw.js", lambda s: s.replace('"./js/vehicle-profile.js"', '"./js/autre.js"'), "cache"),
             ("index.html", lambda s: s.replace('category-picker', 'autre-dialogue'), "Sélecteur"),
             ("index.html", lambda s: s.replace('info-dialog', 'autre-aide'), "Dialogue d’aide"),
             ("index.html", lambda s: s.replace('vigie-2.0.0', 'vigie-1.0.0'), "version"),

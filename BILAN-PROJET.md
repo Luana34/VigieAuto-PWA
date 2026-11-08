@@ -9,8 +9,8 @@ VigieAuto est un carnet automobile en français, gratuit, sans publicité, abonn
 
 Il existe deux applications distinctes :
 
-- **Android natif : 0.4.0-beta.44** — projet Kotlin/Compose avec base Room ; Android 8.0 et supérieur. C’est encore une préversion, pas la version 0.4.0 stable.
-- **PWA : 1.5.2-beta.15** — candidate Web installable, notamment destinée à la famille sur iPhone. La version familiale **1.5.1** est conservée séparément ; la candidate doit encore être validée sur iPhone.
+- **Android natif : 0.4.0-beta.45** — projet Kotlin/Compose avec base Room ; Android 8.0 et supérieur. C’est encore une préversion, pas la version 0.4.0 stable.
+- **PWA : 1.5.2-beta.16** — candidate Web installable, notamment destinée à la famille sur iPhone. La version familiale **1.5.1** est conservée séparément ; la candidate doit encore être validée sur iPhone.
 
 Pour GitHub Pages, publier seulement le contenu du dossier `A-METTRE-SUR-GITHUB` du ZIP PWA. Garder le ZIP source complet sur ordinateur : les tests et documents ne sont pas nécessaires au site, mais servent à la maintenance. Le projet Android complet reste dans son ZIP distinct.
 
@@ -27,7 +27,8 @@ Les appareils ne se synchronisent pas entre eux : les données peuvent être éc
 - Ajouter et sélectionner plusieurs véhicules sur Android et dans la PWA.
 - Chercher une marque et un modèle dans un catalogue local, mais aussi saisir librement et mémoriser ses propres choix. L’année, l’énergie et les détails du véhicule restent souples ; le kilométrage est obligatoire à la création.
 - Sur Android beta.44 et depuis PWA beta.14, rechercher une marque ou un modèle même avec certaines petites fautes ; les choix mémorisés remontent à qualité égale, sans correction automatique. [Guide Android](docs/RECHERCHE-CATALOGUE-BETA44.md) · [Guide PWA](docs/RECHERCHE-CATALOGUE-PWA-BETA14.md).
-- Depuis PWA beta.15, attribuer un **repère de couleur facultatif** à chaque véhicule pour les distinguer, sans lien avec la couleur de la carrosserie. Android beta.44 ne l’affiche pas encore. [Guide](docs/REPERES-VEHICULES-PWA-BETA15.md).
+- Depuis PWA beta.15, attribuer un **repère de couleur facultatif** à chaque véhicule pour les distinguer, sans lien avec la couleur de la carrosserie. Depuis Android beta.45, il est aussi affiché et modifiable sur Android. [Guide](docs/REPERES-VEHICULES-PWA-BETA15.md).
+- Depuis PWA beta.16, « Infos véhicule » permet de saisir facultativement couleur réelle, compagnie/numéro/échéance d’assurance et date/prix d’achat avec devise explicite. Aucune conversion, dépense ou rappel automatique ; l’interface Android et les notes enrichies restent à faire. [Guide](docs/FICHE-VEHICULE-PWA-BETA16.md).
 - Modifier la fiche du véhicule actif et corriger son compteur sans modifier automatiquement les anciennes entrées. Depuis beta.42, choisir le véhicule en haut de l’accueil dans une liste avec miniatures demandées à la vue.
 - Ajouter une photo depuis la galerie ou, sur Android beta.41, la prendre avec l’application photo du téléphone ; remplacement et retrait confirmés, sans Undo. Sur Android beta.40, supprimer le véhicule actif après décompte, export préalable proposé et seconde confirmation ; les données liées peuvent être restaurées avec l’Undo. La PWA possède son propre parcours de suppression.
 
@@ -85,9 +86,9 @@ La phase 1 reste donc ouverte. On peut continuer les fonctions sans attendre ces
 
 ### Phase 2 — Véhicules complets : en cours
 
-**Réalisé :** multivéhicule, catalogue et saisie libre, modification de la fiche, correction du compteur, photo depuis la galerie ou l’appareil photo, suppression sécurisée du véhicule actif avec Undo (beta.40), sélecteur avec aperçus et choix conservé (beta.42), recherche approximative et priorité aux suggestions mémorisées sur Android (beta.44) et sur la PWA (beta.14), puis repère facultatif PWA (beta.15).
+**Réalisé :** multivéhicule, catalogue et saisie libre, modification de la fiche, correction du compteur, photo depuis la galerie ou l’appareil photo, suppression sécurisée du véhicule actif avec Undo (beta.40), sélecteur avec aperçus et choix conservé (beta.42), recherche approximative et priorité aux suggestions mémorisées sur Android (beta.44) et sur la PWA (beta.14), puis repère facultatif sur PWA (beta.15) et Android (beta.45). La fiche complémentaire PWA beta.16 commence seulement la phase 2.4.
 
-**Reste à faire :** porter le repère sur Android ; étudier les avatars et la vue combinée éventuelle ; puis champs complémentaires après vérification des champs déjà présents. L’historique détaillé des corrections du compteur reste à étudier avant de coder. Les essais de la liste et de la suppression sur émulateur et téléphone restent à faire ; la phase 2.3 n’est pas terminée.
+**Reste à faire :** étudier les avatars et la vue combinée éventuelle ; porter les nouveaux champs sur Android et concevoir les notes enrichies sans altérer les notes existantes. L’historique détaillé des corrections du compteur reste à étudier avant de coder. Les essais de la liste et de la suppression sur émulateur et téléphone restent à faire ; la phase 2.3 n’est pas terminée.
 
 ### Phase 3 — Carnet complet : en cours
 
@@ -138,6 +139,12 @@ NFC facultatif, partage sélectif ou QR, mode tablette, fonctions de flotte et a
 
 ## Vérifications de la dernière livraison
 
+**PWA beta.16 — sous-lot partiel :** 94 tests Node, 30 tests d’archive et 14 tests de publication réussis. Fiche, confirmations, concurrence, formats inconnus, quatre thèmes, export et hors-ligne vérifiés sous Chromium et WebKit Linux ; vraie mise à jour beta.15 → beta.16 avec données fictives. Un aller-retour fictif PWA beta.16 → dépôt Android beta.45/Room → PWA a conservé la fiche, une note modifiée par le dépôt Android et les nombres précis après édition et Undo ; le retour PWA a été vérifié sous Chromium et WebKit Linux. Ce test ne valide pas une interface ni un appareil Android réels. Les parcours exigeant les anciens ZIP beta.1, beta.6 et beta.7 manquants ne sont pas tous rejoués ; aucun test n’est retiré. Pas d’essai sur iPhone/Safari ou lecteur d’écran réel ; performances non mesurées. [Guide](docs/FICHE-VEHICULE-PWA-BETA16.md).
+
+**Android beta.45 :** 110 tests JVM ciblés réussis sous Linux ; 10 tests caméra/Room rejoués avec l’adaptateur Windows forcé et 10 réussis avec une JVM Windows sous Wine, sans constituer un test sur PC Windows réel. APK debug assemblé ; 69 tests instrumentés compilés mais non exécutés ; lint 0 erreur, 24 avertissements et 5 indications ; suite JVM complète non relancée. Contrôles des scripts : 34 archive, 32 CI, 7 workflow et 22 R8 réussis. Un échange fictif PWA → Android/Room → PWA, avec changement du repère et conservation des extensions et nombres précis, a réussi sous Chromium et WebKit Linux. Aucun test supprimé. [Guide](docs/REPERES-VEHICULES-ANDROID-BETA45.md).
+
+**Retour utilisateur Windows beta.44 :** 777 tests déclarés, 7 échecs et 8 ignorés. Cinq concernent FileProvider, deux concernent l’ouverture sur disque sous Robolectric. Beta.45 prépare des adaptations ciblées aux tests sans retirer de scénario ; leur réussite sur le PC concerné reste à confirmer. [Guide](docs/REPERES-VEHICULES-ANDROID-BETA45.md).
+
 **Android beta.44 :** 86 tests JVM ciblés réussis sous Linux sans échec ni ignoré, dont 18 nouveaux. La suite complète n’a pas été relancée. L’APK debug est assemblé ; 69 scénarios instrumentés sont compilés mais non exécutés ; lint : 0 erreur, 24 avertissements et 5 indications. Contrôles des scripts : 33 archive, 32 CI, 7 workflow et 22 R8 réussis. Aucun ancien test n’a été retiré. [Guide](docs/RECHERCHE-CATALOGUE-BETA44.md).
 
 **PWA beta.15 :** 85 tests Node, 29 tests d’archive et 14 tests de publication réussis. Repères, conflits (dont symptômes et contrôles), quatre thèmes, hors-ligne et vraie mise à jour beta.14 → beta.15 vérifiés sous Chromium et WebKit Linux. Un aller-retour fictif PWA → Android/Room beta.44 → PWA a conservé le repère et les données après modification et annulation d’une suppression. Les échanges historiques beta.1 et beta.6 n’ont pas été rejoués, ZIP absents. Pas de test sur iPhone/Safari ou lecteur d’écran réel ; performances non mesurées. [Guide](docs/REPERES-VEHICULES-PWA-BETA15.md).
@@ -148,7 +155,7 @@ NFC facultatif, partage sélectif ou QR, mode tablette, fonctions de flotte et a
 
 **PWA beta.12, historique :** 64 tests Node et 22 tests d’archivage réussis ; aides et mise à jour réelle beta.11 → beta.12 vérifiées sous Chromium et WebKit Linux, y compris hors ligne.
 
-Aucun téléphone, émulateur, Windows ou GitHub n’a été validé pour beta.44 ; Safari iOS reste à valider et aucune performance n’est mesurée.
+Aucun téléphone, émulateur, PC Windows réel ou GitHub n’a été validé pour beta.45 ; Safari iOS reste à valider et aucune performance n’est mesurée.
 
 **Android beta.43, historique :** 82 tests JVM ciblés réussis ; suite complète non relancée. APK debug et 69 scénarios instrumentés compilés mais non exécutés ; lint 0 erreur, 24 avertissements et 5 indications. [Guide](docs/AIDES-PLEINS-VIN.md).
 
@@ -180,8 +187,8 @@ Les priorités peuvent être ajustées selon tes demandes, tout en préservant l
 
 Les trois ZIP de projet conservés à la date de ce bilan sont :
 
-- `VigieAuto-Android-v0.4.0-beta.44.zip` — source Android.
-- `VigieAuto-v1.5.2-beta.15.zip` — PWA candidate avec dossier `A-METTRE-SUR-GITHUB`.
+- `VigieAuto-Android-v0.4.0-beta.45.zip` — source Android.
+- `VigieAuto-v1.5.2-beta.16.zip` — PWA candidate avec dossier `A-METTRE-SUR-GITHUB`.
 - `VigieAuto-v1.5.1.zip` — PWA familiale conservée.
 
 Les deux ZIP Android et PWA ont une racine nommée `VigieAuto` : les extraire dans **deux dossiers parents différents**. Ils contiennent aussi l’historique détaillé, le cahier des charges, les feuilles de route, le récapitulatif des fonctions et la checklist de performance.

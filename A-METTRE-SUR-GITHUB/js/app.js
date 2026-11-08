@@ -11,6 +11,7 @@ import {
 } from "./maintenance.js";
 import { consumeGpsFix } from "./gps.js";
 import { VEHICLE_MARKER_COLORS, inspectVehicleMarker, withVehicleMarker } from "./vehicle-marker.js";
+import { PROFILE_FIELDS, PROFILE_TEXT_LIMIT, inspectVehicleProfile, withVehicleProfile } from "./vehicle-profile.js";
 import { inspectExpenseReceipt, receiptPreviewUrl, withExpenseReceipt, validateReceiptFile, requireReceiptRecordSize } from "./expense-receipt.js";
 import {
   SUGGESTION_SETTING_ID, AUTRE_MARQUE, AUTRE_MODELE, FUEL_CHOICES,
@@ -41,7 +42,7 @@ import {
   DOC_CATEGORIES,
 } from "./data.js";
 
-const APP_VERSION = "1.5.2-beta.15";
+const APP_VERSION = "1.5.2-beta.16";
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
   String(value ?? "").replace(
@@ -134,7 +135,7 @@ const app = $("#app");
 const modal = $("#modal");
 // Instantanés pris à l'ouverture : même une lecture de fichier asynchrone ne
 // peut écraser une modification effectuée depuis un autre onglet.
-let expenseDraft = null, receiptDraft = null, fillDraft = null, vehicleDraft = null, markerDraft = null;
+let expenseDraft = null, receiptDraft = null, fillDraft = null, vehicleDraft = null, markerDraft = null, profileDraft = null;
 let symptomDraft = null, checkDraft = null;
 const VALID_THEMES = new Set(["sauge", "cyan", "auto"]);
 const darkScheme = window.matchMedia?.("(prefers-color-scheme: dark)") || null;
@@ -929,7 +930,7 @@ function tripsView() {
 }
 function garageView() {
   return `${pageHeading("Mes véhicules", "Tous vos compagnons de route au même endroit.", addButton("Ajouter un véhicule", "add-vehicle"))}
-  ${state.records.vehicles.length ? `<div class="vehicle-grid">${state.records.vehicles.map((v) => `<div class="card vehicle-tile"><div class="vehicle-tile-top">${square("car")}<div class="list-main"><h3>${esc(nameOf(v))}</h3><div class="list-meta">${esc(v.version || fuelLabel(v))} ${v.year ? `· ${esc(v.year)}` : ""} ${v.plate ? `· ${esc(v.plate)}` : ""}</div><div class="list-meta"><b>${number(v.odometer)} km</b></div>${vehicleMarkerBadge(v)}</div>${v.id === state.activeId ? '<span class="tag">Actif</span>' : ""}</div><div class="tile-actions">${v.id !== state.activeId ? `<button class="btn small" data-action="select-vehicle" data-id="${esc(v.id)}">Choisir ce véhicule</button>` : '<span class="card-intro">Véhicule sélectionné</span>'}<button class="btn secondary small vehicle-marker-button" data-action="vehicle-marker" data-id="${esc(v.id)}" aria-label="Repère de couleur pour ${esc(nameOf(v))}">Repère de couleur</button><span class="spacer"></span><button class="icon-button" data-action="edit-vehicle" data-id="${esc(v.id)}" aria-label="Modifier ${esc(nameOf(v))}">${I("edit")}</button><button class="icon-button" data-action="delete-vehicle" data-id="${esc(v.id)}" aria-label="Supprimer ${esc(nameOf(v))}">${I("trash")}</button></div></div>`).join("")}</div>` : `<div class="card">${empty("car", "Votre garage est vide", "Ajoutez votre premier véhicule pour commencer.", "add-vehicle", "Ajouter un véhicule")}</div>`}`;
+  ${state.records.vehicles.length ? `<div class="vehicle-grid">${state.records.vehicles.map((v) => `<div class="card vehicle-tile"><div class="vehicle-tile-top">${square("car")}<div class="list-main"><h3>${esc(nameOf(v))}</h3><div class="list-meta">${esc(v.version || fuelLabel(v))} ${v.year ? `· ${esc(v.year)}` : ""} ${v.plate ? `· ${esc(v.plate)}` : ""}</div><div class="list-meta"><b>${number(v.odometer)} km</b></div>${vehicleMarkerBadge(v)}</div>${v.id === state.activeId ? '<span class="tag">Actif</span>' : ""}</div><div class="tile-actions">${v.id !== state.activeId ? `<button class="btn small" data-action="select-vehicle" data-id="${esc(v.id)}">Choisir ce véhicule</button>` : '<span class="card-intro">Véhicule sélectionné</span>'}<button class="btn secondary small vehicle-marker-button" data-action="vehicle-marker" data-id="${esc(v.id)}" aria-label="Repère de couleur pour ${esc(nameOf(v))}">Repère de couleur</button><button class="btn secondary small vehicle-profile-button" data-action="vehicle-profile" data-id="${esc(v.id)}" aria-label="Informations complémentaires pour ${esc(nameOf(v))}">Infos véhicule</button><span class="spacer"></span><button class="icon-button" data-action="edit-vehicle" data-id="${esc(v.id)}" aria-label="Modifier ${esc(nameOf(v))}">${I("edit")}</button><button class="icon-button" data-action="delete-vehicle" data-id="${esc(v.id)}" aria-label="Supprimer ${esc(nameOf(v))}">${I("trash")}</button></div></div>`).join("")}</div>` : `<div class="card">${empty("car", "Votre garage est vide", "Ajoutez votre premier véhicule pour commencer.", "add-vehicle", "Ajouter un véhicule")}</div>`}`;
 }
 function categoryFilter(name, values, selected) {
   return `<select data-filter="${name}" aria-label="Filtrer par catégorie"><option value="all">Toutes les catégories</option>${Object.entries(
@@ -1469,6 +1470,68 @@ function vehicleMarkerForm(id) {
     body: `<div class="form-grid">${vehicleMarkerField(vehicle)}</div>`,
   });
 }
+// Informations indépendantes de la fiche principale : pas de changement de
+// véhicule actif ni de réécriture implicite du VIN, des notes ou du compteur.
+function profileCurrencyFields(currency) {
+  const choices = { "": "Choisir la devise", ...CURRENCY_CHOICES };
+  if (currency && !Object.hasOwn(choices, currency)) choices[currency] = `${currency} (devise enregistrée)`;
+  choices.__other = "Autre devise…";
+  return `${selectField("profileCurrency", "Devise du prix d’achat", currency, choices, { help: "Aucune conversion automatique." })}
+    <div class="field" data-profile-other-currency hidden><label for="f-profileCurrencyOther">Code de devise (3 lettres)</label><input id="f-profileCurrencyOther" name="profileCurrencyOther" type="text" maxlength="3" pattern="[A-Za-z]{3}" autocapitalize="characters" autocomplete="off" disabled required><small>Par exemple SEK ; le code est à vérifier, sans service en ligne.</small></div>`;
+}
+function profileInputs(form) {
+  const value = (name) => form.elements[name]?.value ?? "";
+  const selected = value("profileCurrency");
+  return {
+    bodyColor: value("profileBodyColor"), insurer: value("profileInsurer"), policyNumber: value("profilePolicyNumber"),
+    insuranceExpiry: value("profileInsuranceExpiry"), purchaseDate: value("profilePurchaseDate"),
+    purchaseAmount: value("profilePurchaseAmount"), purchaseCurrency: selected === "__other" ? value("profileCurrencyOther") : selected,
+  };
+}
+function profileHasUnsavedChanges() {
+  const form = modal.querySelector('form[data-form="vehicle-profile"]');
+  if (!profileDraft?.initial || !form) return false;
+  const current = profileInputs(form);
+  return PROFILE_FIELDS.some((key) => current[key] !== profileDraft.initial[key]);
+}
+function mayDiscardProfileDraft() {
+  return !profileHasUnsavedChanges() || confirm("Abandonner ces informations non enregistrées ? Les modifications de cette fenêtre seront perdues.");
+}
+function vehicleProfileForm(id) {
+  const vehicle = recordById("vehicles", id);
+  if (!vehicle) throw new Error("Ce véhicule n’existe plus. Rechargez VigieAuto.");
+  const info = inspectVehicleProfile(vehicle);
+  if (info.state === "unsupported") {
+    profileDraft = null;
+    contentModal("Informations complémentaires", esc(nameOf(vehicle)),
+      '<p>Ces informations proviennent d’un format non reconnu. Elles restent conservées sans modification ; ouvrez-les avec une version compatible.</p>');
+    return;
+  }
+  profileDraft = { id, expected: structuredClone(vehicle), initial: null };
+  const f = info.fields;
+  formModal({
+    title: "Informations complémentaires", subtitle: esc(nameOf(vehicle)), form: "vehicle-profile", id,
+    body: `<div class="form-grid">
+      <p class="form-help full-width">Tout est facultatif. Ces informations restent sur cet appareil et dans vos sauvegardes non chiffrées.</p>
+      ${field("profileBodyColor", "Couleur de carrosserie", f.bodyColor, { full:true, placeholder:"Ex. bleu métallisé", extra:`maxlength="${PROFILE_TEXT_LIMIT}" autocomplete="off"`, help:"Couleur réelle du véhicule, différente du repère de couleur de l’application." })}
+      <h3 class="form-section-title full-width">Assurance</h3>
+      ${field("profileInsurer", "Compagnie d’assurance", f.insurer, { extra:`maxlength="${PROFILE_TEXT_LIMIT}" autocomplete="off"` })}
+      ${field("profilePolicyNumber", "Numéro de contrat", f.policyNumber, { extra:`maxlength="${PROFILE_TEXT_LIMIT}" autocomplete="off"` })}
+      ${field("profileInsuranceExpiry", "Échéance de l’assurance", f.insuranceExpiry, { type:"date", full:true, help:"À titre indicatif : aucun rappel n’est créé automatiquement." })}
+      <h3 class="form-section-title full-width">Achat</h3>
+      ${field("profilePurchaseDate", "Date d’achat", f.purchaseDate, { type:"date", full:true })}
+      ${field("profilePurchaseAmount", "Prix d’achat", f.purchaseAmount, { placeholder:"Ex. 12500,00", extra:'inputmode="decimal" autocomplete="off" maxlength="31"', help:"Montant exact ; jusqu’à six décimales, sans espace." })}
+      ${profileCurrencyFields(f.purchaseCurrency)}
+      <p class="form-help full-width">Le prix et sa devise sont à renseigner ensemble. Aucun achat ni dépense n’est ajouté au carnet.</p>
+    </div>`,
+  });
+  const form = modal.querySelector('form[data-form="vehicle-profile"]');
+  const choice = form.elements.profileCurrency, otherBox = form.querySelector("[data-profile-other-currency]");
+  const refresh = () => { const other = choice.value === "__other"; otherBox.hidden = !other; otherBox.querySelector("input").disabled = !other; };
+  choice.addEventListener("change", refresh); refresh();
+  profileDraft.initial = profileInputs(form);
+}
+
 // Le formulaire principal reste ouvert sous le sélecteur : son brouillon ne
 // dépend ni d'un glissement, ni de la reconstruction du DOM de la liste.
 let serviceDraft = null;
@@ -1981,8 +2044,22 @@ async function saveForm(form) {
     x,
     record;
   const v = getVehicle();
-  if (!["vehicle", "vehicle-marker"].includes(type) && !v) throw new Error("Ajoutez d’abord un véhicule.");
-  if (type === "vehicle-marker") {
+  if (!["vehicle", "vehicle-marker", "vehicle-profile"].includes(type) && !v) throw new Error("Ajoutez d’abord un véhicule.");
+  if (type === "vehicle-profile") {
+    if (!profileDraft || profileDraft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
+    const values = profileInputs(form), changed = PROFILE_FIELDS.filter((key) => values[key] !== profileDraft.initial[key]);
+    const before = inspectVehicleProfile(profileDraft.expected).fields;
+    record = withVehicleProfile(profileDraft.expected, values, changed);
+    if (record === profileDraft.expected) { modal.close(); toast("Aucune modification à enregistrer."); return; }
+    const after = inspectVehicleProfile(record).fields;
+    const labels = { bodyColor:"la couleur", insurer:"la compagnie", policyNumber:"le numéro de contrat", insuranceExpiry:"l’échéance", purchaseDate:"la date d’achat", purchaseAmount:"le prix d’achat", purchaseCurrency:"sa devise" };
+    const removed = PROFILE_FIELDS.filter((key) => before[key] && !after[key]).map((key) => labels[key]);
+    if (removed.length && !confirm(`Effacer ${removed.join(", ")} ? Ces informations seront retirées de la fiche après enregistrement.`)) return;
+    if (before.purchaseAmount && after.purchaseAmount && before.purchaseCurrency !== after.purchaseCurrency &&
+        !confirm(`Changer la devise du prix de ${before.purchaseCurrency} à ${after.purchaseCurrency} ? Aucun montant n’est converti automatiquement.`)) return;
+    // Cible complète vérifiée dans la même transaction : pas d'écrasement ni de recréation après suppression.
+    await applyJournalChecked([put("vehicles", record)], [{ store:"vehicles", id, expected:profileDraft.expected }]);
+  } else if (type === "vehicle-marker") {
     if (!markerDraft || markerDraft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
     record = withVehicleMarker(markerDraft.expected, text(d, "vehicleMarker"));
     // Le contrôle et l'écriture sont atomiques, même entre onglets. Aucune
@@ -2729,9 +2806,18 @@ function describeError(error) {
     return "Espace de stockage insuffisant. Exportez vos données et libérez de la place sur l’appareil.";
   return error?.message || "Une erreur est survenue. Réessayez.";
 }
-modal.addEventListener("cancel", (event) => { if (modal.dataset.saving === "true") event.preventDefault(); });
+modal.addEventListener("cancel", (event) => {
+  if (modal.dataset.saving === "true" || !mayDiscardProfileDraft()) event.preventDefault();
+});
+// Le navigateur peut afficher son propre avertissement avant rechargement ou
+// fermeture. Sur mobile, les arrêts forcés ne déclenchent pas tous cet événement.
+window.addEventListener("beforeunload", (event) => {
+  if (!modal.open || !profileHasUnsavedChanges()) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
 modal.addEventListener("close", () => {
-  if (!modal.open) { expenseDraft = null; receiptDraft = null; fillDraft = null; serviceDraft = null; vehicleDraft = null; markerDraft = null; symptomDraft = null; checkDraft = null; }
+  if (!modal.open) { expenseDraft = null; receiptDraft = null; fillDraft = null; serviceDraft = null; vehicleDraft = null; markerDraft = null; profileDraft = null; symptomDraft = null; checkDraft = null; }
   if (!gps.finishTripId) return;
   const id = gps.finishTripId;
   gps.finishTripId = null;
@@ -2796,7 +2882,7 @@ document.addEventListener("click", async (event) => {
         closeInfo();
         break;
       case "close-modal":
-        if (modal.dataset.saving === "true") break;
+        if (modal.dataset.saving === "true" || !mayDiscardProfileDraft()) break;
         if (categoryPicker.open) closeCategoryPicker();
         modal.close();
         break;
@@ -2941,6 +3027,9 @@ document.addEventListener("click", async (event) => {
         break;
       case "vehicle-marker":
         vehicleMarkerForm(id);
+        break;
+      case "vehicle-profile":
+        vehicleProfileForm(id);
         break;
       case "select-vehicle":
         await chooseVehicle(id);
@@ -3123,7 +3212,7 @@ document.addEventListener("submit", async (event) => {
   const button = form.querySelector("[type=submit]"),
     errorBox = form.querySelector(".form-error");
   button.disabled = true;
-  const lockModal = ["expense-receipt", "vehicle", "vehicle-marker", "symptom", "check"].includes(form.dataset.form);
+  const lockModal = ["expense-receipt", "vehicle", "vehicle-marker", "vehicle-profile", "symptom", "check"].includes(form.dataset.form);
   if (lockModal) {
     modal.dataset.saving = "true";
     form.querySelectorAll('[data-action="close-modal"]').forEach((control) => { control.disabled = true; });
