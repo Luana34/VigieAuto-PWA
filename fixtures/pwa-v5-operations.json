@@ -1,0 +1,546 @@
+{
+  "app": "VigieAuto",
+  "formatVersion": 5,
+  "exportedAt": "2026-11-06T10:32:04.339Z",
+  "data": {
+    "vehicles": [
+      {
+        "id": "0fd9a931-a838-40c6-a7f4-0471b9430eb6",
+        "brand": "Renault",
+        "model": "Clio",
+        "version": "",
+        "year": null,
+        "plate": "",
+        "fuel": "diesel",
+        "fuelDetail": "",
+        "initialKm": 1000,
+        "odometer": 1500,
+        "vin": "",
+        "notes": "",
+        "photo": "",
+        "createdAt": "2026-11-06T10:32:02.694Z",
+        "updatedAt": "2026-11-06T10:32:03.359Z"
+      }
+    ],
+    "services": [
+      {
+        "vigieServiceDetails": {
+          "version": 1,
+          "lines": [
+            {
+              "label": "Filtre",
+              "cents": 1200
+            }
+          ]
+        },
+        "id": "6b5b77b1-50cf-4d0c-af17-eaeab814a6e2",
+        "vehicleId": "0fd9a931-a838-40c6-a7f4-0471b9430eb6",
+        "title": "Entretien suisse",
+        "category": "vidange",
+        "date": "2026-01-03",
+        "odometer": 1500,
+        "place": "",
+        "parts": 12,
+        "labor": 5,
+        "notes": "",
+        "createdAt": "2026-11-06T10:32:03.564Z",
+        "updatedAt": "2026-11-06T10:32:03.564Z"
+      },
+      {
+        "id": "même-id",
+        "vehicleId": "0fd9a931-a838-40c6-a7f4-0471b9430eb6",
+        "date": "2026-01-01",
+        "odometer": 1000,
+        "title": "Ancien entretien",
+        "category": "autre",
+        "parts": 4,
+        "labor": 6,
+        "currency": "USD"
+      }
+    ],
+    "fills": [
+      {
+        "id": "076c3195-930c-413f-8eca-c3996e5ff732",
+        "vehicleId": "0fd9a931-a838-40c6-a7f4-0471b9430eb6",
+        "date": "2026-01-03",
+        "odometer": 1500,
+        "volume": 20,
+        "unitPrice": null,
+        "total": 40,
+        "full": true,
+        "unit": "L",
+        "station": "Complet américain",
+        "notes": "",
+        "createdAt": "2026-11-06T10:32:03.359Z",
+        "updatedAt": "2026-11-06T10:32:04.175Z"
+      },
+      {
+        "id": "a7760b33-2b30-4ea6-883c-abdfc7c17bee",
+        "vehicleId": "0fd9a931-a838-40c6-a7f4-0471b9430eb6",
+        "date": "2026-01-02",
+        "odometer": 1200,
+        "volume": 10,
+        "unitPrice": null,
+        "total": 20,
+        "full": false,
+        "unit": "L",
+        "station": "Partiel suisse",
+        "notes": "",
+        "createdAt": "2026-11-06T10:32:03.208Z",
+        "updatedAt": "2026-11-06T10:32:03.942Z"
+      },
+      {
+        "id": "même-id",
+        "vehicleId": "0fd9a931-a838-40c6-a7f4-0471b9430eb6",
+        "date": "2026-01-01",
+        "odometer": 1000,
+        "volume": 40,
+        "unit": "L",
+        "unitPrice": 1.5,
+        "total": 60,
+        "full": true,
+        "station": "Ancien",
+        "currency": "CHF"
+      }
+    ],
+    "trips": [
+      {
+        "id": "trajet",
+        "vehicleId": "0fd9a931-a838-40c6-a7f4-0471b9430eb6",
+        "date": "2026-01-04",
+        "status": "complete",
+        "method": "manual",
+        "startedAt": null,
+        "title": "Trajet fictif",
+        "from": "",
+        "to": "",
+        "distanceKm": 100,
+        "durationMin": 60,
+        "profile": "inconnu",
+        "notes": ""
+      }
+    ],
+    "expenses": [
+      {
+        "id": "dcd63b62-e321-4853-b478-0677c44821e7",
+        "vehicleId": "0fd9a931-a838-40c6-a7f4-0471b9430eb6",
+        "title": "Péage fictif",
+        "category": "assurance",
+        "date": "2026-11-06",
+        "amount": 7,
+        "notes": "",
+        "createdAt": "2026-11-06T10:32:02.960Z",
+        "updatedAt": "2026-11-06T10:32:02.960Z"
+      },
+      {
+        "id": "même-id",
+        "vehicleId": "0fd9a931-a838-40c6-a7f4-0471b9430eb6",
+        "date": "2026-01-01",
+        "title": "Ancienne dépense",
+        "category": "assurance",
+        "amount": 3,
+        "notes": ""
+      }
+    ],
+    "reminders": [],
+    "symptoms": [],
+    "templates": [
+      {
+        "id": "cq-monthly",
+        "name": "Contrôle mensuel",
+        "description": "Un point plus complet, à adapter au véhicule.",
+        "builtin": true,
+        "items": [
+          {
+            "id": "cq-monthly-1",
+            "title": "Pression des pneus à froid selon l’étiquette constructeur"
+          },
+          {
+            "id": "cq-monthly-2",
+            "title": "Usure et état des pneus"
+          },
+          {
+            "id": "cq-monthly-3",
+            "title": "Roue de secours ou kit de réparation"
+          },
+          {
+            "id": "cq-monthly-4",
+            "title": "Éclairage avant"
+          },
+          {
+            "id": "cq-monthly-5",
+            "title": "Feux arrière et de freinage"
+          },
+          {
+            "id": "cq-monthly-6",
+            "title": "Clignotants"
+          },
+          {
+            "id": "cq-monthly-7",
+            "title": "Pare-brise et vitres"
+          },
+          {
+            "id": "cq-monthly-8",
+            "title": "Essuie-glaces"
+          },
+          {
+            "id": "cq-monthly-9",
+            "title": "Niveau de lave-glace"
+          },
+          {
+            "id": "cq-monthly-10",
+            "title": "Niveau d’huile selon le manuel et moteur froid"
+          },
+          {
+            "id": "cq-monthly-11",
+            "title": "Niveau de liquide de refroidissement moteur froid"
+          },
+          {
+            "id": "cq-monthly-12",
+            "title": "Niveau de liquide de frein selon le manuel"
+          },
+          {
+            "id": "cq-monthly-13",
+            "title": "Absence de fuite visible"
+          },
+          {
+            "id": "cq-monthly-14",
+            "title": "Ceintures de sécurité"
+          },
+          {
+            "id": "cq-monthly-15",
+            "title": "Voyants au tableau de bord"
+          }
+        ]
+      },
+      {
+        "id": "cq-quick",
+        "name": "Contrôle rapide",
+        "description": "Les essentiels avant de prendre la route.",
+        "builtin": true,
+        "items": [
+          {
+            "id": "cq-quick-1",
+            "title": "État visuel des pneus"
+          },
+          {
+            "id": "cq-quick-2",
+            "title": "Éclairage et clignotants"
+          },
+          {
+            "id": "cq-quick-3",
+            "title": "Pare-brise et visibilité"
+          },
+          {
+            "id": "cq-quick-4",
+            "title": "Rétroviseurs correctement réglés"
+          },
+          {
+            "id": "cq-quick-5",
+            "title": "Absence de voyant d’alerte inhabituel"
+          }
+        ]
+      },
+      {
+        "id": "cq-summer",
+        "name": "Contrôle été",
+        "description": "Les bons réflexes avant la chaleur.",
+        "builtin": true,
+        "items": [
+          {
+            "id": "cq-summer-1",
+            "title": "Pression des pneus à froid selon la charge"
+          },
+          {
+            "id": "cq-summer-2",
+            "title": "Usure et état des pneus"
+          },
+          {
+            "id": "cq-summer-3",
+            "title": "Niveau de liquide de refroidissement moteur froid"
+          },
+          {
+            "id": "cq-summer-4",
+            "title": "Niveau d’huile selon le manuel"
+          },
+          {
+            "id": "cq-summer-5",
+            "title": "Climatisation et ventilation"
+          },
+          {
+            "id": "cq-summer-6",
+            "title": "Pare-brise propre"
+          },
+          {
+            "id": "cq-summer-7",
+            "title": "État des essuie-glaces"
+          },
+          {
+            "id": "cq-summer-8",
+            "title": "Éclairage et clignotants"
+          },
+          {
+            "id": "cq-summer-9",
+            "title": "Roue de secours ou kit de réparation"
+          },
+          {
+            "id": "cq-summer-10",
+            "title": "Eau et matériel de sécurité pour le trajet"
+          }
+        ]
+      },
+      {
+        "id": "cq-trip",
+        "name": "Avant un long trajet",
+        "description": "Prenez quelques minutes avant de partir.",
+        "builtin": true,
+        "items": [
+          {
+            "id": "cq-trip-1",
+            "title": "Pression des pneus à froid selon la charge"
+          },
+          {
+            "id": "cq-trip-2",
+            "title": "Usure et état des pneus"
+          },
+          {
+            "id": "cq-trip-3",
+            "title": "Roue de secours ou kit anti-crevaison"
+          },
+          {
+            "id": "cq-trip-4",
+            "title": "Éclairage avant"
+          },
+          {
+            "id": "cq-trip-5",
+            "title": "Feux arrière et de freinage"
+          },
+          {
+            "id": "cq-trip-6",
+            "title": "Clignotants"
+          },
+          {
+            "id": "cq-trip-7",
+            "title": "Pare-brise et vitres propres"
+          },
+          {
+            "id": "cq-trip-8",
+            "title": "État des essuie-glaces"
+          },
+          {
+            "id": "cq-trip-9",
+            "title": "Niveau de lave-glace"
+          },
+          {
+            "id": "cq-trip-10",
+            "title": "Niveau d’huile selon le manuel et moteur froid"
+          },
+          {
+            "id": "cq-trip-11",
+            "title": "Niveau de liquide de refroidissement moteur froid"
+          },
+          {
+            "id": "cq-trip-12",
+            "title": "Niveau de liquide de frein selon le manuel"
+          },
+          {
+            "id": "cq-trip-13",
+            "title": "Absence de fuite visible"
+          },
+          {
+            "id": "cq-trip-14",
+            "title": "Rétroviseurs réglés"
+          },
+          {
+            "id": "cq-trip-15",
+            "title": "Ceintures de sécurité"
+          },
+          {
+            "id": "cq-trip-16",
+            "title": "Sièges enfants correctement installés"
+          },
+          {
+            "id": "cq-trip-17",
+            "title": "Voyants au tableau de bord"
+          },
+          {
+            "id": "cq-trip-18",
+            "title": "Gilet et triangle selon les règles locales"
+          },
+          {
+            "id": "cq-trip-19",
+            "title": "Documents nécessaires au trajet"
+          },
+          {
+            "id": "cq-trip-20",
+            "title": "Bagages arrimés et visibilité dégagée"
+          }
+        ]
+      },
+      {
+        "id": "cq-weekly",
+        "name": "Contrôle hebdomadaire",
+        "description": "Un petit tour du véhicule pour rouler sereinement.",
+        "builtin": true,
+        "items": [
+          {
+            "id": "cq-weekly-1",
+            "title": "État visuel et pression des pneus à froid"
+          },
+          {
+            "id": "cq-weekly-2",
+            "title": "Éclairage et clignotants"
+          },
+          {
+            "id": "cq-weekly-3",
+            "title": "État du pare-brise"
+          },
+          {
+            "id": "cq-weekly-4",
+            "title": "Essuie-glaces"
+          },
+          {
+            "id": "cq-weekly-5",
+            "title": "Niveau de lave-glace"
+          },
+          {
+            "id": "cq-weekly-6",
+            "title": "Rétroviseurs"
+          },
+          {
+            "id": "cq-weekly-7",
+            "title": "Absence de fuite visible au sol"
+          },
+          {
+            "id": "cq-weekly-8",
+            "title": "Absence de voyant d’alerte"
+          },
+          {
+            "id": "cq-weekly-9",
+            "title": "Fonctionnement des ceintures"
+          },
+          {
+            "id": "cq-weekly-10",
+            "title": "Présence du matériel de sécurité"
+          }
+        ]
+      },
+      {
+        "id": "cq-winter",
+        "name": "Contrôle hiver",
+        "description": "Préparez votre voiture aux températures froides.",
+        "builtin": true,
+        "items": [
+          {
+            "id": "cq-winter-1",
+            "title": "État et pression des pneus à froid"
+          },
+          {
+            "id": "cq-winter-2",
+            "title": "Pneus ou équipements hiver selon la réglementation"
+          },
+          {
+            "id": "cq-winter-3",
+            "title": "Éclairage et clignotants"
+          },
+          {
+            "id": "cq-winter-4",
+            "title": "Batterie : signes de faiblesse au démarrage"
+          },
+          {
+            "id": "cq-winter-5",
+            "title": "État des essuie-glaces"
+          },
+          {
+            "id": "cq-winter-6",
+            "title": "Lave-glace adapté au gel"
+          },
+          {
+            "id": "cq-winter-7",
+            "title": "Pare-brise et vitres dégagés"
+          },
+          {
+            "id": "cq-winter-8",
+            "title": "Chauffage et désembuage"
+          },
+          {
+            "id": "cq-winter-9",
+            "title": "Liquide de refroidissement contrôlé moteur froid"
+          },
+          {
+            "id": "cq-winter-10",
+            "title": "Joints de portes et serrures"
+          },
+          {
+            "id": "cq-winter-11",
+            "title": "Gilet et matériel de sécurité"
+          },
+          {
+            "id": "cq-winter-12",
+            "title": "Couverture et accessoires adaptés au trajet"
+          }
+        ]
+      }
+    ],
+    "checks": [],
+    "documents": [],
+    "settings": [
+      {
+        "id": "activeVehicle",
+        "value": "0fd9a931-a838-40c6-a7f4-0471b9430eb6"
+      },
+      {
+        "id": "defaultsSeeded",
+        "value": true
+      },
+      {
+        "id": "vehicleSuggestions",
+        "version": 1,
+        "brands": [
+          "Renault"
+        ],
+        "models": [
+          {
+            "brand": "Renault",
+            "model": "Clio"
+          }
+        ],
+        "lastBrand": "Renault",
+        "lastModel": "Clio"
+      }
+    ],
+    "currencyAssignments": [
+      {
+        "id": "expenses:dcd63b62-e321-4853-b478-0677c44821e7",
+        "collection": "expenses",
+        "recordId": "dcd63b62-e321-4853-b478-0677c44821e7",
+        "currency": "USD"
+      },
+      {
+        "id": "fills:076c3195-930c-413f-8eca-c3996e5ff732",
+        "collection": "fills",
+        "recordId": "076c3195-930c-413f-8eca-c3996e5ff732",
+        "currency": "USD"
+      },
+      {
+        "id": "fills:a7760b33-2b30-4ea6-883c-abdfc7c17bee",
+        "collection": "fills",
+        "recordId": "a7760b33-2b30-4ea6-883c-abdfc7c17bee",
+        "currency": "SEK",
+        "futur": {
+          "precise": 12345678901234567890.125,
+          "extra": [
+            null,
+            true
+          ]
+        }
+      },
+      {
+        "id": "services:6b5b77b1-50cf-4d0c-af17-eaeab814a6e2",
+        "collection": "services",
+        "recordId": "6b5b77b1-50cf-4d0c-af17-eaeab814a6e2",
+        "currency": "CHF"
+      }
+    ]
+  }
+}
