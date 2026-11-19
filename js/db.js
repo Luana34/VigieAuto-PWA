@@ -342,12 +342,13 @@ export class LocalDatabase {
           tx.abort();
           return;
         }
-        const distance = trip.gpsDistanceM + addedM;
-        if (!Number.isFinite(distance) || distance > Number.MAX_SAFE_INTEGER) {
+        const rawDistance = trip.gpsDistanceM + addedM;
+        if (!Number.isFinite(rawDistance) || rawDistance > Number.MAX_SAFE_INTEGER) {
           reason = new Error("Distance GPS trop grande ; aucun enregistrement approximatif n’a été ajouté.");
           tx.abort();
           return;
         }
+        const distance = Math.round(rawDistance * 100) / 100;
         result = {
           ...trip,
           gpsDistanceM: distance,

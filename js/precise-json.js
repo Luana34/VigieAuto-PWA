@@ -52,6 +52,19 @@ export function survivesNumber(token, { forUse = false } = {}) {
   return original !== null && original === roundTrip;
 }
 
+/**
+ * Tolérance flottante standard dédiée uniquement à `trips.gpsDistanceM` :
+ * accepte les distances GPS déjà exportées avec de nombreuses décimales,
+ * tout en gardant stricts `MAX_SAFE_INTEGER`, les zéros négatifs et le sous-flux.
+ */
+function survivesTripGpsDistance(token) {
+  if (typeof token !== "string" || token.length > MAX_NUMBER_LENGTH || !NUMBER.test(token)) return false;
+  const n = Number(token);
+  if (!Number.isFinite(n) || Math.abs(n) > Number.MAX_SAFE_INTEGER) return false;
+  if (n === 0) return decimalIdentity(token) === "zero";
+  return true;
+}
+
 /** Les formulaires acceptent aussi des écritures usuelles comme 0012 ou .5. */
 export function survivesUserNumber(raw) {
   if (typeof raw !== "string" || raw.length > MAX_NUMBER_LENGTH) return false;
@@ -161,7 +174,14 @@ export function parseBackupJson(text) {
       if (token.length > MAX_NUMBER_LENGTH)
         throw new Error(`Un nombre dépasse ${MAX_NUMBER_LENGTH} caractères ; import annulé, aucune donnée remplacée.`);
       if (knownNumber(path, root)) {
-        if (!survivesNumber(token, { forUse: true })) {
+        const isTripGpsDistanceM =
+          path.length === 4 &&
+          path[0] === "data" &&
+          path[1] === "trips" &&
+          typeof path[2] === "number" &&
+          path[3] === "gpsDistanceM";
+        const ok = isTripGpsDistanceM ? survivesTripGpsDistance(token) : survivesNumber(token, { forUse: true });
+        if (!ok) {
           const location = path.length === 1 ? "version de sauvegarde" : `${path[1]}.${path[3]}`;
           throw new Error(`La valeur numérique ${location} est trop précise ou trop grande pour être utilisée sans arrondi. Import annulé ; conservez le fichier original.`);
         }

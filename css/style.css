@@ -1143,7 +1143,30 @@ h3 {
 .vehicle-marker[data-marker-color="violet"] .vehicle-marker-dot { background: #a779d0; }
 .vehicle-marker[data-marker-color="rose"] .vehicle-marker-dot { background: #e1769d; }
 .garage-hero .vehicle-marker { align-self: flex-start; position: relative; z-index: 1; margin-bottom: 10px; }
-.btn.vehicle-marker-button, .btn.vehicle-profile-button, form[data-form="vehicle-marker"] select { min-height: 44px; }
+.vehicle-tile-thumb {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.vehicle-photo-preview {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.vehicle-photo-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.btn.vehicle-marker-button, .btn.vehicle-profile-button, .btn.vehicle-odometer-button, .btn.vehicle-photo-button, form[data-form="vehicle-marker"] select { min-height: 44px; }
 .tile-actions {
   display: flex;
   align-items: center;

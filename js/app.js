@@ -214,7 +214,7 @@ const app = $("#app");
 const modal = $("#modal");
 // Instantanés pris à l'ouverture : même une lecture de fichier asynchrone ne
 // peut écraser une modification effectuée depuis un autre onglet.
-let expenseDraft = null, receiptDraft = null, fillDraft = null, vehicleDraft = null, markerDraft = null, profileDraft = null;
+let expenseDraft = null, receiptDraft = null, fillDraft = null, vehicleDraft = null, markerDraft = null, profileDraft = null, vehiclePhotoDraft = null, vehicleOdometerDraft = null;
 let notesDraft = null, notesOpening = 0;
 let symptomDraft = null, checkDraft = null, reminderDraft = null;
 const VALID_THEMES = new Set(["sauge", "cyan", "auto"]);
@@ -1067,7 +1067,8 @@ function garageView() {
   return `${pageHeading("Mes véhicules", "Tous vos compagnons de route au même endroit.", addButton("Ajouter un véhicule", "add-vehicle"))}
   ${state.records.vehicles.length ? `<div class="vehicle-grid">${state.records.vehicles.map((v) => {
     const symptomCount = activeSymptomsFor(v.id).length;
-    return `<div class="card vehicle-tile"><div class="vehicle-tile-top">${square("car")}<div class="list-main"><h3>${esc(nameOf(v))}</h3><div class="list-meta">${esc(v.version || fuelLabel(v))} ${v.year ? `· ${esc(v.year)}` : ""} ${v.plate ? `· ${esc(v.plate)}` : ""}</div><div class="list-meta"><b>${number(v.odometer)} km</b></div>${vehicleMarkerBadge(v)}</div>${v.id === state.activeId ? '<span class="tag">Actif</span>' : ""}</div><div class="tile-actions">${v.id !== state.activeId ? `<button class="btn small" data-action="select-vehicle" data-id="${esc(v.id)}">Choisir ce véhicule</button>` : '<span class="card-intro">Véhicule sélectionné</span>'}<button class="btn secondary small vehicle-symptoms-button" data-action="vehicle-symptoms" data-id="${esc(v.id)}" aria-label="Journal des symptômes pour ${esc(nameOf(v))}">Journal des symptômes${symptomCount ? ` <span class="symptom-count-badge">${symptomCount}</span>` : ""}</button><button class="btn secondary small vehicle-marker-button" data-action="vehicle-marker" data-id="${esc(v.id)}" aria-label="Repère de couleur pour ${esc(nameOf(v))}">Repère de couleur</button><button class="btn secondary small vehicle-profile-button" data-action="vehicle-profile" data-id="${esc(v.id)}" aria-label="Informations complémentaires pour ${esc(nameOf(v))}">Infos véhicule</button><button class="btn secondary small vehicle-notes-button" data-action="vehicle-notes" data-id="${esc(v.id)}" aria-label="Notes pour ${esc(nameOf(v))}">Notes</button><button class="btn secondary small vehicle-history-button" data-action="vehicle-odometer-history" data-id="${esc(v.id)}" aria-label="Historique kilométrique pour ${esc(nameOf(v))}">Historique km</button><span class="spacer"></span><button class="icon-button" data-action="edit-vehicle" data-id="${esc(v.id)}" aria-label="Modifier ${esc(nameOf(v))}">${I("edit")}</button><button class="icon-button" data-action="delete-vehicle" data-id="${esc(v.id)}" aria-label="Supprimer ${esc(nameOf(v))}">${I("trash")}</button></div></div>`;
+    const thumb = validPhoto(v.photo) ? `<img class="vehicle-tile-thumb" src="${esc(v.photo)}" alt="Photo de ${esc(nameOf(v))}">` : square("car");
+    return `<div class="card vehicle-tile"><div class="vehicle-tile-top">${thumb}<div class="list-main"><h3>${esc(nameOf(v))}</h3><div class="list-meta">${esc(v.version || fuelLabel(v))} ${v.year ? `· ${esc(v.year)}` : ""} ${v.plate ? `· ${esc(v.plate)}` : ""}</div><div class="list-meta"><b>${number(v.odometer)} km</b></div>${vehicleMarkerBadge(v)}</div>${v.id === state.activeId ? '<span class="tag">Actif</span>' : ""}</div><div class="tile-actions">${v.id !== state.activeId ? `<button class="btn small" data-action="select-vehicle" data-id="${esc(v.id)}">Choisir ce véhicule</button>` : '<span class="card-intro">Véhicule sélectionné</span>'}<button class="btn secondary small vehicle-symptoms-button" data-action="vehicle-symptoms" data-id="${esc(v.id)}" aria-label="Journal des symptômes pour ${esc(nameOf(v))}">Journal des symptômes${symptomCount ? ` <span class="symptom-count-badge">${symptomCount}</span>` : ""}</button><button class="btn secondary small vehicle-marker-button" data-action="vehicle-marker" data-id="${esc(v.id)}" aria-label="Repère de couleur pour ${esc(nameOf(v))}">Repère de couleur</button><button class="btn secondary small vehicle-profile-button" data-action="vehicle-profile" data-id="${esc(v.id)}" aria-label="Informations complémentaires pour ${esc(nameOf(v))}">Infos véhicule</button><button class="btn secondary small vehicle-notes-button" data-action="vehicle-notes" data-id="${esc(v.id)}" aria-label="Notes pour ${esc(nameOf(v))}">Notes</button><button class="btn secondary small vehicle-history-button" data-action="vehicle-odometer-history" data-id="${esc(v.id)}" aria-label="Historique kilométrique pour ${esc(nameOf(v))}">Historique km</button><button class="btn secondary small vehicle-odometer-button" data-action="vehicle-odometer" data-id="${esc(v.id)}" aria-label="Actualiser le kilométrage pour ${esc(nameOf(v))}">Actualiser le kilométrage</button><button class="btn secondary small vehicle-photo-button" data-action="vehicle-photo" data-id="${esc(v.id)}" aria-label="Photo de ${esc(nameOf(v))}">Photo</button><span class="spacer"></span><button class="icon-button" data-action="edit-vehicle" data-id="${esc(v.id)}" aria-label="Modifier ${esc(nameOf(v))}">${I("edit")}</button><button class="icon-button" data-action="delete-vehicle" data-id="${esc(v.id)}" aria-label="Supprimer ${esc(nameOf(v))}">${I("trash")}</button></div></div>`;
   }).join("")}</div>` : `<div class="card">${empty("car", "Votre garage est vide", "Ajoutez votre premier véhicule pour commencer.", "add-vehicle", "Ajouter un véhicule")}</div>`}`;
 }
 function filterChipBar(name, ariaLabel, entries, selected) {
@@ -1843,6 +1844,44 @@ function vehicleMarkerForm(id) {
     body: `<div class="form-grid">${vehicleMarkerField(vehicle)}</div>`,
   });
 }
+function vehicleOdometerForm(id) {
+  const vehicle = recordById("vehicles", id);
+  if (!vehicle) throw new Error("Ce véhicule n’existe plus. Rechargez VigieAuto.");
+  const initialValue = vehicle.odometer ?? "";
+  vehicleOdometerDraft = { id, expected: structuredClone(vehicle), initialValue: String(initialValue) };
+  formModal({
+    title: "Kilométrage actuel",
+    subtitle: esc(nameOf(vehicle)),
+    form: "vehicle-odometer",
+    id,
+    submit: "Enregistrer",
+    body: `<div class="form-grid">
+      <p class="form-help full-width">Ce compteur sert aux rappels. Les anciens relevés restent inchangés.</p>
+      ${field("odometer", "Kilométrage actuel (km)", initialValue, { type: "number", min: 0, step: "any", required: true, full: true, help: "Une modification du compteur demande confirmation et motif." })}
+    </div>`,
+  });
+}
+function vehiclePhotoForm(id) {
+  const vehicle = recordById("vehicles", id);
+  if (!vehicle) throw new Error("Ce véhicule n’existe plus. Rechargez VigieAuto.");
+  vehiclePhotoDraft = { id, expected: structuredClone(vehicle) };
+  const hasPhoto = validPhoto(vehicle.photo);
+  const preview = hasPhoto
+    ? `<img class="vehicle-photo-preview" src="${esc(vehicle.photo)}" alt="Photo de ${esc(nameOf(vehicle))}">`
+    : '<p class="vehicle-photo-empty">Aucune photo pour ce véhicule.</p>';
+  formModal({
+    title: "Photo du véhicule",
+    subtitle: esc(nameOf(vehicle)),
+    form: "vehicle-photo",
+    id,
+    submit: "Enregistrer la photo",
+    body: `<div class="form-grid">
+      <div class="field full-width">${preview}</div>
+      ${field("vehiclePhoto", hasPhoto ? "Remplacer la photo" : "Choisir une photo", "", { type: "file", accept: "image/jpeg,image/png,image/webp,image/gif", full: true, help: "JPG, PNG, WebP ou GIF jusqu’à 5 Mo, stockée uniquement sur cet appareil." })}
+      ${hasPhoto ? checkbox("removePhoto", "Supprimer la photo actuelle.") : ""}
+    </div>`,
+  });
+}
 // L'éditeur garde le texte commun aux anciennes versions : les styles sont des
 // plages séparées et vérifiées. Aucun HTML issu des notes n'est interprété.
 function noteMarksEqual(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
@@ -1997,7 +2036,12 @@ function hasUnsavedDraft() {
   const vehicleFormElement = modal.querySelector('form[data-form="vehicle"]');
   const vehicleChanged = !!(vehicleFormElement && vehicleDraft?.initialFormSignature &&
     vehicleFormSignature(vehicleFormElement) !== vehicleDraft.initialFormSignature);
-  return !!pendingVehicleCorrection || profileHasUnsavedChanges() || vehicleChanged || notesHaveUnsavedChanges();
+  const odometerFormElement = modal.querySelector('form[data-form="vehicle-odometer"]');
+  const odometerChanged = !!(odometerFormElement && vehicleOdometerDraft &&
+    odometerFormElement.elements.odometer?.value !== vehicleOdometerDraft.initialValue);
+  const photoFormElement = modal.querySelector('form[data-form="vehicle-photo"]');
+  const photoChanged = !!(photoFormElement && (photoFormElement.elements.vehiclePhoto?.files?.length || photoFormElement.elements.removePhoto?.checked));
+  return !!pendingVehicleCorrection || profileHasUnsavedChanges() || vehicleChanged || odometerChanged || photoChanged || notesHaveUnsavedChanges();
 }
 function mayDiscardDraft() {
   return !hasUnsavedDraft() || confirm("Abandonner ces informations non enregistrées ? Les modifications de cette fenêtre seront perdues.");
@@ -2568,7 +2612,7 @@ async function saveForm(form) {
     record,
     createdSymptomRedirectId = null;
   const v = getVehicle();
-  if (!["vehicle", "vehicle-marker", "vehicle-profile", "vehicle-notes", "odometer-correction"].includes(type) && !v) throw new Error("Ajoutez d’abord un véhicule.");
+  if (!["vehicle", "vehicle-marker", "vehicle-profile", "vehicle-notes", "vehicle-odometer", "vehicle-photo", "odometer-correction"].includes(type) && !v) throw new Error("Ajoutez d’abord un véhicule.");
   if (type === "vehicle-notes") {
     const draft = notesDraft, input = form.elements.noteText;
     if (!draft || draft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
@@ -2608,6 +2652,29 @@ async function saveForm(form) {
     // Le contrôle et l'écriture sont atomiques, même entre onglets. Aucune
     // autre propriété, donnée liée ou sélection de véhicule n'est modifiée.
     await applyJournalChecked([put("vehicles", record)], [{ store: "vehicles", id, expected: markerDraft.expected }]);
+  } else if (type === "vehicle-odometer") {
+    if (!vehicleOdometerDraft || vehicleOdometerDraft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
+    const odometer = asNumber(d, "odometer");
+    if (odometer === vehicleOdometerDraft.expected.odometer) {
+      vehicleOdometerDraft = null;
+      modal.close();
+      toast("Kilométrage inchangé ; aucune correction ajoutée.");
+      return;
+    }
+    record = { ...vehicleOdometerDraft.expected, odometer, updatedAt: now };
+    beginVehicleCorrection(record, vehicleOdometerDraft.expected);
+    return;
+  } else if (type === "vehicle-photo") {
+    const draft = vehiclePhotoDraft;
+    if (!draft || draft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
+    const file = d.get("vehiclePhoto"), remove = d.has("removePhoto");
+    if (remove && file?.size) throw new Error("Choisissez de remplacer ou de retirer la photo, pas les deux.");
+    if (!remove && !file?.size) { modal.close(); return; }
+    let photo = "";
+    if (!remove) photo = await readAttachment(file, true);
+    if (!modal.open || !form.isConnected || vehiclePhotoDraft !== draft) throw new Error("Opération annulée : aucune photo n’a été modifiée.");
+    record = { ...draft.expected, photo, updatedAt: now };
+    await applyJournalChecked([put("vehicles", record)], [{ store: "vehicles", id, expected: draft.expected }]);
   } else if (type === "vehicle") {
     if (!vehicleDraft || vehicleDraft.id !== id) throw new Error("Formulaire périmé : fermez-le et rechargez VigieAuto.");
     x = vehicleDraft.expected || {};
@@ -3496,7 +3563,7 @@ modal.addEventListener("close", () => {
   if (!modal.open) {
     if (choiceSheet.open) closeChoiceSheet();
     choiceRegistry.clear();
-    notesOpening++; notesDraft = null; expenseDraft = null; receiptDraft = null; fillDraft = null; serviceDraft = null; vehicleDraft = null; markerDraft = null; profileDraft = null; symptomDraft = null; checkDraft = null; reminderDraft = null; pendingVehicleCorrection = null; odometerHistoryView = null;
+    notesOpening++; notesDraft = null; expenseDraft = null; receiptDraft = null; fillDraft = null; serviceDraft = null; vehicleDraft = null; markerDraft = null; profileDraft = null; vehiclePhotoDraft = null; vehicleOdometerDraft = null; symptomDraft = null; checkDraft = null; reminderDraft = null; pendingVehicleCorrection = null; odometerHistoryView = null;
   }
   if (!gps.finishTripId) return;
   const id = gps.finishTripId;
@@ -3791,6 +3858,12 @@ document.addEventListener("click", async (event) => {
       case "vehicle-odometer-history":
         await openOdometerHistory(id);
         break;
+      case "vehicle-odometer":
+        vehicleOdometerForm(id);
+        break;
+      case "vehicle-photo":
+        vehiclePhotoForm(id);
+        break;
       case "more-odometer-history":
         if (odometerHistoryView) await openOdometerHistory(odometerHistoryView.id, { refresh:false, limit:odometerHistoryView.limit + 80 });
         break;
@@ -3984,7 +4057,7 @@ document.addEventListener("submit", async (event) => {
   const button = form.querySelector("[type=submit]"),
     errorBox = form.querySelector(".form-error");
   button.disabled = true;
-  const lockModal = ["expense-receipt", "vehicle", "odometer-correction", "vehicle-marker", "vehicle-profile", "vehicle-notes", "symptom", "check", "reminder"].includes(form.dataset.form);
+  const lockModal = ["expense-receipt", "vehicle", "vehicle-photo", "vehicle-odometer", "odometer-correction", "vehicle-marker", "vehicle-profile", "vehicle-notes", "symptom", "check", "reminder"].includes(form.dataset.form);
   if (lockModal) {
     modal.dataset.saving = "true";
     form.querySelectorAll('[data-action="close-modal"]').forEach((control) => { control.disabled = true; });

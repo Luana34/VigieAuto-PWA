@@ -1,6 +1,6 @@
-/* VigieAuto : cache applicatif uniquement. Les données restent dans IndexedDB. */
+/* VigieAuto 1.0.0 : cache applicatif uniquement. Les données restent dans IndexedDB. */
 const CACHE = "vigieauto-cache-v1.0";
-// Préfixes nettoyés à l'activation : anciens caches CQ Auto / beta et caches VigieAuto précédents.
+// Préfixes nettoyés à l'activation : anciens caches CQ Auto / préversions et caches VigieAuto précédents.
 const PREFIXES = ["vigieauto-cache-", "cq-auto-app-"];
 const FILES = [
   "./",
@@ -35,7 +35,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(FILES))
+      .then((cache) => cache.addAll(FILES.map((file) => new Request(file, { cache: "reload" }))))
       .then(() => self.skipWaiting()),
   );
 });
